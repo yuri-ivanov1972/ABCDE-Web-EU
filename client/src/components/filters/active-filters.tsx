@@ -38,7 +38,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
           <button 
             className="ml-1 text-gray-500 hover:text-gray-700"
             onClick={() => onRemoveFilter('nutriScores')}
-            aria-label="Remove nutri-score filter"
+            aria-label="Noņemt Nutri-Score filtru"
           >
             <X className="h-4 w-4" />
           </button>
@@ -48,14 +48,14 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
       {(filters.sugar.min !== undefined || filters.sugar.max !== undefined) && (
         <div className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
           <span>
-            Sugar: 
+            Cukurs: 
             {filters.sugar.min !== undefined && ` > ${filters.sugar.min}g`}
             {filters.sugar.max !== undefined && ` < ${filters.sugar.max}g`}
           </span>
           <button 
             className="ml-1 text-gray-500 hover:text-gray-700"
             onClick={() => onRemoveFilter('sugar')}
-            aria-label="Remove sugar filter"
+            aria-label="Noņemt cukura filtru"
           >
             <X className="h-4 w-4" />
           </button>
@@ -65,14 +65,14 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
       {(filters.fat.min !== undefined || filters.fat.max !== undefined) && (
         <div className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
           <span>
-            Fat: 
+            Tauki: 
             {filters.fat.min !== undefined && ` > ${filters.fat.min}g`}
             {filters.fat.max !== undefined && ` < ${filters.fat.max}g`}
           </span>
           <button 
             className="ml-1 text-gray-500 hover:text-gray-700"
             onClick={() => onRemoveFilter('fat')}
-            aria-label="Remove fat filter"
+            aria-label="Noņemt tauku filtru"
           >
             <X className="h-4 w-4" />
           </button>
@@ -82,14 +82,14 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
       {(filters.protein.min !== undefined || filters.protein.max !== undefined) && (
         <div className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
           <span>
-            Protein: 
+            Olbaltumvielas: 
             {filters.protein.min !== undefined && ` > ${filters.protein.min}g`}
             {filters.protein.max !== undefined && ` < ${filters.protein.max}g`}
           </span>
           <button 
             className="ml-1 text-gray-500 hover:text-gray-700"
             onClick={() => onRemoveFilter('protein')}
-            aria-label="Remove protein filter"
+            aria-label="Noņemt olbaltumvielu filtru"
           >
             <X className="h-4 w-4" />
           </button>
@@ -99,14 +99,14 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
       {(filters.salt.min !== undefined || filters.salt.max !== undefined) && (
         <div className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
           <span>
-            Salt: 
+            Sāls: 
             {filters.salt.min !== undefined && ` > ${filters.salt.min}g`}
             {filters.salt.max !== undefined && ` < ${filters.salt.max}g`}
           </span>
           <button 
             className="ml-1 text-gray-500 hover:text-gray-700"
             onClick={() => onRemoveFilter('salt')}
-            aria-label="Remove salt filter"
+            aria-label="Noņemt sāls filtru"
           >
             <X className="h-4 w-4" />
           </button>
@@ -118,7 +118,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
         className="inline-flex items-center text-primary hover:text-primary/90 text-sm font-medium ml-1"
         onClick={onClearAllFilters}
       >
-        Clear All
+        Noņemt visus
       </button>
     </div>
   );

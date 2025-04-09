@@ -156,10 +156,10 @@ const Home: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {searchQuery 
-              ? `Search results for "${searchQuery}"`
+              ? `Meklēšanas rezultāti: "${searchQuery}"`
               : category 
-                ? category.nameEn 
-                : 'All Products'
+                ? category.nameLv 
+                : 'Visi produkti'
             }
           </h1>
           
@@ -177,8 +177,8 @@ const Home: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-gray-600">
               {isLoading 
-                ? 'Loading products...' 
-                : `Showing ${data?.products.length || 0} ${data?.products.length === 1 ? 'product' : 'products'}`
+                ? 'Ielādē produktus...' 
+                : `Parāda ${data?.products?.length || 0} produktus`
               }
             </p>
             
@@ -189,12 +189,12 @@ const Home: React.FC = () => {
                 value={sortOption === 'nutriScore' ? 'nutri-score' : sortOption}
                 onChange={handleSortChange}
               >
-                <option value="name">Sort by: Name</option>
-                <option value="nutri-score">Sort by: Nutri-Score</option>
-                <option value="sugar">Sort by: Sugar (low to high)</option>
-                <option value="fat">Sort by: Fat (low to high)</option>
-                <option value="protein">Sort by: Protein (high to low)</option>
-                <option value="salt">Sort by: Salt (low to high)</option>
+                <option value="name">Kārtot pēc: Nosaukuma</option>
+                <option value="nutri-score">Kārtot pēc: Nutri-Score</option>
+                <option value="sugar">Kārtot pēc: Cukura (no zema uz augstu)</option>
+                <option value="fat">Kārtot pēc: Tauki (no zema uz augstu)</option>
+                <option value="protein">Kārtot pēc: Olbaltumvielas (no augsta uz zemu)</option>
+                <option value="salt">Kārtot pēc: Sāls (no zema uz augstu)</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

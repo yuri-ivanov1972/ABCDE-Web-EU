@@ -57,12 +57,12 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-700 mb-2">Nutrients (per 100g/ml)</h3>
+      <h3 className="text-sm font-medium text-gray-700 mb-2">Uzturvielas (uz 100g/ml)</h3>
       
       {/* Sugar Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Sugar</span>
+          <span>Cukurs</span>
           <span>{displayValues.sugar}</span>
         </label>
         <input 
@@ -79,7 +79,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Fat Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Fat</span>
+          <span>Tauki</span>
           <span>{displayValues.fat}</span>
         </label>
         <input 
@@ -96,7 +96,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Protein Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Protein</span>
+          <span>Olbaltumvielas</span>
           <span>{displayValues.protein}</span>
         </label>
         <input 
@@ -113,7 +113,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Salt Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Salt</span>
+          <span>Sāls</span>
           <span>{displayValues.salt}</span>
         </label>
         <input 

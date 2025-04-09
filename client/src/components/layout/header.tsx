@@ -29,9 +29,9 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.618 5.984A11.955 11.955 0 0112 2.5c-2.688 0-5.18.885-7.18 2.376m0 0A11.953 11.953 0 012.5 12c0 5.284 3.43 9.772 8.185 11.376.386.126.787.24 1.186.34M7.5 14.25L5.106 5.272M6.5 18h12.53c1.695 0 2.54 0 3.186-.55.646-.55.892-1.385 1.132-3.056.24-1.67.24-1.67-.058-2.044-.298-.375-.3-.375-2.232-.375H14.5" />
               </svg>
-              <span className="font-bold text-xl text-gray-800">NutriMarket</span>
+              <span className="font-bold text-xl text-gray-800">ABCDE</span>
             </Link>
           </div>
 
@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for products..."
+                placeholder="Meklēt produktus..."
                 className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearchInput}
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
           <button 
             className="md:hidden text-gray-500 focus:outline-none"
             onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
+            aria-label="Izvēlne"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for products..."
+                placeholder="Meklēt produktus..."
                 className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearchInput}

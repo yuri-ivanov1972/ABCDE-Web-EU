@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types';
-import { getCategories, getCategoryById, getSubcategories } from '@/api';
+import { getCategories, getCategoryById } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import NutrientFilters from '@/components/filters/nutrient-filters';
 import { Filters, NutrientFilter, NutriScoreGrade } from '@/types';
@@ -73,17 +73,17 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
     <aside className="hidden md:block w-64 flex-shrink-0 pr-6">
       {/* Categories */}
       <div className="mb-8">
-        <h2 className="font-medium text-lg text-gray-900 mb-3">Categories</h2>
+        <h2 className="font-medium text-lg text-gray-900 mb-3">Kategorijas</h2>
         
         {/* Breadcrumbs for subcategory navigation */}
         {currentCategory && (
           <div className="mb-4">
             <div className="flex items-center text-sm text-gray-500 mb-2">
-              <Link href="/" className="hover:text-primary">All Categories</Link>
+              <Link href="/" className="hover:text-primary">Visas kategorijas</Link>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
-              <span className="font-medium text-gray-800">{currentCategory.nameEn}</span>
+              <span className="font-medium text-gray-800">{currentCategory.nameLv}</span>
             </div>
           </div>
         )}
@@ -107,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                 >
-                  {category.nameEn}
+                  {category.nameLv}
                 </Link>
                 
                 {/* Subcategories */}
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
                           href={`/category/${subcat.categoryId}`}
                           className="block px-3 py-1.5 rounded-md hover:bg-gray-100 text-gray-700"
                         >
-                          {subcat.nameEn}
+                          {subcat.nameLv}
                         </Link>
                       </li>
                     ))}
@@ -133,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
 
       {/* Filters */}
       <div>
-        <h2 className="font-medium text-lg text-gray-900 mb-3">Filters</h2>
+        <h2 className="font-medium text-lg text-gray-900 mb-3">Filtri</h2>
         
         {/* Nutri-Score Filter */}
         <div className="mb-6">
@@ -155,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
           className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mt-2"
           onClick={onApplyFilters}
         >
-          Apply Filters
+          Pielietot filtrus
         </button>
       </div>
     </aside>

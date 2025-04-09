@@ -67,9 +67,9 @@ const Pagination: React.FC<PaginationProps> = ({
           `}
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          aria-label="Previous page"
+          aria-label="Iepriekšējā lapa"
         >
-          <span className="sr-only">Previous</span>
+          <span className="sr-only">Iepriekšējā</span>
           <ChevronLeft className="h-5 w-5" />
         </button>
         
@@ -111,9 +111,9 @@ const Pagination: React.FC<PaginationProps> = ({
           `}
           onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          aria-label="Next page"
+          aria-label="Nākamā lapa"
         >
-          <span className="sr-only">Next</span>
+          <span className="sr-only">Nākamā</span>
           <ChevronRight className="h-5 w-5" />
         </button>
       </nav>
