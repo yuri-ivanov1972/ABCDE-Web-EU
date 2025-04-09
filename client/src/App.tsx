@@ -6,6 +6,7 @@ import { useState } from "react";
 import Home from "@/pages/home";
 import ProductDetails from "@/pages/product-details";
 import NotFound from "@/pages/not-found";
+import DebugPage from "@/pages/debug";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/category/:id" component={Home} />
       <Route path="/product/:id" component={ProductDetails} />
+      <Route path="/debug" component={DebugPage} />
       <Route component={NotFound} />
     </Switch>
   );

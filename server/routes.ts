@@ -2,6 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { sql } from "drizzle-orm";
+import { categoriesDb, productsDb } from "./db";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -29,6 +31,71 @@ const getProductsQuerySchema = z.object({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API routes - all prefixed with /api
+
+  // Debug route to check database connectivity
+  app.get("/api/debug/db-status", async (_req: Request, res: Response) => {
+    try {
+      let categoriesConnected = false;
+      let productsConnected = false;
+      let categoriesCount = 0;
+      let productsCount = 0;
+
+      try {
+        // Check categories database
+        const categoriesResult = await categoriesDb.execute(sql`SELECT 1 as check`);
+        categoriesConnected = !!categoriesResult;
+        
+        // Get categories count if connected
+        const categoriesCountResult = await categoriesDb.execute(sql`SELECT COUNT(*) as count FROM normalized_categories`);
+        categoriesCount = categoriesCountResult && 
+          typeof categoriesCountResult === 'object' && 
+          Array.isArray(categoriesCountResult) && 
+          categoriesCountResult.length > 0 ? 
+            Number(categoriesCountResult[0].count) : 0;
+      } catch (err) {
+        console.error("Categories DB error:", err);
+      }
+
+      try {
+        // Check products database
+        const productsResult = await productsDb.execute(sql`SELECT 1 as check`);
+        productsConnected = !!productsResult;
+        
+        // Get products count if connected
+        const productsCountResult = await productsDb.execute(sql`SELECT COUNT(*) as count FROM products`);
+        productsCount = productsCountResult && 
+          typeof productsCountResult === 'object' && 
+          Array.isArray(productsCountResult) && 
+          productsCountResult.length > 0 ? 
+            Number(productsCountResult[0].count) : 0;
+      } catch (err) {
+        console.error("Products DB error:", err);
+      }
+
+      res.json({
+        status: "ok",
+        connections: {
+          categories: categoriesConnected,
+          products: productsConnected
+        },
+        counts: {
+          categories: categoriesCount,
+          products: productsCount
+        },
+        env: {
+          categoriesUrl: !!process.env.CATEGORIES_DB_URL,
+          productsUrl: !!process.env.PRODUCTS_DB_URL
+        }
+      });
+    } catch (error) {
+      console.error("Error checking database status:", error);
+      res.status(500).json({ 
+        status: "error", 
+        error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined
+      });
+    }
+  });
   
   // Category routes
   app.get("/api/categories", async (req: Request, res: Response) => {
@@ -111,11 +178,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sortOrder
       } = getProductsQuerySchema.parse(req.query);
       
+      // Cast nutriScores to the correct type (A, B, C, D, E)
+      const validGrades = ['A', 'B', 'C', 'D', 'E'];
+      const validatedNutriScores = nutriScores?.filter(grade => 
+          validGrades.includes(grade.toUpperCase())
+        ).map(grade => grade.toUpperCase() as any);
+      
       const options = {
         categoryId,
         page,
         pageSize,
-        nutriScores,
+        nutriScores: validatedNutriScores,
         sugarMin,
         sugarMax,
         fatMin,
