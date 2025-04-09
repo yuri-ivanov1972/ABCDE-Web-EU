@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types';
-import { getCategories, getCategoryById } from '@/api';
+import { getCategories, getCategoryById, getCategoryPath } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import NutrientFilters from '@/components/filters/nutrient-filters';
 import { Filters, NutrientFilter, NutriScoreGrade } from '@/types';
@@ -15,11 +15,96 @@ interface SidebarProps {
   onApplyFilters: () => void;
 }
 
+// Recursive category component to handle any depth of nesting
+interface CategoryItemProps {
+  category: Category;
+  currentCategoryId?: number;
+  depth: number;
+  pathOfOpenCategories: number[];
+}
+
+const CategoryItem: React.FC<CategoryItemProps> = ({ 
+  category, 
+  currentCategoryId, 
+  depth,
+  pathOfOpenCategories
+}) => {
+  const [isExpanded, setIsExpanded] = useState(
+    pathOfOpenCategories.includes(category.categoryId)
+  );
+  
+  // Fetch subcategories for this category
+  const { data: subcategories = [] } = useQuery({
+    queryKey: ['/api/categories', 'subcategories', category.categoryId],
+    queryFn: () => getCategories(undefined, category.categoryId),
+    enabled: isExpanded || pathOfOpenCategories.includes(category.categoryId)
+  });
+
+  const isSelected = currentCategoryId === category.categoryId;
+  const hasSubcategories = subcategories && subcategories.length > 0;
+  
+  // Toggle expansion when clicking the expand/collapse icon
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  return (
+    <li>
+      <div className="flex items-center">
+        <Link 
+          href={`/category/${category.categoryId}`}
+          className={`flex-grow block px-3 py-1.5 rounded-md ${
+            isSelected
+              ? 'bg-primary bg-opacity-10 text-primary font-medium'
+              : 'hover:bg-gray-100 text-gray-700'
+          }`}
+        >
+          {category.nameLv}
+        </Link>
+        
+        {hasSubcategories && (
+          <button 
+            onClick={toggleExpand}
+            className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+      </div>
+      
+      {/* Display subcategories if expanded */}
+      {isExpanded && hasSubcategories && (
+        <ul className={`mt-1 space-y-1 ${depth === 1 ? 'ml-4' : 'ml-6'}`}>
+          {subcategories.map(subcat => (
+            <CategoryItem 
+              key={subcat.categoryId}
+              category={subcat}
+              currentCategoryId={currentCategoryId}
+              depth={depth + 1}
+              pathOfOpenCategories={pathOfOpenCategories}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters, onApplyFilters }) => {
   const [location] = useLocation();
   
   // Fetch main level categories
-  const { data: mainCategories, isLoading: isLoadingCategories } = useQuery({
+  const { data: mainCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['/api/categories', { level: 1 }],
     queryFn: () => getCategories(1)
   });
@@ -30,11 +115,11 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
     queryFn: () => (categoryId ? getCategoryById(categoryId) : null),
     enabled: !!categoryId
   });
-  
-  // Fetch subcategories if a category is selected
-  const { data: subcategories } = useQuery({
-    queryKey: ['/api/categories', 'subcategories', categoryId],
-    queryFn: () => (categoryId ? getCategories(undefined, categoryId) : []),
+
+  // Fetch path to the current category (to determine which categories should be expanded)
+  const { data: categoryPath = [] } = useQuery({
+    queryKey: ['/api/categories', categoryId, 'path'],
+    queryFn: () => categoryId ? getCategoryPath(categoryId) : Promise.resolve([]),
     enabled: !!categoryId
   });
   
@@ -69,6 +154,11 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
     });
   };
 
+  // Get parent ID chain for the current category
+  const pathOfOpenCategories = categoryPath?.map((cat: Category) => cat.categoryId) || 
+    (currentCategory?.parentCategoryId ? [currentCategory.parentCategoryId, currentCategory.categoryId] : 
+    categoryId ? [categoryId] : []);
+
   return (
     <aside className="hidden md:block w-64 flex-shrink-0 pr-6">
       {/* Categories */}
@@ -97,35 +187,14 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
           </div>
         ) : (
           <ul className="space-y-2">
-            {mainCategories?.map((category) => (
-              <li key={category.categoryId}>
-                <Link 
-                  href={`/category/${category.categoryId}`}
-                  className={`block px-3 py-2 rounded-md ${
-                    categoryId === category.categoryId
-                      ? 'bg-primary bg-opacity-10 text-primary font-medium'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {category.nameLv}
-                </Link>
-                
-                {/* Subcategories */}
-                {categoryId === category.categoryId && subcategories && subcategories.length > 0 && (
-                  <ul className="mt-1 ml-4 space-y-1">
-                    {subcategories.map((subcat) => (
-                      <li key={subcat.categoryId}>
-                        <Link 
-                          href={`/category/${subcat.categoryId}`}
-                          className="block px-3 py-1.5 rounded-md hover:bg-gray-100 text-gray-700"
-                        >
-                          {subcat.nameLv}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
+            {mainCategories.map(category => (
+              <CategoryItem 
+                key={category.categoryId}
+                category={category}
+                currentCategoryId={categoryId}
+                depth={1}
+                pathOfOpenCategories={pathOfOpenCategories}
+              />
             ))}
           </ul>
         )}
