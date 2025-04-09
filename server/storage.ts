@@ -76,20 +76,8 @@ export class DatabaseStorage implements IStorage {
   
   // Category methods
   async getCategories(level?: number): Promise<Category[]> {
-    // First, get categories that have products
-    console.log("Getting categories with products...");
-    const categoriesWithProductsResult = await productsDb.execute(sql`
-      SELECT DISTINCT category_id 
-      FROM products
-    `);
-
-    // Convert raw SQL result to array of category IDs
-    const validCategoryIds: number[] = [];
-    for (const row of (categoriesWithProductsResult as unknown) as Record<string, unknown>[]) {
-      validCategoryIds.push(Number(row.category_id));
-    }
-    
-    console.log(`Found ${validCategoryIds.length} categories with products`);
+    // We'll show all categories but mark which ones have products
+    console.log("Getting categories...");
     
     // Prepare the query based on level
     let query = categoriesDb
@@ -98,11 +86,6 @@ export class DatabaseStorage implements IStorage {
     
     if (level !== undefined) {
       query = query.where(eq(categories.level, level));
-    }
-    
-    // Add the filter for categories with products 
-    if (validCategoryIds.length > 0) {
-      query = query.where(inArray(categories.categoryId, validCategoryIds));
     }
     
     // Execute the query with the order by clause
@@ -130,26 +113,11 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getSubcategories(parentId: number): Promise<Category[]> {
-    // First, get categories that have products
-    const categoriesWithProductsResult = await productsDb.execute(sql`
-      SELECT DISTINCT category_id 
-      FROM products
-    `);
-
-    // Convert raw SQL result to array of category IDs
-    const validCategoryIds: number[] = [];
-    for (const row of (categoriesWithProductsResult as unknown) as Record<string, unknown>[]) {
-      validCategoryIds.push(Number(row.category_id));
-    }
-    
-    // Only show subcategories that have products
+    // Return all subcategories
     return await categoriesDb
       .select()
       .from(categories)
-      .where(and(
-        eq(categories.parentCategoryId, parentId),
-        inArray(categories.categoryId, validCategoryIds)
-      ))
+      .where(eq(categories.parentCategoryId, parentId))
       .orderBy(categories.nameEn);
   }
   
