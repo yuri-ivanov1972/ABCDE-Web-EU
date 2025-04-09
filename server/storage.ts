@@ -76,18 +76,41 @@ export class DatabaseStorage implements IStorage {
   
   // Category methods
   async getCategories(level?: number): Promise<Category[]> {
-    if (level) {
-      return await categoriesDb
-        .select()
-        .from(categories)
-        .where(eq(categories.level, level))
-        .orderBy(categories.nameEn);
+    // First, get categories that have products
+    console.log("Getting categories with products...");
+    const categoriesWithProductsResult = await productsDb.execute(sql`
+      SELECT DISTINCT category_id 
+      FROM products
+    `);
+
+    // Convert raw SQL result to array of category IDs
+    const validCategoryIds: number[] = [];
+    for (const row of (categoriesWithProductsResult as unknown) as Record<string, unknown>[]) {
+      validCategoryIds.push(Number(row.category_id));
     }
     
-    return await categoriesDb
+    console.log(`Found ${validCategoryIds.length} categories with products`);
+    
+    // Prepare the query based on level
+    let query = categoriesDb
       .select()
-      .from(categories)
-      .orderBy(categories.level, categories.nameEn);
+      .from(categories);
+    
+    if (level !== undefined) {
+      query = query.where(eq(categories.level, level));
+    }
+    
+    // Add the filter for categories with products 
+    if (validCategoryIds.length > 0) {
+      query = query.where(inArray(categories.categoryId, validCategoryIds));
+    }
+    
+    // Execute the query with the order by clause
+    if (level !== undefined) {
+      return await query.orderBy(categories.nameEn);
+    } else {
+      return await query.orderBy(categories.level, categories.nameEn);
+    }
   }
   
   async getCategoryById(id: number): Promise<Category | undefined> {
@@ -107,10 +130,26 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getSubcategories(parentId: number): Promise<Category[]> {
+    // First, get categories that have products
+    const categoriesWithProductsResult = await productsDb.execute(sql`
+      SELECT DISTINCT category_id 
+      FROM products
+    `);
+
+    // Convert raw SQL result to array of category IDs
+    const validCategoryIds: number[] = [];
+    for (const row of (categoriesWithProductsResult as unknown) as Record<string, unknown>[]) {
+      validCategoryIds.push(Number(row.category_id));
+    }
+    
+    // Only show subcategories that have products
     return await categoriesDb
       .select()
       .from(categories)
-      .where(eq(categories.parentCategoryId, parentId))
+      .where(and(
+        eq(categories.parentCategoryId, parentId),
+        inArray(categories.categoryId, validCategoryIds)
+      ))
       .orderBy(categories.nameEn);
   }
   
@@ -130,7 +169,20 @@ export class DatabaseStorage implements IStorage {
       ORDER BY level ASC
     `);
     
-    return result as Category[];
+    // Convert raw result to properly formatted Category objects
+    const categoryPath: Category[] = [];
+    for (const row of (result as unknown) as Record<string, unknown>[]) {
+      categoryPath.push({
+        categoryId: Number(row.category_id),
+        rimiCategoryCode: String(row.rimi_category_code),
+        nameLv: String(row.name_lv),
+        nameEn: String(row.name_en),
+        parentCategoryId: row.parent_category_id ? Number(row.parent_category_id) : null,
+        level: Number(row.level)
+      });
+    }
+    
+    return categoryPath;
   }
   
   // Product methods
