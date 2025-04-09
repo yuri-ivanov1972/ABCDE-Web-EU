@@ -1,0 +1,41 @@
+import React from 'react';
+import ProductCard, { ProductCardSkeleton } from './product-card';
+import { ProductWithDetails } from '@/types';
+
+interface ProductGridProps {
+  products: ProductWithDetails[];
+  isLoading: boolean;
+}
+
+const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 9 }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <h3 className="text-xl font-medium text-gray-900 mb-2">No products found</h3>
+        <p className="text-gray-600">
+          Try adjusting your filters or search for something else.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((product) => (
+        <ProductCard key={product.productId} product={product} />
+      ))}
+    </div>
+  );
+};
+
+export default ProductGrid;

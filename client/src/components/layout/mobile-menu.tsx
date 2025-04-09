@@ -1,0 +1,227 @@
+import React, { useState } from 'react';
+import { Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { getCategories } from '@/api';
+import NutriScoreFilter from '@/components/filters/nutri-score-filter';
+import { NutriScoreGrade } from '@/types';
+
+interface MobileMenuProps {
+  isOpen: boolean;
+}
+
+const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
+  const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
+  const [filters, setFilters] = useState({
+    sugar: { min: '', max: '' },
+    fat: { min: '', max: '' },
+    protein: { min: '', max: '' },
+    salt: { min: '', max: '' }
+  });
+
+  // Fetch main categories
+  const { data: categories } = useQuery({
+    queryKey: ['/api/categories', { level: 1 }],
+    queryFn: () => getCategories(1)
+  });
+
+  const toggleNutriScoreFilter = (score: NutriScoreGrade) => {
+    if (selectedNutriScores.includes(score)) {
+      setSelectedNutriScores(selectedNutriScores.filter(s => s !== score));
+    } else {
+      setSelectedNutriScores([...selectedNutriScores, score]);
+    }
+  };
+
+  const updateFilters = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const [filterName, filterType] = name.split('.');
+    
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: {
+        ...prev[filterName as keyof typeof prev],
+        [filterType]: value
+      }
+    }));
+  };
+
+  const handleApplyFilters = () => {
+    // Implement applying filters in the parent component
+    console.log('Applied filters:', { nutriScores: selectedNutriScores, ...filters });
+  };
+
+  return (
+    <div 
+      className={`md:hidden bg-white shadow-md transition-all duration-300 ease-in-out overflow-hidden ${
+        isOpen ? 'max-h-[1000px]' : 'max-h-0'
+      }`}
+    >
+      <nav className="py-3 px-4">
+        <h3 className="font-medium text-gray-900 mb-2">Categories</h3>
+        <ul className="space-y-1">
+          {categories?.map((category) => (
+            <li key={category.categoryId}>
+              <Link 
+                href={`/category/${category.categoryId}`}
+                className="block px-2 py-1 rounded hover:bg-gray-100 text-gray-700"
+              >
+                {category.nameEn}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <div className="border-t border-gray-200 py-3 px-4">
+        <h3 className="font-medium text-gray-900 mb-2">Filters</h3>
+        
+        {/* Mobile Nutri-Score Filter */}
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Nutri-Score</h4>
+          <div className="flex space-x-2">
+            <NutriScoreFilter 
+              selectedScores={selectedNutriScores}
+              onToggleScore={toggleNutriScoreFilter}
+              size="small"
+            />
+          </div>
+        </div>
+
+        {/* Mobile Nutrient Filters */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Nutrients (per 100g/ml)</h4>
+          
+          {/* Sugar Filter */}
+          <div className="mb-3">
+            <label className="block text-xs text-gray-600 mb-1">Sugar</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select 
+                name="sugar.min"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.sugar.min}
+                onChange={updateFilters}
+              >
+                <option value="">Min</option>
+                <option value="0">0g</option>
+                <option value="2">2g</option>
+                <option value="5">5g</option>
+              </select>
+              <select 
+                name="sugar.max"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.sugar.max}
+                onChange={updateFilters}
+              >
+                <option value="">Max</option>
+                <option value="5">5g</option>
+                <option value="10">10g</option>
+                <option value="15">15g</option>
+                <option value="20">20g</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Fat Filter */}
+          <div className="mb-3">
+            <label className="block text-xs text-gray-600 mb-1">Fat</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select 
+                name="fat.min"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.fat.min}
+                onChange={updateFilters}
+              >
+                <option value="">Min</option>
+                <option value="0">0g</option>
+                <option value="2">2g</option>
+                <option value="5">5g</option>
+              </select>
+              <select 
+                name="fat.max"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.fat.max}
+                onChange={updateFilters}
+              >
+                <option value="">Max</option>
+                <option value="5">5g</option>
+                <option value="10">10g</option>
+                <option value="20">20g</option>
+                <option value="30">30g</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Protein Filter */}
+          <div className="mb-3">
+            <label className="block text-xs text-gray-600 mb-1">Protein</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select 
+                name="protein.min"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.protein.min}
+                onChange={updateFilters}
+              >
+                <option value="">Min</option>
+                <option value="5">5g</option>
+                <option value="10">10g</option>
+                <option value="15">15g</option>
+              </select>
+              <select 
+                name="protein.max"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.protein.max}
+                onChange={updateFilters}
+              >
+                <option value="">Max</option>
+                <option value="15">15g</option>
+                <option value="20">20g</option>
+                <option value="30">30g</option>
+                <option value="40">40g</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Salt Filter */}
+          <div className="mb-3">
+            <label className="block text-xs text-gray-600 mb-1">Salt</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select 
+                name="salt.min"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.salt.min}
+                onChange={updateFilters}
+              >
+                <option value="">Min</option>
+                <option value="0">0g</option>
+                <option value="0.1">0.1g</option>
+                <option value="0.5">0.5g</option>
+              </select>
+              <select 
+                name="salt.max"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                value={filters.salt.max}
+                onChange={updateFilters}
+              >
+                <option value="">Max</option>
+                <option value="0.5">0.5g</option>
+                <option value="1">1g</option>
+                <option value="1.5">1.5g</option>
+                <option value="2">2g</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Apply Filters Button */}
+        <button 
+          className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          onClick={handleApplyFilters}
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default MobileMenu;
