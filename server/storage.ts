@@ -3,7 +3,7 @@ import {
   categories, products, nutritionFacts, productPhotos,
   type Category, type Product, type NutritionFacts, type ProductPhoto
 } from "@shared/schema";
-import { categoriesDb, productsDb } from "./db";
+import { categoriesDb, productsDb, categoriesPool, productsPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
 
 // Storage interface
@@ -257,76 +257,221 @@ export class DatabaseStorage implements IStorage {
     // Calculate offset for pagination
     const offset = (page - 1) * pageSize;
     
-    // Execute query to get products
-    let productsQuery = productsDb
-      .select()
-      .from(products)
-      .limit(pageSize)
-      .offset(offset);
+    // Declare the variable here so it's available in all scopes
+    let productsResult: any[] = [];
+    
+    // Create a custom raw SQL query
+    if (categoryId) {
+      console.log(`Executing raw SQL query for category ${categoryId} with all included categories`);
       
-    if (whereConditions.length > 0) {
-      productsQuery = productsQuery.where(and(...whereConditions));
-    }
-    
-    // Apply sorting
-    if (sortBy === 'name') {
-      productsQuery = productsQuery.orderBy(sortOrder === 'asc' ? asc(products.name) : desc(products.name));
-    }
-    
-    const productsResult = await productsQuery;
-    
-    // Get total count for pagination
-    const [countResult] = await productsDb
-      .select({ count: sql<number>`count(*)` })
-      .from(products)
-      .where(and(...whereConditions));
-    
-    const totalCount = countResult?.count || 0;
-    
-    // Fetch additional details for each product
-    const productsWithDetails: ProductWithDetails[] = await Promise.all(
-      productsResult.map(async (product) => {
-        // Get nutrition facts
-        const [nutrition] = await productsDb
-          .select()
-          .from(nutritionFacts)
-          .where(eq(nutritionFacts.productId, product.productId));
+      // Get all the category IDs in our list
+      const allCategoriesToInclude = whereConditions.length > 0 
+        ? (whereConditions[0] as any).rightValue || []
+        : [];
         
-        // Apply nutrition filters if present
-        if (
-          (nutriScores && nutrition?.nutriScoreGrade && !nutriScores.includes(nutrition.nutriScoreGrade as NutriScoreGrade)) ||
-          (sugarMin !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) < sugarMin)) ||
-          (sugarMax !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) > sugarMax)) ||
-          (fatMin !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) < fatMin)) ||
-          (fatMax !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) > fatMax)) ||
-          (proteinMin !== undefined && (nutrition?.protein === null || Number(nutrition.protein) < proteinMin)) ||
-          (proteinMax !== undefined && (nutrition?.protein === null || Number(nutrition.protein) > proteinMax)) ||
-          (saltMin !== undefined && (nutrition?.salt === null || Number(nutrition.salt) < saltMin)) ||
-          (saltMax !== undefined && (nutrition?.salt === null || Number(nutrition.salt) > saltMax))
-        ) {
-          return null;
-        }
+      if (allCategoriesToInclude.length === 0) {
+        console.log("No categories found to include!");
+        return { products: [], totalCount: 0 };
+      }
+      
+      // Build the IN list as a string for the raw query
+      const categoryList = allCategoriesToInclude.join(',');
+      console.log(`Using category list for SQL: ${categoryList}`);
+      
+      try {
+        // Execute the raw SQL query using the direct pool connection
+        const rawQueryResult = await productsPool.query(`
+          SELECT p.*
+          FROM products p
+          WHERE p.category_id IN (${categoryList})
+          ORDER BY ${sortBy === 'name' 
+            ? `p.name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`
+            : 'p.name ASC'
+          }
+          LIMIT ${pageSize} OFFSET ${offset}
+        `);
         
-        // Get product photos
-        const photos = await productsDb
+        console.log(`Raw SQL query returned ${rawQueryResult.rows.length} products`);
+        
+        // Convert the raw result to the same structure expected by our code
+        productsResult = rawQueryResult.rows.map((row: any) => ({
+          productId: Number(row.product_id),
+          sku: row.sku,
+          name: row.name,
+          rimiUrl: row.rimi_url,
+          categoryId: Number(row.category_id),
+          quantityValue: row.quantity_value,
+          quantityUnit: row.quantity_unit,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }));
+        
+        console.log(`Mapped ${productsResult.length} products from raw query`);
+        
+        // Get the total count directly with a separate query for pagination
+        const countQueryResult = await productsPool.query(`
+          SELECT COUNT(*) as total
+          FROM products p
+          WHERE p.category_id IN (${categoryList})
+        `);
+        
+        const totalCount = parseInt(countQueryResult.rows[0].total, 10);
+        console.log(`Total count of products in these categories: ${totalCount}`);
+        
+      } catch (error) {
+        console.error('Error executing raw SQL query:', error);
+        
+        // Fallback to the basic query
+        return this.getProducts({
+          ...options,
+          categoryId: undefined // remove category filter
+        });
+      }
+    } else {
+      // No category filter, use the original query
+      try {
+        const productsQuery = productsDb
           .select()
-          .from(productPhotos)
-          .where(eq(productPhotos.productId, product.productId));
+          .from(products)
+          .limit(pageSize)
+          .offset(offset);
           
-        // Get category
-        const [category] = await categoriesDb
-          .select()
-          .from(categories)
-          .where(eq(categories.categoryId, product.categoryId));
-        
-        return {
-          ...product,
-          nutrition,
-          photos,
-          category
-        };
-      })
-    );
+        // Apply sorting
+        if (sortBy === 'name') {
+          const directionFn = sortOrder === 'asc' ? asc : desc;
+          productsResult = await productsQuery.orderBy(directionFn(products.name));
+        } else {
+          productsResult = await productsQuery;
+        }
+      } catch (error) {
+        console.error('Error executing Drizzle query:', error);
+        return { products: [], totalCount: 0 };
+      }
+    }
+    
+    // Get total count for pagination (for cases without a category filter)
+    let totalCount = productsResult.length;
+    
+    if (!categoryId) {
+      try {
+        const [countResult] = await productsDb
+          .select({ count: sql<number>`count(*)` })
+          .from(products);
+          
+        totalCount = countResult?.count || 0;
+      } catch (error) {
+        console.error('Error getting total count:', error);
+      }
+    } else {
+      // For category filters with the old query method, calculate total count
+      try {
+        // Get category IDs from whereConditions
+        const catIds = whereConditions.length > 0 
+          ? (whereConditions[0] as any).rightValue || []
+          : [];
+          
+        if (catIds.length > 0) {
+          const catList = catIds.join(',');
+          const countQuery = await productsPool.query(`
+            SELECT COUNT(*) as total FROM products 
+            WHERE category_id IN (${catList})
+          `);
+          totalCount = parseInt(countQuery.rows[0].total, 10);
+        }
+      } catch (error) {
+        console.error('Error getting category product count:', error);
+      }
+    }
+    
+    // Get raw product IDs for debugging
+    console.log(`Raw product IDs: ${productsResult.map(p => p.productId).join(', ')}`);
+    
+    // For each product returned, log its actual category ID for debugging
+    for (const product of productsResult) {
+      console.log(`Product '${product.name}' (ID: ${product.productId}) is in category ${product.categoryId}`);
+    }
+    
+    // Fetch additional details in batch instead of individually
+    // First get all product IDs
+    const productIds = productsResult.map(p => p.productId);
+    
+    // Fetch all nutrition facts in one query
+    let nutritionMap: Record<number, NutritionFacts> = {};
+    if (productIds.length > 0) {
+      const allNutritionFacts = await productsDb
+        .select()
+        .from(nutritionFacts)
+        .where(inArray(nutritionFacts.productId, productIds));
+      
+      // Create a map for fast lookup
+      nutritionMap = allNutritionFacts.reduce((map, nf) => {
+        map[nf.productId] = nf;
+        return map;
+      }, {} as Record<number, NutritionFacts>);
+    }
+    
+    // Fetch all photos in one query
+    let photosMap: Record<number, ProductPhoto[]> = {};
+    if (productIds.length > 0) {
+      const allPhotos = await productsDb
+        .select()
+        .from(productPhotos)
+        .where(inArray(productPhotos.productId, productIds));
+      
+      // Group photos by product ID
+      photosMap = allPhotos.reduce((map, photo) => {
+        if (!map[photo.productId]) {
+          map[photo.productId] = [];
+        }
+        map[photo.productId].push(photo);
+        return map;
+      }, {} as Record<number, ProductPhoto[]>);
+    }
+    
+    // Fetch all categories in one query
+    const categoryIds = productsResult.map(p => p.categoryId);
+    let categoryMap: Record<number, Category> = {};
+    if (categoryIds.length > 0) {
+      const allCategories = await categoriesDb
+        .select()
+        .from(categories)
+        .where(inArray(categories.categoryId, categoryIds));
+      
+      // Create a map for fast lookup
+      categoryMap = allCategories.reduce((map, cat) => {
+        map[cat.categoryId] = cat;
+        return map;
+      }, {} as Record<number, Category>);
+    }
+    
+    // Now create the product details without additional queries
+    const productsWithDetails: ProductWithDetails[] = productsResult.map(product => {
+      const nutrition = nutritionMap[product.productId];
+      const photos = photosMap[product.productId] || [];
+      const category = categoryMap[product.categoryId];
+      
+      // Apply nutrition filters
+      if (
+        (nutriScores && nutrition?.nutriScoreGrade && !nutriScores.includes(nutrition.nutriScoreGrade as NutriScoreGrade)) ||
+        (sugarMin !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) < sugarMin)) ||
+        (sugarMax !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) > sugarMax)) ||
+        (fatMin !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) < fatMin)) ||
+        (fatMax !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) > fatMax)) ||
+        (proteinMin !== undefined && (nutrition?.protein === null || Number(nutrition.protein) < proteinMin)) ||
+        (proteinMax !== undefined && (nutrition?.protein === null || Number(nutrition.protein) > proteinMax)) ||
+        (saltMin !== undefined && (nutrition?.salt === null || Number(nutrition.salt) < saltMin)) ||
+        (saltMax !== undefined && (nutrition?.salt === null || Number(nutrition.salt) > saltMax))
+      ) {
+        return null;
+      }
+      
+      return {
+        ...product,
+        nutrition,
+        photos,
+        category
+      };
+    });
     
     // Filter out null products (those that didn't match nutrition filters)
     const filteredProducts = productsWithDetails.filter(Boolean) as ProductWithDetails[];
@@ -363,6 +508,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getProductById(id: number): Promise<ProductWithDetails | undefined> {
+    // First get the product
     const [product] = await productsDb
       .select()
       .from(products)
@@ -370,23 +516,28 @@ export class DatabaseStorage implements IStorage {
       
     if (!product) return undefined;
     
-    // Get nutrition facts
-    const [nutrition] = await productsDb
-      .select()
-      .from(nutritionFacts)
-      .where(eq(nutritionFacts.productId, product.productId));
-      
-    // Get product photos
-    const photos = await productsDb
-      .select()
-      .from(productPhotos)
-      .where(eq(productPhotos.productId, product.productId));
-      
-    // Get category
-    const [category] = await categoriesDb
-      .select()
-      .from(categories)
-      .where(eq(categories.categoryId, product.categoryId));
+    // Get all related data in parallel
+    const [nutrition, photos, category] = await Promise.all([
+      // Get nutrition facts
+      productsDb
+        .select()
+        .from(nutritionFacts)
+        .where(eq(nutritionFacts.productId, product.productId))
+        .then(results => results[0] || null),
+        
+      // Get product photos
+      productsDb
+        .select()
+        .from(productPhotos)
+        .where(eq(productPhotos.productId, product.productId)),
+        
+      // Get category
+      categoriesDb
+        .select()
+        .from(categories)
+        .where(eq(categories.categoryId, product.categoryId))
+        .then(results => results[0] || null)
+    ]);
     
     return {
       ...product,
@@ -397,6 +548,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getProductBySku(sku: string): Promise<ProductWithDetails | undefined> {
+    // First get the product
     const [product] = await productsDb
       .select()
       .from(products)
@@ -404,23 +556,28 @@ export class DatabaseStorage implements IStorage {
       
     if (!product) return undefined;
     
-    // Get nutrition facts
-    const [nutrition] = await productsDb
-      .select()
-      .from(nutritionFacts)
-      .where(eq(nutritionFacts.productId, product.productId));
-      
-    // Get product photos
-    const photos = await productsDb
-      .select()
-      .from(productPhotos)
-      .where(eq(productPhotos.productId, product.productId));
-      
-    // Get category
-    const [category] = await categoriesDb
-      .select()
-      .from(categories)
-      .where(eq(categories.categoryId, product.categoryId));
+    // Get all related data in parallel
+    const [nutrition, photos, category] = await Promise.all([
+      // Get nutrition facts
+      productsDb
+        .select()
+        .from(nutritionFacts)
+        .where(eq(nutritionFacts.productId, product.productId))
+        .then(results => results[0] || null),
+        
+      // Get product photos
+      productsDb
+        .select()
+        .from(productPhotos)
+        .where(eq(productPhotos.productId, product.productId)),
+        
+      // Get category
+      categoriesDb
+        .select()
+        .from(categories)
+        .where(eq(categories.categoryId, product.categoryId))
+        .then(results => results[0] || null)
+    ]);
     
     return {
       ...product,
@@ -452,37 +609,73 @@ export class DatabaseStorage implements IStorage {
     
     const totalCount = countResult?.count || 0;
     
-    // Fetch additional details for each product
-    const productsWithDetails: ProductWithDetails[] = await Promise.all(
-      productsResult.map(async (product) => {
-        // Get nutrition facts
-        const [nutrition] = await productsDb
-          .select()
-          .from(nutritionFacts)
-          .where(eq(nutritionFacts.productId, product.productId));
-        
-        // Get product photos
-        const photos = await productsDb
-          .select()
-          .from(productPhotos)
-          .where(eq(productPhotos.productId, product.productId));
-          
-        // Get category
-        const [category] = await categoriesDb
-          .select()
-          .from(categories)
-          .where(eq(categories.categoryId, product.categoryId));
-        
-        return {
-          ...product,
-          nutrition,
-          photos,
-          category
-        };
-      })
-    );
+    // First get all product IDs
+    const productIds = productsResult.map(p => p.productId);
     
-    return { products: productsWithDetails, totalCount };
+    // Fetch all nutrition facts in one query
+    let nutritionMap: Record<number, NutritionFacts> = {};
+    if (productIds.length > 0) {
+      const allNutritionFacts = await productsDb
+        .select()
+        .from(nutritionFacts)
+        .where(inArray(nutritionFacts.productId, productIds));
+      
+      // Create a map for fast lookup
+      nutritionMap = allNutritionFacts.reduce((map, nf) => {
+        map[nf.productId] = nf;
+        return map;
+      }, {} as Record<number, NutritionFacts>);
+    }
+    
+    // Fetch all photos in one query
+    let photosMap: Record<number, ProductPhoto[]> = {};
+    if (productIds.length > 0) {
+      const allPhotos = await productsDb
+        .select()
+        .from(productPhotos)
+        .where(inArray(productPhotos.productId, productIds));
+      
+      // Group photos by product ID
+      photosMap = allPhotos.reduce((map, photo) => {
+        if (!map[photo.productId]) {
+          map[photo.productId] = [];
+        }
+        map[photo.productId].push(photo);
+        return map;
+      }, {} as Record<number, ProductPhoto[]>);
+    }
+    
+    // Fetch all categories in one query
+    const categoryIds = productsResult.map(p => p.categoryId);
+    let categoryMap: Record<number, Category> = {};
+    if (categoryIds.length > 0) {
+      const allCategories = await categoriesDb
+        .select()
+        .from(categories)
+        .where(inArray(categories.categoryId, categoryIds));
+      
+      // Create a map for fast lookup
+      categoryMap = allCategories.reduce((map, cat) => {
+        map[cat.categoryId] = cat;
+        return map;
+      }, {} as Record<number, Category>);
+    }
+    
+    // Now create the product details without additional queries
+    const productsWithDetails: ProductWithDetails[] = productsResult.map(product => {
+      const nutrition = nutritionMap[product.productId];
+      const photos = photosMap[product.productId] || [];
+      const category = categoryMap[product.categoryId];
+      
+      return {
+        ...product,
+        nutrition,
+        photos,
+        category
+      };
+    });
+    
+    return { products: productsWithDetails, totalCount: productsWithDetails.length };
   }
 }
 
