@@ -122,35 +122,46 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getCategoryPath(categoryId: number): Promise<Category[]> {
-    // Use recursive CTE to get the category path
-    const result = await categoriesDb.execute(sql`
-      WITH RECURSIVE category_path AS (
-        SELECT * FROM normalized_categories
-        WHERE category_id = ${categoryId}
-        
-        UNION ALL
-        
-        SELECT c.* FROM normalized_categories c
-        JOIN category_path p ON c.category_id = p.parent_category_id
-      )
-      SELECT * FROM category_path
-      ORDER BY level ASC
-    `);
-    
-    // Convert raw result to properly formatted Category objects
-    const categoryPath: Category[] = [];
-    for (const row of (result as unknown) as Record<string, unknown>[]) {
-      categoryPath.push({
-        categoryId: Number(row.category_id),
-        rimiCategoryCode: String(row.rimi_category_code),
-        nameLv: String(row.name_lv),
-        nameEn: String(row.name_en),
-        parentCategoryId: row.parent_category_id ? Number(row.parent_category_id) : null,
-        level: Number(row.level)
-      });
+    try {
+      // Use recursive CTE to get the category path
+      const result = await categoriesDb.execute(sql`
+        WITH RECURSIVE category_path AS (
+          SELECT * FROM normalized_categories
+          WHERE category_id = ${categoryId}
+          
+          UNION ALL
+          
+          SELECT c.* FROM normalized_categories c
+          JOIN category_path p ON c.parent_category_id = p.category_id
+        )
+        SELECT * FROM category_path
+        ORDER BY level ASC
+      `);
+      
+      // Convert raw result to properly formatted Category objects
+      const categoryPath: Category[] = [];
+      
+      // Ensure result is an array before iterating
+      if (Array.isArray(result)) {
+        for (const row of result) {
+          categoryPath.push({
+            categoryId: Number(row.category_id),
+            rimiCategoryCode: String(row.rimi_category_code),
+            nameLv: String(row.name_lv),
+            nameEn: String(row.name_en),
+            parentCategoryId: row.parent_category_id ? Number(row.parent_category_id) : null,
+            level: Number(row.level)
+          });
+        }
+      } else {
+        console.error("Unexpected result format in getCategoryPath:", typeof result);
+      }
+      
+      return categoryPath;
+    } catch (error) {
+      console.error("Error in getCategoryPath:", error);
+      return [];
     }
-    
-    return categoryPath;
   }
   
   // Product methods
