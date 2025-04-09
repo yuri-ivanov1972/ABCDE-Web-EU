@@ -188,7 +188,38 @@ export class DatabaseStorage implements IStorage {
     const whereConditions = [];
     
     if (categoryId) {
-      whereConditions.push(eq(products.categoryId, categoryId));
+      try {
+        // Get all subcategories of this category to include their products too
+        const allCategoriesToInclude = [categoryId];
+        
+        // Find all subcategories (level 2)
+        const subcategories = await categoriesDb
+          .select()
+          .from(categories)
+          .where(eq(categories.parentCategoryId, categoryId));
+        
+        // Add subcategory IDs
+        allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
+        
+        // For each subcategory, find their children (level 3)
+        for (const subcat of subcategories) {
+          const subsubcategories = await categoriesDb
+            .select()
+            .from(categories)
+            .where(eq(categories.parentCategoryId, subcat.categoryId));
+          
+          // Add sub-subcategory IDs
+          allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
+        }
+        
+        // Use the IN operator to match any category in our list
+        whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
+        console.log(`Including products from categories: ${allCategoriesToInclude.join(', ')}`);
+      } catch (error) {
+        console.error("Error getting subcategories:", error);
+        // Fallback to just the current category
+        whereConditions.push(eq(products.categoryId, categoryId));
+      }
     }
     
     // Calculate offset for pagination

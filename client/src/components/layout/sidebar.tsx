@@ -57,7 +57,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
           href={`/category/${category.categoryId}`}
           className={`flex-grow block px-3 py-1.5 rounded-md ${
             isSelected
-              ? 'bg-primary bg-opacity-10 text-primary font-medium'
+              ? 'bg-primary bg-opacity-10 text-white font-medium'
               : 'hover:bg-gray-100 text-gray-700'
           }`}
         >
