@@ -39,6 +39,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let productsConnected = false;
       let categoriesCount = 0;
       let productsCount = 0;
+      let errors = [];
+      let testCategoryData = null;
+      let testProductData = null;
 
       try {
         // Check categories database
@@ -52,8 +55,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           Array.isArray(categoriesCountResult) && 
           categoriesCountResult.length > 0 ? 
             Number(categoriesCountResult[0].count) : 0;
+            
+        // Get first category for testing
+        if (categoriesCount > 0) {
+          const firstCategoryResult = await categoriesDb.execute(sql`
+            SELECT * FROM normalized_categories 
+            ORDER BY category_id ASC 
+            LIMIT 1
+          `);
+          testCategoryData = firstCategoryResult && Array.isArray(firstCategoryResult) && firstCategoryResult.length > 0 ? 
+            firstCategoryResult[0] : null;
+        }
       } catch (err) {
         console.error("Categories DB error:", err);
+        errors.push({
+          type: "categories",
+          message: err instanceof Error ? err.message : String(err)
+        });
       }
 
       try {
@@ -68,12 +86,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           Array.isArray(productsCountResult) && 
           productsCountResult.length > 0 ? 
             Number(productsCountResult[0].count) : 0;
+            
+        // Get first product for testing
+        if (productsCount > 0) {
+          const firstProductResult = await productsDb.execute(sql`
+            SELECT * FROM products 
+            ORDER BY product_id ASC 
+            LIMIT 1
+          `);
+          testProductData = firstProductResult && Array.isArray(firstProductResult) && firstProductResult.length > 0 ? 
+            firstProductResult[0] : null;
+        }
       } catch (err) {
         console.error("Products DB error:", err);
+        errors.push({
+          type: "products",
+          message: err instanceof Error ? err.message : String(err)
+        });
       }
 
       res.json({
-        status: "ok",
+        status: errors.length > 0 ? "error" : (categoriesCount > 0 && productsCount > 0 ? "ok" : "warning"),
         connections: {
           categories: categoriesConnected,
           products: productsConnected
@@ -85,7 +118,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         env: {
           categoriesUrl: !!process.env.CATEGORIES_DB_URL,
           productsUrl: !!process.env.PRODUCTS_DB_URL
-        }
+        },
+        // Add test data for debugging
+        testData: {
+          category: testCategoryData,
+          product: testProductData
+        },
+        errors: errors.length > 0 ? errors : undefined,
+        message: errors.length > 0 
+          ? "Database connection errors occurred" 
+          : (categoriesCount === 0 || productsCount === 0 
+              ? "One or more databases appear to be empty" 
+              : "Database connections successful")
       });
     } catch (error) {
       console.error("Error checking database status:", error);
