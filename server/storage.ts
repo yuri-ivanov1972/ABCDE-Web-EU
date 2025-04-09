@@ -189,32 +189,64 @@ export class DatabaseStorage implements IStorage {
     
     if (categoryId) {
       try {
-        // Get all subcategories of this category to include their products too
-        const allCategoriesToInclude = [categoryId];
-        
-        // Find all subcategories (level 2)
-        const subcategories = await categoriesDb
+        // First, let's get the current category to determine its level
+        const [currentCategory] = await categoriesDb
           .select()
           .from(categories)
-          .where(eq(categories.parentCategoryId, categoryId));
+          .where(eq(categories.categoryId, categoryId));
         
-        // Add subcategory IDs
-        allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
-        
-        // For each subcategory, find their children (level 3)
-        for (const subcat of subcategories) {
-          const subsubcategories = await categoriesDb
-            .select()
-            .from(categories)
-            .where(eq(categories.parentCategoryId, subcat.categoryId));
+        if (currentCategory) {
+          console.log(`Current category: ${currentCategory.nameLv} (ID: ${currentCategory.categoryId}, Level: ${currentCategory.level})`);
           
-          // Add sub-subcategory IDs
-          allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
+          // Get all subcategories of this category to include their products too
+          const allCategoriesToInclude = [categoryId];
+          
+          // If this is level 1 or 2, we need to include subcategories
+          if (currentCategory.level < 3) {
+            // Find all direct subcategories
+            const subcategories = await categoriesDb
+              .select()
+              .from(categories)
+              .where(eq(categories.parentCategoryId, categoryId));
+            
+            console.log(`Found ${subcategories.length} direct subcategories`);
+            
+            // Add subcategory IDs
+            allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
+            
+            // If this is level 1, we need to go one level deeper
+            if (currentCategory.level === 1) {
+              // For each level 2 subcategory, find their children (level 3)
+              for (const subcat of subcategories) {
+                const subsubcategories = await categoriesDb
+                  .select()
+                  .from(categories)
+                  .where(eq(categories.parentCategoryId, subcat.categoryId));
+                
+                console.log(`Found ${subsubcategories.length} subsubcategories for ${subcat.nameLv}`);
+                
+                // Add sub-subcategory IDs
+                allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
+              }
+            }
+          }
+          
+          // Now let's check if there are any products directly in these categories
+          const productCounts = await productsDb
+            .select({
+              categoryId: products.categoryId,
+              count: sql<number>`count(*)`
+            })
+            .from(products)
+            .where(inArray(products.categoryId, allCategoriesToInclude))
+            .groupBy(products.categoryId);
+          
+          console.log('Product counts by category:', JSON.stringify(productCounts));
+          
+          // Use the IN operator to match any category in our list
+          whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
+          console.log(`Including products from categories: ${allCategoriesToInclude.join(', ')}`);
         }
-        
-        // Use the IN operator to match any category in our list
-        whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
-        console.log(`Including products from categories: ${allCategoriesToInclude.join(', ')}`);
       } catch (error) {
         console.error("Error getting subcategories:", error);
         // Fallback to just the current category
