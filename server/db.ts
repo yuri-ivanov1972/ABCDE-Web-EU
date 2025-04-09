@@ -6,6 +6,12 @@ import * as schema from "@shared/schema";
 neonConfig.webSocketConstructor = ws;
 
 // Get database connection strings from environment variables
+// Log the first part of the URLs for debugging (without exposing credentials)
+console.log("CATEGORIES_DB_URL starts with:", 
+  process.env.CATEGORIES_DB_URL ? process.env.CATEGORIES_DB_URL.substring(0, 20) + "..." : "undefined");
+console.log("PRODUCTS_DB_URL starts with:", 
+  process.env.PRODUCTS_DB_URL ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..." : "undefined");
+
 const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
 const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
 
