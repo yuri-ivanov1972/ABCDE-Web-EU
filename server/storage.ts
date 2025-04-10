@@ -264,11 +264,48 @@ export class DatabaseStorage implements IStorage {
     if (categoryId) {
       console.log(`Executing raw SQL query for category ${categoryId} with all included categories`);
       
-      // Get all the category IDs in our list
-      const allCategoriesToInclude = whereConditions.length > 0 
-        ? (whereConditions[0] as any).rightValue || []
-        : [];
+      // Use the allCategoriesToInclude array that was built earlier
+      // Now let's ensure we have the list of category IDs
+      // This section needs to use the same logic as the earlier code that built allCategoriesToInclude
+      let allCategoriesToInclude: number[] = [categoryId];
+      
+      try {
+        // Get the current category to check its level
+        const [currentCategory] = await categoriesDb
+          .select()
+          .from(categories)
+          .where(eq(categories.categoryId, categoryId));
         
+        // If this is level 1 or 2, include subcategories
+        if (currentCategory && currentCategory.level < 3) {
+          // Find all direct subcategories
+          const subcategories = await categoriesDb
+            .select()
+            .from(categories)
+            .where(eq(categories.parentCategoryId, categoryId));
+          
+          // Add subcategory IDs
+          allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
+          
+          // If level 1, go one level deeper
+          if (currentCategory.level === 1) {
+            for (const subcat of subcategories) {
+              const subsubcategories = await categoriesDb
+                .select()
+                .from(categories)
+                .where(eq(categories.parentCategoryId, subcat.categoryId));
+              
+              // Add sub-subcategory IDs
+              allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error rebuilding category list:", error);
+        // Just use the original categoryId if there's an error
+        allCategoriesToInclude = [categoryId];
+      }
+      
       if (allCategoriesToInclude.length === 0) {
         console.log("No categories found to include!");
         return { products: [], totalCount: 0 };
