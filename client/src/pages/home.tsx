@@ -11,9 +11,15 @@ import ProductGrid from '@/components/products/product-grid';
 import Pagination from '@/components/pagination';
 import ActiveFilters from '@/components/filters/active-filters';
 
-const Home: React.FC = () => {
+interface HomeProps {
+  initialSearchQuery?: string;
+  categoryId?: number;
+}
+
+const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
   const params = useParams<{ id?: string }>();
-  const categoryId = params.id ? parseInt(params.id, 10) : undefined;
+  const urlCategoryId = params.id ? parseInt(params.id, 10) : undefined;
+  const categoryId = propCategoryId || urlCategoryId;
   
   // States
   const [page, setPage] = useState(1);
@@ -30,6 +36,13 @@ const Home: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   
+  // Initialize search from props
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery]);
+
   // Reset page when category changes
   useEffect(() => {
     setPage(1);

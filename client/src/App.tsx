@@ -47,7 +47,7 @@ function App() {
           onSearch={handleSearch}
         />
         <div className="flex-grow">
-          <Router />
+          <Router searchQuery={searchQuery} />
         </div>
         <Footer />
       </div>
