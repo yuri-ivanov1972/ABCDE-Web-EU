@@ -106,7 +106,7 @@ const ProductSearch: React.FC = () => {
                 {product.nutrition && product.nutrition.nutriScoreGrade && (
                   <div className="mb-4 flex items-center">
                     <span className="text-sm font-medium text-gray-600 mr-2">Nutri-Score:</span>
-                    <NutriScoreBadge grade={product.nutrition.nutriScoreGrade} size="medium" />
+                    <NutriScoreBadge score={product.nutrition.nutriScoreGrade} size="medium" />
                   </div>
                 )}
                 

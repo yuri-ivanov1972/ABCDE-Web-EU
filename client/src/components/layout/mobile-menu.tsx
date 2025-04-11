@@ -121,6 +121,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
       }`}
     >
       <nav className="py-3 px-4">
+        <div className="mb-4">
+          <Link 
+            href="/product-search" 
+            className="block py-2 text-gray-700 hover:text-primary"
+          >
+            Meklēt pēc URL
+          </Link>
+        </div>
         <h3 className="font-medium text-gray-900 mb-2">Kategorijas</h3>
         <ul className="space-y-1">
           {categories.map((category) => (
