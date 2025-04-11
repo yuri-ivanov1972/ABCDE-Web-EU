@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <span className="font-bold text-gray-800">NutriMarket</span>
+              <span className="font-bold text-gray-800">ABCDE.lv</span>
             </Link>
             <p className="mt-2 text-sm text-gray-600 max-w-xs">
               Helping you make healthier food choices with transparent nutritional information.
@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} NutriMarket. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ABCDE.lv. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="https://www.facebook.com/profile.php?id=61574647907086" className="text-gray-500 hover:text-primary" target="_blank" rel="noopener noreferrer">
               <span className="sr-only">Facebook</span>
