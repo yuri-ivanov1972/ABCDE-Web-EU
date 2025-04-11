@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
               <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">Resources</h3>
               <ul className="mt-4 space-y-2">
                 <li><a href="#" className="text-sm text-gray-600 hover:text-primary">Nutritional Guides</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-primary">About Nutri-Score</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/Nutri-Score" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-primary">About Nutri-Score</a></li>
                 <li><a href="#" className="text-sm text-gray-600 hover:text-primary">FAQ</a></li>
               </ul>
             </div>
