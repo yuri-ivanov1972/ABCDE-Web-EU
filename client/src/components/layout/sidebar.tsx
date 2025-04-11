@@ -43,11 +43,13 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   const isSelected = currentCategoryId === category.categoryId;
   const hasSubcategories = subcategories && subcategories.length > 0;
   
-  // Toggle expansion when clicking the expand/collapse icon
-  const toggleExpand = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
+  // Handle click on category - combines navigation and expansion
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    // If it has subcategories, automatically expand when clicked
+    if (hasSubcategories && !isExpanded) {
+      setIsExpanded(true);
+    }
+    // Navigation will happen through the Link component
   };
 
   return (
@@ -55,31 +57,29 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
       <div className="flex items-center">
         <Link 
           href={`/category/${category.categoryId}`}
+          onClick={handleCategoryClick}
           className={`flex-grow block px-3 py-1.5 rounded-md ${
             isSelected
-              ? 'bg-primary bg-opacity-10 text-white font-medium'
+              ? 'bg-primary bg-opacity-10 text-gray-700 font-medium'
               : 'hover:bg-gray-100 text-gray-700'
           }`}
         >
-          {category.nameLv}
+          <div className="flex items-center justify-between w-full">
+            <span>{category.nameLv}</span>
+            
+            {hasSubcategories && (
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </div>
         </Link>
-        
-        {hasSubcategories && (
-          <button 
-            onClick={toggleExpand}
-            className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
       </div>
       
       {/* Display subcategories if expanded */}
