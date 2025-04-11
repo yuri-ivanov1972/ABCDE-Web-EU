@@ -166,18 +166,12 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
       <div className="mb-8">
         <h2 className="font-medium text-lg text-gray-900 mb-3">Kategorijas</h2>
         
-        {/* Breadcrumbs for subcategory navigation */}
-        {currentCategory && (
-          <div className="mb-4">
-            <div className="flex items-center text-sm text-gray-500 mb-2">
-              <Link href="/" className="hover:text-primary">Visas kategorijas</Link>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="font-medium text-gray-800">{currentCategory.nameLv}</span>
-            </div>
+        {/* Home link without breadcrumbs */}
+        <div className="mb-4">
+          <div className="flex items-center text-sm text-gray-500 mb-2">
+            <Link href="/" className="hover:text-primary">Visas kategorijas</Link>
           </div>
-        )}
+        </div>
         
         {/* Category List */}
         {isLoadingCategories ? (
