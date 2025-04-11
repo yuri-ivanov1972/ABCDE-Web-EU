@@ -300,6 +300,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch product" });
     }
   });
+  
+  // Get product by Rimi URL
+  app.get("/api/products/url/:url", async (req: Request, res: Response) => {
+    try {
+      const { url } = req.params;
+      
+      if (!url) {
+        return res.status(400).json({ message: "Invalid product URL" });
+      }
+      
+      // URL may need decoding as it could contain slashes and other special characters
+      const decodedUrl = decodeURIComponent(url);
+      
+      const product = await storage.getProductByRimiUrl(decodedUrl);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error("Error fetching product by URL:", error);
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
