@@ -10,11 +10,15 @@ import DebugPage from "@/pages/debug";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
-function Router() {
+function Router({ searchQuery }: { searchQuery: string }) {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/category/:id" component={Home} />
+      <Route path="/">
+        {() => <Home initialSearchQuery={searchQuery} />}
+      </Route>
+      <Route path="/category/:id">
+        {(params) => <Home categoryId={Number(params.id)} initialSearchQuery={searchQuery} />}
+      </Route>
       <Route path="/product/:id" component={ProductDetails} />
       <Route path="/debug" component={DebugPage} />
       <Route component={NotFound} />
