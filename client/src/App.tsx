@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useState } from "react";
 import Home from "@/pages/home";
 import ProductDetails from "@/pages/product-details";
+import ProductSearch from "@/pages/product-search";
 import NotFound from "@/pages/not-found";
 import DebugPage from "@/pages/debug";
 import Header from "@/components/layout/header";
@@ -20,6 +21,7 @@ function Router({ searchQuery }: { searchQuery: string }) {
         {(params) => <Home categoryId={Number(params.id)} initialSearchQuery={searchQuery} />}
       </Route>
       <Route path="/product/:id" component={ProductDetails} />
+      <Route path="/product-search" component={ProductSearch} />
       <Route path="/debug" component={DebugPage} />
       <Route component={NotFound} />
     </Switch>

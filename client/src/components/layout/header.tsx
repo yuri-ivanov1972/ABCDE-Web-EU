@@ -31,6 +31,11 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
             <Link href="/" className="flex items-center">
               <img src={abcdeLogo} alt="ABCDE Logo" className="h-10" />
             </Link>
+            <nav className="ml-6 hidden md:flex space-x-4">
+              <Link href="/product-search" className="text-gray-600 hover:text-primary">
+                Meklēt pēc URL
+              </Link>
+            </nav>
           </div>
 
           {/* Search Bar - Desktop */}

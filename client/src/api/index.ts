@@ -165,3 +165,15 @@ export const getProductBySku = async (sku: string): Promise<ProductWithDetails> 
   
   return response.json();
 };
+
+export const getProductByRimiUrl = async (url: string): Promise<ProductWithDetails> => {
+  // Encode the URL to handle special characters in path
+  const encodedUrl = encodeURIComponent(url);
+  const response = await fetch(`${API_BASE_URL}/products/url/${encodedUrl}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch product by URL: ${response.status}`);
+  }
+  
+  return response.json();
+};
