@@ -45,11 +45,12 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   
   // Handle click on category - combines navigation and expansion
   const handleCategoryClick = (e: React.MouseEvent) => {
-    // If it has subcategories, automatically expand when clicked
-    if (hasSubcategories && !isExpanded) {
-      setIsExpanded(true);
+    // If it has subcategories, toggle expansion when clicked
+    if (hasSubcategories) {
+      e.preventDefault(); // Prevent navigation if toggling expansion
+      setIsExpanded(!isExpanded);
     }
-    // Navigation will happen through the Link component
+    // Otherwise, navigation will happen through the Link component
   };
 
   return (
@@ -60,7 +61,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
           onClick={handleCategoryClick}
           className={`flex-grow block px-3 py-1.5 rounded-md ${
             isSelected
-              ? 'bg-primary bg-opacity-10 text-gray-700 font-medium'
+              ? 'bg-primary text-white font-medium'
               : 'hover:bg-gray-100 text-gray-700'
           }`}
         >

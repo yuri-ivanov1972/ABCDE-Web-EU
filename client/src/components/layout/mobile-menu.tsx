@@ -29,7 +29,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
   const handleCategoryClick = (e: React.MouseEvent) => {
     if (hasSubcategories) {
       e.preventDefault(); // Prevent navigation if there are subcategories
-      setIsExpanded(!isExpanded);
+      setIsExpanded(!isExpanded); // Toggle expansion state
     }
     // Otherwise navigation happens via the Link
   };
@@ -133,7 +133,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
       </nav>
       
       <div className="border-t border-gray-200 py-3 px-4">
-        <h3 className="font-medium text-gray-900 mb-2">Filters</h3>
+        <h3 className="font-medium text-gray-900 mb-2">Filtri</h3>
         
         {/* Mobile Nutri-Score Filter */}
         <div className="mb-4">
@@ -149,11 +149,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
 
         {/* Mobile Nutrient Filters */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Nutrients (per 100g/ml)</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Uzturvielas (100g/ml)</h4>
           
           {/* Sugar Filter */}
           <div className="mb-3">
-            <label className="block text-xs text-gray-600 mb-1">Sugar</label>
+            <label className="block text-xs text-gray-600 mb-1">Cukurs</label>
             <div className="grid grid-cols-2 gap-2">
               <select 
                 name="sugar.min"
@@ -183,7 +183,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
           
           {/* Fat Filter */}
           <div className="mb-3">
-            <label className="block text-xs text-gray-600 mb-1">Fat</label>
+            <label className="block text-xs text-gray-600 mb-1">Tauki</label>
             <div className="grid grid-cols-2 gap-2">
               <select 
                 name="fat.min"
@@ -213,7 +213,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
           
           {/* Protein Filter */}
           <div className="mb-3">
-            <label className="block text-xs text-gray-600 mb-1">Protein</label>
+            <label className="block text-xs text-gray-600 mb-1">Olbaltumvielas</label>
             <div className="grid grid-cols-2 gap-2">
               <select 
                 name="protein.min"
@@ -243,7 +243,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
           
           {/* Salt Filter */}
           <div className="mb-3">
-            <label className="block text-xs text-gray-600 mb-1">Salt</label>
+            <label className="block text-xs text-gray-600 mb-1">Sāls</label>
             <div className="grid grid-cols-2 gap-2">
               <select 
                 name="salt.min"
@@ -277,7 +277,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
           className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={handleApplyFilters}
         >
-          Apply Filters
+          Pielietot filtrus
         </button>
       </div>
     </div>
