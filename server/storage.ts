@@ -24,6 +24,7 @@ export interface IStorage {
   getProducts(options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }>;
   getProductById(id: number): Promise<ProductWithDetails | undefined>;
   getProductBySku(sku: string): Promise<ProductWithDetails | undefined>;
+  getProductByRimiUrl(rimiUrl: string): Promise<ProductWithDetails | undefined>;
   searchProducts(query: string, options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }>;
 }
 
@@ -623,6 +624,46 @@ export class DatabaseStorage implements IStorage {
       category
     };
   }
+
+  async getProductByRimiUrl(rimiUrl: string): Promise<ProductWithDetails | undefined> {
+    // First get the product
+    const [product] = await productsDb
+      .select()
+      .from(products)
+      .where(eq(products.rimiUrl, rimiUrl));
+      
+    if (!product) return undefined;
+    
+    // Get all related data in parallel
+    const [nutrition, photos, category] = await Promise.all([
+      // Get nutrition facts
+      productsDb
+        .select()
+        .from(nutritionFacts)
+        .where(eq(nutritionFacts.productId, product.productId))
+        .then(results => results[0] || null),
+        
+      // Get product photos
+      productsDb
+        .select()
+        .from(productPhotos)
+        .where(eq(productPhotos.productId, product.productId)),
+        
+      // Get category
+      categoriesDb
+        .select()
+        .from(categories)
+        .where(eq(categories.categoryId, product.categoryId))
+        .then(results => results[0] || null)
+    ]);
+    
+    return {
+      ...product,
+      nutrition,
+      photos,
+      category
+    };
+  }
   
   async searchProducts(query: string, options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }> {
     const { page = 1, pageSize = 12 } = options;
@@ -773,6 +814,10 @@ export class MemStorage implements IStorage {
   }
   
   async getProductBySku(): Promise<ProductWithDetails | undefined> {
+    return undefined;
+  }
+  
+  async getProductByRimiUrl(): Promise<ProductWithDetails | undefined> {
     return undefined;
   }
   
