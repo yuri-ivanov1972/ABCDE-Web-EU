@@ -248,10 +248,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If search query is provided, use search endpoint
       if (search) {
         const result = await storage.searchProducts(search, options);
+        console.log(`Search query "${search}" returned ${result.products.length} products, total: ${result.totalCount}`);
         return res.json(result);
       }
       
       const result = await storage.getProducts(options);
+      console.log(`GET products with options ${JSON.stringify({
+        categoryId, page, pageSize, 
+        filters: {
+          nutriScores: nutriScores?.length ? nutriScores : 'none',
+          nutrients: {sugarMin, sugarMax, fatMin, fatMax, proteinMin, proteinMax, saltMin, saltMax}
+        },
+        sort: {sortBy, sortOrder}
+      })} returned ${result.products.length} products, total: ${result.totalCount}`);
       res.json(result);
     } catch (error) {
       console.error("Error fetching products:", error);
