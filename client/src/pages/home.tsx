@@ -78,11 +78,23 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   });
   
   // Calculate total pages
+  const calculatedPages = data?.totalCount ? Math.ceil(data.totalCount / 12) : 1;
   // For testing purposes, we'll use at least 3 pages to ensure pagination is visible
-  const totalPages = data?.totalCount ? Math.max(3, Math.ceil(data.totalCount / 12)) : 3;
+  const totalPages = Math.max(3, calculatedPages);
+  
+  // Log data for debugging pagination with filters
+  useEffect(() => {
+    if (data) {
+      console.log('API response - Products count:', data.products.length);
+      console.log('API response - Total count:', data.totalCount);
+      console.log('Calculated pages:', calculatedPages);
+      console.log('Current page:', page, 'Total pages:', totalPages);
+    }
+  }, [data, calculatedPages, totalPages, page]);
   
   // Handle page change
   const handlePageChange = (newPage: number) => {
+    console.log('Changing page from', page, 'to', newPage, 'with current filters:', filters);
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -94,7 +106,10 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   
   // Apply filters (will trigger refetch due to dependency in useQuery)
   const handleApplyFilters = () => {
+    // Reset to page 1 when applying filters
     setPage(1);
+    console.log('Applying filters:', filters);
+    // Refetch products with the current filters
     refetch();
   };
   
@@ -110,6 +125,9 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     
     setFilters(newFilters);
     setPage(1);
+    console.log('Removed filter:', filterType);
+    // Immediately refetch to update results with removed filter
+    refetch();
   };
   
   // Clear all filters
@@ -122,6 +140,9 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       salt: {}
     });
     setPage(1);
+    console.log('Cleared all filters');
+    // Immediately refetch to update results with all filters cleared
+    refetch();
   };
   
   // Handle sort change
