@@ -186,14 +186,14 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
 
         {/* Product Results */}
         <div className="mb-6">
-          {/* Product Count and Sort */}
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-600">
-              {isLoading 
-                ? 'Ielādē produktus...' 
-                : `Parāda ${data?.products?.length || 0} produktus`
-              }
-            </p>
+          {/* Sort Options */}
+          <div className="flex justify-end items-center mb-4">
+            {/* Loading indicator */}
+            {isLoading && (
+              <p className="text-sm text-gray-600 mr-auto">
+                Ielādē produktus...
+              </p>
+            )}
             
             {/* Sort Dropdown */}
             <div className="relative">

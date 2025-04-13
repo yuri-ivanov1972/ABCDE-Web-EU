@@ -55,15 +55,20 @@ const Pagination: React.FC<PaginationProps> = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex justify-center mt-10">
-      <nav className="inline-flex rounded-md shadow" aria-label="Pagination">
+    <div className="flex flex-col items-center mt-8">
+      {totalPages > 1 && (
+        <p className="text-sm text-gray-600 mb-3">
+          {`Lapa ${currentPage} no ${totalPages}`}
+        </p>
+      )}
+      <nav className="inline-flex rounded-md shadow-md" aria-label="Pagination">
         {/* Previous button */}
         <button 
           className={`
             relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 
             ${currentPage === 1 
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-white text-gray-500 hover:bg-gray-50'}
+              : 'bg-white text-gray-500 hover:bg-gray-50 hover:text-primary'}
           `}
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -90,8 +95,8 @@ const Pagination: React.FC<PaginationProps> = ({
               className={`
                 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium
                 ${pageNumber === currentPage 
-                  ? 'bg-primary text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'}
+                  ? 'bg-primary text-white font-semibold' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-primary'}
               `}
               onClick={() => onPageChange(pageNumber)}
               aria-current={pageNumber === currentPage ? 'page' : undefined}
@@ -107,7 +112,7 @@ const Pagination: React.FC<PaginationProps> = ({
             relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 
             ${currentPage === totalPages 
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-white text-gray-500 hover:bg-gray-50'}
+              : 'bg-white text-gray-500 hover:bg-gray-50 hover:text-primary'}
           `}
           onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
