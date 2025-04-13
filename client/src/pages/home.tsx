@@ -77,10 +77,10 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     })
   });
   
-  // Calculate total pages
+  // Calculate total pages based on API response data
   const calculatedPages = data?.totalCount ? Math.ceil(data.totalCount / 12) : 1;
-  // For testing purposes, we'll use at least 3 pages to ensure pagination is visible
-  const totalPages = Math.max(3, calculatedPages);
+  // Use real page count from API response to ensure proper pagination with filters
+  const totalPages = calculatedPages;
   
   // Log data for debugging pagination with filters
   useEffect(() => {
