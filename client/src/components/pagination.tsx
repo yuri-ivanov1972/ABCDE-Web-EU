@@ -13,7 +13,10 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange 
 }) => {
   // If total pages is 1 or less, don't render pagination
-  if (totalPages <= 1) return null;
+  console.log('Pagination: currentPage =', currentPage, 'totalPages =', totalPages);
+  
+  // Always show pagination for testing
+  // if (totalPages <= 1) return null;
 
   // Generate array of page numbers to display
   const getPageNumbers = () => {
