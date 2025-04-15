@@ -27,7 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img 
             src={mainPhoto?.photoUrl || 'https://via.placeholder.com/300x200?text=No+Image'}
             alt={mainPhoto?.altText || name}
-            className="w-full h-48 object-cover"
+            className="w-full h-40 object-cover"
           />
           {nutrition?.nutriScoreGrade && (
             <div className="absolute top-2 left-2 z-10">
@@ -35,8 +35,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="font-medium text-gray-900 mb-1">{name}</h3>
+        <div className="p-3">
+          <h3 className="font-medium text-gray-900 mb-1 text-sm md:text-base">{name}</h3>
           {quantityFormatted && (
             <p className="text-sm text-gray-500 mb-3">{quantityFormatted}</p>
           )}
@@ -83,8 +83,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 export const ProductCardSkeleton: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <Skeleton className="w-full h-48" />
-      <div className="p-4">
+      <Skeleton className="w-full h-40" />
+      <div className="p-3">
         <Skeleton className="h-6 w-3/4 mb-1" />
         <Skeleton className="h-4 w-1/3 mb-4" />
         
