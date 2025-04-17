@@ -9,6 +9,9 @@ interface HeaderProps {
   toggleMobileMenu: () => void;
   onSearch: (query: string) => void;
   categoryId?: number;
+  onApplyMobileFilters?: (nutriScores: NutriScoreGrade[], sugarMin?: number, sugarMax?: number, 
+    fatMin?: number, fatMax?: number, proteinMin?: number, proteinMax?: number, 
+    saltMin?: number, saltMax?: number) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch, categoryId }) => {

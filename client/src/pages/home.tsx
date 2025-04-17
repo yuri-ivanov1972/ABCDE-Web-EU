@@ -150,6 +150,33 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     refetch();
   };
   
+  // Handle mobile filters applied
+  const handleMobileFiltersApply = (
+    nutriScores: NutriScoreGrade[],
+    sugarMin?: number, sugarMax?: number,
+    fatMin?: number, fatMax?: number,
+    proteinMin?: number, proteinMax?: number,
+    saltMin?: number, saltMax?: number
+  ) => {
+    // Close mobile filters panel
+    setIsMobileFiltersOpen(false);
+    
+    // Apply the filter values to the main filters state
+    const newFilters: Filters = {
+      nutriScores: nutriScores,
+      sugar: { min: sugarMin, max: sugarMax },
+      fat: { min: fatMin, max: fatMax },
+      protein: { min: proteinMin, max: proteinMax },
+      salt: { min: saltMin, max: saltMax }
+    };
+    
+    // Update filters state and trigger refetch
+    setFilters(newFilters);
+    setPage(1);
+    console.log('Applied mobile filters:', newFilters);
+    refetch();
+  };
+
   // Handle sort change
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
