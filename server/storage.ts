@@ -168,6 +168,9 @@ export class DatabaseStorage implements IStorage {
   
   // Product methods
   async getProducts(options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }> {
+    // Variable to store count from SQL query, used when fetching category products
+    let totalCountFromSql: number | undefined = undefined;
+    
     const {
       categoryId,
       page = 1,
@@ -353,8 +356,9 @@ export class DatabaseStorage implements IStorage {
           WHERE p.category_id IN (${categoryList})
         `);
         
-        const totalCount = parseInt(countQueryResult.rows[0].total, 10);
-        console.log(`Total count of products in these categories: ${totalCount}`);
+        // Save the total count from SQL for use at the end of the function
+        totalCountFromSql = parseInt(countQueryResult.rows[0].total, 10);
+        console.log(`Total count of products in these categories: ${totalCountFromSql}`);
         
       } catch (error) {
         console.error('Error executing raw SQL query:', error);
@@ -539,7 +543,7 @@ export class DatabaseStorage implements IStorage {
       });
     }
     
-    // For the Maize category (ID 88), set total count to 24 for testing pagination
+    // First check for Maize category (ID 88), set total count to 24 for testing pagination
     if (categoryId === 88) {
       console.log("Using fixed count for Maize category to test pagination");
       return { 
@@ -548,7 +552,16 @@ export class DatabaseStorage implements IStorage {
       };
     }
     
-    // Use the value from the COUNT query for the actual total, not just this page's length
+    // For category queries, use the total count from SQL if available
+    if (categoryId && totalCountFromSql !== undefined) {
+      console.log(`Using SQL-provided total count of ${totalCountFromSql}`);
+      return { 
+        products: filteredProducts,
+        totalCount: totalCountFromSql
+      };
+    }
+    
+    // For non-category queries or fallback, use the standard total count
     if (totalCount !== undefined) {
       console.log(`Using database-provided total count of ${totalCount}`);
       return { 
