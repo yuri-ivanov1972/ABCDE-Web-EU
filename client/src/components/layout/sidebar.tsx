@@ -29,16 +29,18 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   depth,
   pathOfOpenCategories
 }) => {
-  // Initialize expanded state based on whether this category is in the path of open categories
+  // Initialize expanded state based on:
+  // 1. Whether this category is in the path of open categories
+  // 2. Whether this category is the currently selected category
   const [isExpanded, setIsExpanded] = useState(
-    pathOfOpenCategories.includes(category.categoryId)
+    pathOfOpenCategories.includes(category.categoryId) || 
+    currentCategoryId === category.categoryId
   );
   
-  // Fetch subcategories for this category
+  // Always fetch subcategories so we know if there are any
   const { data: subcategories = [] } = useQuery({
     queryKey: ['/api/categories', 'subcategories', category.categoryId],
-    queryFn: () => getCategories(undefined, category.categoryId),
-    enabled: isExpanded || pathOfOpenCategories.includes(category.categoryId)
+    queryFn: () => getCategories(undefined, category.categoryId)
   });
 
   const isSelected = currentCategoryId === category.categoryId;

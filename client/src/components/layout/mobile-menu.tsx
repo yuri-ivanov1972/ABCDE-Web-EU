@@ -20,13 +20,12 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
   category,
   currentCategoryId
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(currentCategoryId === category.categoryId);
   
-  // Fetch subcategories for this category
+  // Always fetch subcategories so we know if there are any
   const { data: subcategories = [] } = useQuery({
     queryKey: ['/api/categories', 'subcategories', category.categoryId],
-    queryFn: () => getCategories(undefined, category.categoryId),
-    enabled: isExpanded
+    queryFn: () => getCategories(undefined, category.categoryId)
   });
 
   const hasSubcategories = subcategories && subcategories.length > 0;
