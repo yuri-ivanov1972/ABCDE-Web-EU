@@ -29,6 +29,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   depth,
   pathOfOpenCategories
 }) => {
+  // Initialize expanded state based on whether this category is in the path of open categories
   const [isExpanded, setIsExpanded] = useState(
     pathOfOpenCategories.includes(category.categoryId)
   );
@@ -43,14 +44,15 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   const isSelected = currentCategoryId === category.categoryId;
   const hasSubcategories = subcategories && subcategories.length > 0;
   
-  // Handle click on category - combines navigation and expansion
+  // New improved handling of category clicks with simplified behavior
   const handleCategoryClick = (e: React.MouseEvent) => {
-    // If it has subcategories, toggle expansion when clicked
-    if (hasSubcategories) {
-      e.preventDefault(); // Prevent navigation if toggling expansion
-      setIsExpanded(!isExpanded);
+    // We don't prevent default navigation anymore
+    // Instead, if it has subcategories and isn't expanded, expand it
+    if (hasSubcategories && !isExpanded) {
+      setIsExpanded(true);
     }
-    // Otherwise, navigation will happen through the Link component
+    // Navigation will happen naturally through the Link component
+    // This allows both navigation and expansion with one click
   };
 
   return (
@@ -75,6 +77,10 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 fill="none" 
                 viewBox="0 0 24 24" 
                 stroke="currentColor"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent navigation when clicking directly on arrow
+                  setIsExpanded(!isExpanded);
+                }}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>

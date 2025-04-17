@@ -7,14 +7,19 @@ import { NutriScoreGrade, Category } from '@/types';
 
 interface MobileMenuProps {
   isOpen: boolean;
+  categoryId?: number;
 }
 
 // Mobile category component
 interface MobileCategoryItemProps {
   category: Category;
+  currentCategoryId?: number;
 }
 
-const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => {
+const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ 
+  category,
+  currentCategoryId
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Fetch subcategories for this category
@@ -25,13 +30,15 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
   });
 
   const hasSubcategories = subcategories && subcategories.length > 0;
+  const isSelected = currentCategoryId === category.categoryId;
   
+  // New simplified behavior
   const handleCategoryClick = (e: React.MouseEvent) => {
-    if (hasSubcategories) {
-      e.preventDefault(); // Prevent navigation if there are subcategories
-      setIsExpanded(!isExpanded); // Toggle expansion state
+    // If it has subcategories and isn't expanded, expand it
+    if (hasSubcategories && !isExpanded) {
+      setIsExpanded(true);
     }
-    // Otherwise navigation happens via the Link
+    // No preventDefault - allow navigation to happen normally
   };
 
   return (
@@ -39,8 +46,12 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
       <div className="flex items-center">
         <Link 
           href={`/category/${category.categoryId}`}
-          className="flex-grow flex items-center justify-between px-2 py-1.5 rounded hover:bg-gray-100 text-gray-700"
-          onClick={hasSubcategories ? handleCategoryClick : undefined}
+          className={`flex-grow flex items-center justify-between px-2 py-1.5 rounded ${
+            isSelected 
+              ? 'bg-primary text-white font-medium' 
+              : 'hover:bg-gray-100 text-gray-700'
+          }`}
+          onClick={handleCategoryClick}
         >
           <span>{category.nameLv}</span>
           
@@ -51,6 +62,10 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent navigation when clicking directly on arrow
+                setIsExpanded(!isExpanded);
+              }}
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -65,6 +80,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
             <MobileCategoryItem 
               key={subcat.categoryId}
               category={subcat}
+              currentCategoryId={currentCategoryId}
             />
           ))}
         </ul>
@@ -73,7 +89,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({ category }) => 
   );
 };
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen }) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId }) => {
   const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
   const [filters, setFilters] = useState({
     sugar: { min: '', max: '' },

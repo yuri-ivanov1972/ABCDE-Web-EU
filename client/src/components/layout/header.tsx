@@ -8,9 +8,10 @@ interface HeaderProps {
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
   onSearch: (query: string) => void;
+  categoryId?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch }) => {
+const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch, categoryId }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
