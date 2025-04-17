@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import MobileMenu from './mobile-menu';
 import abcdeLogo from '@assets/abcde_logo.svg';
 
@@ -48,10 +48,23 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
               <input
                 type="text"
                 placeholder="Meklēt produktus..."
-                className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 pr-16 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearchInput}
               />
+              {searchQuery && (
+                <button 
+                  type="button"
+                  className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
+                  onClick={() => {
+                    setSearchQuery('');
+                    onSearch(''); // Clear search results
+                  }}
+                  aria-label="Notīrīt meklēšanu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
               <button 
                 type="submit"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
@@ -80,10 +93,23 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
               <input
                 type="text"
                 placeholder="Meklēt produktus..."
-                className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 pr-16 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearchInput}
               />
+              {searchQuery && (
+                <button 
+                  type="button"
+                  className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
+                  onClick={() => {
+                    setSearchQuery('');
+                    onSearch(''); // Clear search results
+                  }}
+                  aria-label="Notīrīt meklēšanu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
               <button 
                 type="submit"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
