@@ -7,6 +7,7 @@ import { getProducts, getCategoryById } from '@/api';
 import { Filters, NutriScoreGrade, SortOption, SortOrder } from '@/types';
 
 import Sidebar from '@/components/layout/sidebar';
+import MobileMenu from '@/components/layout/mobile-menu';
 import ProductGrid from '@/components/products/product-grid';
 import Pagination from '@/components/pagination';
 import ActiveFilters from '@/components/filters/active-filters';
@@ -198,6 +199,13 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
 
   return (
     <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
+      {/* Mobile Menu - shown/hidden based on state */}
+      <MobileMenu 
+        isOpen={isMobileFiltersOpen} 
+        categoryId={categoryId}
+        onApplyFilters={handleMobileFiltersApply}
+      />
+      
       {/* Sidebar - desktop only */}
       <Sidebar 
         categoryId={categoryId}

@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { Search, X } from 'lucide-react';
 import MobileMenu from './mobile-menu';
 import abcdeLogo from '@assets/abcde_logo.svg';
+import { NutriScoreGrade } from '@/types';
 
 interface HeaderProps {
   isMobileMenuOpen: boolean;
@@ -14,7 +15,7 @@ interface HeaderProps {
     saltMin?: number, saltMax?: number) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch, categoryId }) => {
+const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch, categoryId, onApplyMobileFilters }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,8 +127,17 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} categoryId={categoryId} />
+      {/* 
+        Mobile Menu is now handled directly in the Home component 
+        to allow direct access to filter state
+      */}
+      {/* 
+      <MobileMenu 
+        isOpen={isMobileMenuOpen} 
+        categoryId={categoryId} 
+        onApplyFilters={onApplyMobileFilters} 
+      />
+      */}
     </>
   );
 };
