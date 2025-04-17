@@ -151,6 +151,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId }) => {
             <MobileCategoryItem 
               key={category.categoryId}
               category={category}
+              currentCategoryId={categoryId}
             />
           ))}
         </ul>

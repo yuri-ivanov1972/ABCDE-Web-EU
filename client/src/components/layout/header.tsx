@@ -96,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
       </header>
 
       {/* Mobile Menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} />
+      <MobileMenu isOpen={isMobileMenuOpen} categoryId={categoryId} />
     </>
   );
 };

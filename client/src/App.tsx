@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -32,6 +32,12 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Extract current category ID from URL
+  const [location] = useLocation();
+  // Check if URL is like /category/123
+  const categoryIdMatch = /^\/category\/(\d+)$/.exec(location);
+  const currentCategoryId = categoryIdMatch ? Number(categoryIdMatch[1]) : undefined;
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -47,6 +53,7 @@ function App() {
           isMobileMenuOpen={isMobileMenuOpen} 
           toggleMobileMenu={toggleMobileMenu}
           onSearch={handleSearch}
+          categoryId={currentCategoryId}
         />
         <div className="flex-grow">
           <Router searchQuery={searchQuery} />
