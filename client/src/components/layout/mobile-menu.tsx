@@ -8,6 +8,9 @@ import { NutriScoreGrade, Category } from '@/types';
 interface MobileMenuProps {
   isOpen: boolean;
   categoryId?: number;
+  onApplyFilters?: (nutriScores: NutriScoreGrade[], sugarMin?: number, sugarMax?: number, 
+    fatMin?: number, fatMax?: number, proteinMin?: number, proteinMax?: number, 
+    saltMin?: number, saltMax?: number) => void;
 }
 
 // Mobile category component
@@ -88,7 +91,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
   );
 };
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId }) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, onApplyFilters }) => {
   const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
   const [filters, setFilters] = useState({
     sugar: { min: '', max: '' },
@@ -125,8 +128,34 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId }) => {
   };
 
   const handleApplyFilters = () => {
-    // Implement applying filters in the parent component
-    console.log('Applied filters:', { nutriScores: selectedNutriScores, ...filters });
+    if (onApplyFilters) {
+      // Convert string values to numbers or undefined for API
+      const sugarMin = filters.sugar.min ? parseFloat(filters.sugar.min) : undefined;
+      const sugarMax = filters.sugar.max ? parseFloat(filters.sugar.max) : undefined;
+      const fatMin = filters.fat.min ? parseFloat(filters.fat.min) : undefined;
+      const fatMax = filters.fat.max ? parseFloat(filters.fat.max) : undefined;
+      const proteinMin = filters.protein.min ? parseFloat(filters.protein.min) : undefined;
+      const proteinMax = filters.protein.max ? parseFloat(filters.protein.max) : undefined;
+      const saltMin = filters.salt.min ? parseFloat(filters.salt.min) : undefined;
+      const saltMax = filters.salt.max ? parseFloat(filters.salt.max) : undefined;
+      
+      // Call the parent component's filter handler
+      onApplyFilters(
+        selectedNutriScores,
+        sugarMin, sugarMax, 
+        fatMin, fatMax, 
+        proteinMin, proteinMax, 
+        saltMin, saltMax
+      );
+      
+      console.log('Applied filters:', { 
+        nutriScores: selectedNutriScores,
+        sugarMin, sugarMax,
+        fatMin, fatMax,
+        proteinMin, proteinMax,
+        saltMin, saltMax
+      });
+    }
   };
 
   return (
