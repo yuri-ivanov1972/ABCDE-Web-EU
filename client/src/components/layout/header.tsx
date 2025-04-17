@@ -33,16 +33,21 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
     <>
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <img src={abcdeLogo} alt="ABCDE Logo" className="h-10" />
-            </Link>
-            <nav className="ml-6 hidden md:flex space-x-4">
-              <Link href="/product-search" className="text-gray-600 hover:text-primary">
-                Meklēt pēc URL
+          {/* Logo and Tagline */}
+          <div className="flex flex-col items-start">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center">
+                <img src={abcdeLogo} alt="ABCDE Logo" className="h-10" />
               </Link>
-            </nav>
+              <nav className="ml-6 hidden md:flex space-x-4">
+                <Link href="/product-search" className="text-gray-600 hover:text-primary">
+                  Meklēt pēc URL
+                </Link>
+              </nav>
+            </div>
+            <p className="text-xs text-gray-600 mt-1 hidden md:block">
+              Helping you make healthier food choices with transparent nutritional information.
+            </p>
           </div>
 
           {/* Search Bar - Desktop */}

@@ -14,9 +14,6 @@ const Footer: React.FC = () => {
               </svg>
               <span className="font-bold text-gray-800">ABCDE.lv</span>
             </Link>
-            <p className="mt-2 text-sm text-gray-600 max-w-xs">
-              Helping you make healthier food choices with transparent nutritional information.
-            </p>
           </div>
           <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
             <div>
