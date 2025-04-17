@@ -38,8 +38,13 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   
   // Initialize search from props
   useEffect(() => {
+    // Trim the search query to remove any leading or trailing spaces
+    // This helps ensure consistency between mobile and desktop search
     if (initialSearchQuery) {
-      setSearchQuery(initialSearchQuery);
+      const trimmedQuery = initialSearchQuery.trim();
+      setSearchQuery(trimmedQuery.length > 0 ? trimmedQuery : undefined);
+    } else {
+      setSearchQuery(undefined);
     }
   }, [initialSearchQuery]);
 
@@ -190,7 +195,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
         {/* Title and Active Filters */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {searchQuery 
+            {searchQuery && searchQuery.length > 0
               ? `Meklēšanas rezultāti: "${searchQuery}"`
               : category 
                 ? category.nameLv 

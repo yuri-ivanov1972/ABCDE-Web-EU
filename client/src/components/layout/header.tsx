@@ -20,7 +20,9 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    // Normalize search query by trimming whitespace
+    const trimmedQuery = searchQuery.trim();
+    onSearch(trimmedQuery);
   };
 
   return (

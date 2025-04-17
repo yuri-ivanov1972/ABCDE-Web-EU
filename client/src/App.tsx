@@ -43,7 +43,9 @@ function App() {
   };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    // Additional normalization at the app level
+    const trimmedQuery = query.trim();
+    setSearchQuery(trimmedQuery);
   };
 
   return (

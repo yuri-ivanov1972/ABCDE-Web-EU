@@ -704,10 +704,11 @@ export class DatabaseStorage implements IStorage {
     const offset = (page - 1) * pageSize;
     
     // Execute query to search products by name
+    // Use ilike for case-insensitive search to ensure consistency
     const productsResult = await productsDb
       .select()
       .from(products)
-      .where(like(products.name, `%${query}%`))
+      .where(sql`${products.name} ILIKE ${'%' + query + '%'}`)
       .limit(pageSize)
       .offset(offset);
     
@@ -715,7 +716,7 @@ export class DatabaseStorage implements IStorage {
     const [countResult] = await productsDb
       .select({ count: sql<number>`count(*)` })
       .from(products)
-      .where(like(products.name, `%${query}%`));
+      .where(sql`${products.name} ILIKE ${'%' + query + '%'}`);
     
     const totalCount = countResult?.count || 0;
     
