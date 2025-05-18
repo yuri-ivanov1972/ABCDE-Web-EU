@@ -5,6 +5,7 @@ import {
 } from "@shared/schema";
 import { categoriesDb, productsDb, categoriesPool, productsPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
+import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
 // Storage interface
 export interface IStorage {
@@ -703,20 +704,43 @@ export class DatabaseStorage implements IStorage {
     // Calculate offset for pagination
     const offset = (page - 1) * pageSize;
     
-    // Execute query to search products by name
-    // Use ilike for case-insensitive search to ensure consistency
+    // Normalize the search query to handle Latvian characters
+    const normalizedQuery = normalizeLvText(query);
+    console.log(`Search query: "${query}" normalized to: "${normalizedQuery}"`);
+    
+    // Execute query to search products by name using multiple approaches
+    // This improves search to handle Latvian diacritical marks
+    const normalizedPattern = createSearchPattern(query);
+    console.log(`Search pattern: "${normalizedPattern}"`);
+    
+    // Prepare multi-approach search
     const productsResult = await productsDb
       .select()
       .from(products)
-      .where(sql`${products.name} ILIKE ${'%' + query + '%'}`)
+      .where(
+        or(
+          // 1. Try exact match first (case insensitive)
+          sql`${products.name} ILIKE ${'%' + query + '%'}`,
+          
+          // 2. Try with normalized input against the actual product name
+          // This allows searching for "karums" to find "Kārums"
+          sql`${products.name} ILIKE ${normalizedPattern}`
+        )
+      )
       .limit(pageSize)
       .offset(offset);
     
-    // Get total count for pagination
+    // Get total count for pagination using the same search conditions
     const [countResult] = await productsDb
       .select({ count: sql<number>`count(*)` })
       .from(products)
-      .where(sql`${products.name} ILIKE ${'%' + query + '%'}`);
+      .where(
+        or(
+          // Same conditions as above for consistency
+          sql`${products.name} ILIKE ${'%' + query + '%'}`,
+          sql`${products.name} ILIKE ${normalizedPattern}`
+        )
+      );
     
     const totalCount = countResult?.count || 0;
     
