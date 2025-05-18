@@ -32,6 +32,7 @@ export const products = pgTable("products", {
   productId: serial("product_id").primaryKey(),
   sku: text("sku").notNull().unique(),
   name: text("name").notNull(),
+  name_norm: text("name_norm"),  // Normalized name for case-insensitive search
   rimiUrl: text("rimi_url").unique(),
   categoryId: integer("category_id").notNull(),
   quantityValue: decimal("quantity_value", { precision: 10, scale: 2 }),

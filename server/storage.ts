@@ -748,14 +748,8 @@ export class DatabaseStorage implements IStorage {
           // Original query (exact match, case insensitive)
           sql`${products.name} ILIKE ${exactMatchPattern}`,
           
-          // Create a condition where we normalize both the input and the stored name
-          sql`
-            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-              ${products.name},
-              'ā', 'a'), 'ē', 'e'), 'ī', 'i'), 'ū', 'u'), 'č', 'c'), 'ģ', 'g'), 'ķ', 'k'), 'ļ', 'l'), 
-              'ņ', 'n'), 'š', 's'), 'ž', 'z'), 'ō', 'o')
-            ) LIKE ${searchPattern}
-          `
+          // Use the pre-normalized name_norm column for efficient matching
+          sql`${products.name_norm} LIKE ${searchPattern}`
         )
       );
     
