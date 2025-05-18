@@ -711,14 +711,14 @@ export class DatabaseStorage implements IStorage {
     // Create search pattern
     const searchPattern = `%${normalizedQuery}%`;
     
-    // Get all product names and normalize them on the fly
+    // Get all product names
     // First approach - exact match using ILIKE (case insensitive)
     const exactMatchPattern = `%${query}%`;
     
-    // Execute a simpler SQL query to find products
+    // Execute a simpler SQL query using the pre-normalized name_norm column
     // Using a two-step approach:
     // 1. First try to search with the original input for exact matches
-    // 2. Then try to search with the normalized query for fuzzy matches
+    // 2. Then use the name_norm column with our normalized query
     const productsQuery = productsDb
       .select()
       .from(products)
@@ -727,14 +727,8 @@ export class DatabaseStorage implements IStorage {
           // Original query (exact match, case insensitive)
           sql`${products.name} ILIKE ${exactMatchPattern}`,
           
-          // Create a condition where we normalize both the input and the stored name
-          sql`
-            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-              ${products.name},
-              'ā', 'a'), 'ē', 'e'), 'ī', 'i'), 'ū', 'u'), 'č', 'c'), 'ģ', 'g'), 'ķ', 'k'), 'ļ', 'l'), 
-              'ņ', 'n'), 'š', 's'), 'ž', 'z'), 'ō', 'o')
-            ) LIKE ${searchPattern}
-          `
+          // Use the pre-normalized name_norm column for efficient matching
+          sql`${products.name_norm} LIKE ${searchPattern}`
         )
       )
       .limit(pageSize)
