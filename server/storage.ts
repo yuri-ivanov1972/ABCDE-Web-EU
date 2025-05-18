@@ -704,45 +704,69 @@ export class DatabaseStorage implements IStorage {
     // Calculate offset for pagination
     const offset = (page - 1) * pageSize;
     
-    // Normalize the search query to handle Latvian characters
+    // Normalize the search term
     const normalizedQuery = normalizeLvText(query);
     console.log(`Search query: "${query}" normalized to: "${normalizedQuery}"`);
     
-    // Execute query to search products by name using multiple approaches
-    // This improves search to handle Latvian diacritical marks
-    const normalizedPattern = createSearchPattern(query);
-    console.log(`Search pattern: "${normalizedPattern}"`);
+    // Create search pattern
+    const searchPattern = `%${normalizedQuery}%`;
     
-    // Prepare multi-approach search
-    const productsResult = await productsDb
+    // Get all product names and normalize them on the fly
+    // First approach - exact match using ILIKE (case insensitive)
+    const exactMatchPattern = `%${query}%`;
+    
+    // Execute a simpler SQL query to find products
+    // Using a two-step approach:
+    // 1. First try to search with the original input for exact matches
+    // 2. Then try to search with the normalized query for fuzzy matches
+    const productsQuery = productsDb
       .select()
       .from(products)
       .where(
         or(
-          // 1. Try exact match first (case insensitive)
-          sql`${products.name} ILIKE ${'%' + query + '%'}`,
+          // Original query (exact match, case insensitive)
+          sql`${products.name} ILIKE ${exactMatchPattern}`,
           
-          // 2. Try with normalized input against the actual product name
-          // This allows searching for "karums" to find "Kārums"
-          sql`${products.name} ILIKE ${normalizedPattern}`
+          // Create a condition where we normalize both the input and the stored name
+          sql`
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+              ${products.name},
+              'ā', 'a'), 'ē', 'e'), 'ī', 'i'), 'ū', 'u'), 'č', 'c'), 'ģ', 'g'), 'ķ', 'k'), 'ļ', 'l'), 
+              'ņ', 'n'), 'š', 's'), 'ž', 'z'), 'ō', 'o')
+            ) LIKE ${searchPattern}
+          `
         )
       )
       .limit(pageSize)
       .offset(offset);
+
+    console.log('Executing search query with pattern:', searchPattern);
+    const productsResult = await productsQuery;
     
-    // Get total count for pagination using the same search conditions
+    console.log(`Search query "${query}" returned ${productsResult.length} products`);
+    
+    // Get total count for pagination using the same conditions
     const [countResult] = await productsDb
       .select({ count: sql<number>`count(*)` })
       .from(products)
       .where(
         or(
-          // Same conditions as above for consistency
-          sql`${products.name} ILIKE ${'%' + query + '%'}`,
-          sql`${products.name} ILIKE ${normalizedPattern}`
+          // Original query (exact match, case insensitive)
+          sql`${products.name} ILIKE ${exactMatchPattern}`,
+          
+          // Create a condition where we normalize both the input and the stored name
+          sql`
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+              ${products.name},
+              'ā', 'a'), 'ē', 'e'), 'ī', 'i'), 'ū', 'u'), 'č', 'c'), 'ģ', 'g'), 'ķ', 'k'), 'ļ', 'l'), 
+              'ņ', 'n'), 'š', 's'), 'ž', 'z'), 'ō', 'o')
+            ) LIKE ${searchPattern}
+          `
         )
       );
     
     const totalCount = countResult?.count || 0;
+    console.log(`Search query "${query}" total count: ${totalCount}`);
     
     // First get all product IDs
     const productIds = productsResult.map(p => p.productId);
