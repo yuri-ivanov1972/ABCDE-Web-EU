@@ -7,12 +7,10 @@ import * as schema from "@shared/schema";
 neonConfig.webSocketConstructor = ws;
 
 // Get database connection strings from environment variables
-console.log("CATEGORIES_DB_URL starts with:", 
-  process.env.CATEGORIES_DB_URL ? process.env.CATEGORIES_DB_URL.substring(0, 20) + "..." : "undefined");
-console.log("PRODUCTS_DB_URL starts with:", 
-  process.env.PRODUCTS_DB_URL ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..." : "undefined");
+console.log("CATEGORIES_DB_URL available:", !!process.env.CATEGORIES_DB_URL);
+console.log("PRODUCTS_DB_URL available:", !!process.env.PRODUCTS_DB_URL);
 
-// Use original product and category database URLs
+// Check if required environment variables are set
 const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
 const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
 
@@ -24,28 +22,13 @@ if (!PRODUCTS_DB_URL) {
   throw new Error("PRODUCTS_DB_URL must be set. Did you forget to add the products database URL?");
 }
 
-// Function to create a connection with better error handling
-function createNeonConnection(url: string) {
-  try {
-    // Create a connection with minimal settings for Neon's serverless environment
-    const pool = new Pool({ 
-      connectionString: url,
-      max: 1 // Use single connection mode for Neon serverless
-    });
-    
-    return pool;
-  } catch (error) {
-    console.error('Failed to create database connection:', error);
-    throw error;
-  }
-}
+// Create pools with very minimal configuration to avoid connection issues
+// Neon serverless works best with simple configuration
+export const categoriesPool = new Pool({ connectionString: CATEGORIES_DB_URL });
+export const productsPool = new Pool({ connectionString: PRODUCTS_DB_URL });
 
-// Create the database pools with better error handling
-export const categoriesPool = createNeonConnection(CATEGORIES_DB_URL);
-export const productsPool = createNeonConnection(PRODUCTS_DB_URL);
-
-// Create the Drizzle clients
+// Create drizzle clients
 export const categoriesDb = drizzle({ client: categoriesPool, schema });
 export const productsDb = drizzle({ client: productsPool, schema });
 
-console.log("Original database connections restored successfully");
+console.log("Database connections established with minimal configuration");
