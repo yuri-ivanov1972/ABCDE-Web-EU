@@ -3,7 +3,14 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
+// Configure Neon to use WebSockets
 neonConfig.webSocketConstructor = ws;
+// Increase connection timeout for more stability
+neonConfig.connectionTimeoutMillis = 30000;
+// Add connection retries
+neonConfig.retryEnabled = true;
+neonConfig.retryCreditsWait = 100;
+neonConfig.retryInitialCredits = 5;
 
 // Get database connection strings from environment variables
 // Log the first part of the URLs for debugging (without exposing credentials)
@@ -27,9 +34,25 @@ if (!PRODUCTS_DB_URL) {
   );
 }
 
-// Create database pools
-export const categoriesPool = new Pool({ connectionString: CATEGORIES_DB_URL });
-export const productsPool = new Pool({ connectionString: PRODUCTS_DB_URL });
+// Create more robust database pools
+const poolConfig = {
+  max: 10,                    // Maximum number of connections in the pool
+  idleTimeoutMillis: 30000,   // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 30000, // Timeout for connection attempts
+  maxUses: 100,               // Max queries per connection to prevent memory leaks
+  connectionRetryLimit: 3     // Retry connection attempts
+};
+
+// Create database pools with improved settings
+export const categoriesPool = new Pool({ 
+  connectionString: CATEGORIES_DB_URL, 
+  ...poolConfig
+});
+
+export const productsPool = new Pool({ 
+  connectionString: PRODUCTS_DB_URL,
+  ...poolConfig
+});
 
 // Create drizzle clients
 export const categoriesDb = drizzle({ client: categoriesPool, schema });

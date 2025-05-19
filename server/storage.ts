@@ -7,6 +7,36 @@ import { categoriesDb, productsDb, categoriesPool, productsPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
+/**
+ * Utility function to retry database operations with exponential backoff
+ * @param operation Function that returns a promise to be retried
+ * @param maxRetries Maximum number of retry attempts (default: 3)
+ * @returns Result of the operation
+ */
+async function withRetry<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
+  let lastError: Error | undefined;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Attempt the operation
+      return await operation();
+    } catch (error: any) {
+      console.error(`Database operation failed (attempt ${attempt + 1}/${maxRetries}):`, error?.message || error);
+      lastError = error;
+      
+      if (attempt < maxRetries - 1) {
+        // Calculate backoff time: 200ms, 400ms, 800ms, etc.
+        const backoffTime = 200 * Math.pow(2, attempt);
+        console.log(`Retrying in ${backoffTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoffTime));
+      }
+    }
+  }
+  
+  // If we've exhausted all retries, throw the last error
+  throw lastError;
+}
+
 // Storage interface
 export interface IStorage {
   // Original template methods
