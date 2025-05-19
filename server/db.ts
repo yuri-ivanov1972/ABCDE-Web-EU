@@ -6,29 +6,40 @@ import * as schema from "@shared/schema";
 // Configure Neon to use WebSockets
 neonConfig.webSocketConstructor = ws;
 
-// Get database connection strings from environment variables
-console.log("CATEGORIES_DB_URL available:", !!process.env.CATEGORIES_DB_URL);
-console.log("PRODUCTS_DB_URL available:", !!process.env.PRODUCTS_DB_URL);
+// Log database URLs (just the beginning for security)
+const categoriesUrlStart = process.env.CATEGORIES_DB_URL 
+  ? process.env.CATEGORIES_DB_URL.substring(0, 20) + "..." 
+  : "undefined";
+const productsUrlStart = process.env.PRODUCTS_DB_URL
+  ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..."
+  : "undefined";
 
-// Check if required environment variables are set
+console.log("CATEGORIES_DB_URL starts with:", categoriesUrlStart);
+console.log("PRODUCTS_DB_URL starts with:", productsUrlStart);
+
+// Get database connection strings
 const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
 const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
 
 if (!CATEGORIES_DB_URL) {
-  throw new Error("CATEGORIES_DB_URL must be set. Did you forget to add the categories database URL?");
+  throw new Error("CATEGORIES_DB_URL is not set. Please provide this environment variable.");
 }
 
 if (!PRODUCTS_DB_URL) {
-  throw new Error("PRODUCTS_DB_URL must be set. Did you forget to add the products database URL?");
+  throw new Error("PRODUCTS_DB_URL is not set. Please provide this environment variable.");
 }
 
-// Create pools with very minimal configuration to avoid connection issues
-// Neon serverless works best with simple configuration
-export const categoriesPool = new Pool({ connectionString: CATEGORIES_DB_URL });
-export const productsPool = new Pool({ connectionString: PRODUCTS_DB_URL });
+// Create connection pools
+export const categoriesPool = new Pool({ 
+  connectionString: CATEGORIES_DB_URL
+});
+
+export const productsPool = new Pool({ 
+  connectionString: PRODUCTS_DB_URL
+});
 
 // Create drizzle clients
 export const categoriesDb = drizzle({ client: categoriesPool, schema });
 export const productsDb = drizzle({ client: productsPool, schema });
 
-console.log("Database connections established with minimal configuration");
+console.log("Database connections established with original URLs");
