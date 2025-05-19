@@ -351,17 +351,20 @@ export class DatabaseStorage implements IStorage {
       console.log(`Using category list for SQL: ${categoryList}`);
       
       try {
-        // Execute the raw SQL query using the direct pool connection
-        const rawQueryResult = await productsPool.query(`
-          SELECT p.*
-          FROM products p
-          WHERE p.category_id IN (${categoryList})
-          ORDER BY ${sortBy === 'name' 
-            ? `p.name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`
-            : 'p.name ASC'
-          }
-          LIMIT ${pageSize} OFFSET ${offset}
-        `);
+        // Execute the raw SQL query using the direct pool connection with retry mechanism
+        const rawQueryResult = await withRetry(async () => {
+          console.log(`Attempting SQL query with category list: ${categoryList}`);
+          return productsPool.query(`
+            SELECT p.*
+            FROM products p
+            WHERE p.category_id IN (${categoryList})
+            ORDER BY ${sortBy === 'name' 
+              ? `p.name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`
+              : 'p.name ASC'
+            }
+            LIMIT ${pageSize} OFFSET ${offset}
+          `);
+        });
         
         console.log(`Raw SQL query returned ${rawQueryResult.rows.length} products`);
         
@@ -380,12 +383,15 @@ export class DatabaseStorage implements IStorage {
         
         console.log(`Mapped ${productsResult.length} products from raw query`);
         
-        // Get the total count directly with a separate query for pagination
-        const countQueryResult = await productsPool.query(`
-          SELECT COUNT(*) as total
-          FROM products p
-          WHERE p.category_id IN (${categoryList})
-        `);
+        // Get the total count directly with a separate query for pagination with retry
+        const countQueryResult = await withRetry(async () => {
+          console.log(`Attempting count query for categories: ${categoryList}`);
+          return productsPool.query(`
+            SELECT COUNT(*) as total
+            FROM products p
+            WHERE p.category_id IN (${categoryList})
+          `);
+        });
         
         // Save the total count from SQL for use at the end of the function
         totalCountFromSql = parseInt(countQueryResult.rows[0].total, 10);
@@ -403,21 +409,24 @@ export class DatabaseStorage implements IStorage {
     } else {
       // No category filter, use the original query
       try {
-        const productsQuery = productsDb
-          .select()
-          .from(products)
-          .limit(pageSize)
-          .offset(offset);
-          
-        // Apply sorting
-        if (sortBy === 'name') {
-          const directionFn = sortOrder === 'asc' ? asc : desc;
-          productsResult = await productsQuery.orderBy(directionFn(products.name));
-        } else {
-          productsResult = await productsQuery;
-        }
+        productsResult = await withRetry(async () => {
+          console.log("Attempting to get products without category filter");
+          const productsQuery = productsDb
+            .select()
+            .from(products)
+            .limit(pageSize)
+            .offset(offset);
+            
+          // Apply sorting
+          if (sortBy === 'name') {
+            const directionFn = sortOrder === 'asc' ? asc : desc;
+            return await productsQuery.orderBy(directionFn(products.name));
+          } else {
+            return await productsQuery;
+          }
+        });
       } catch (error) {
-        console.error('Error executing Drizzle query:', error);
+        console.error('Error executing Drizzle query after retries:', error);
         return { products: [], totalCount: 0 };
       }
     }
@@ -427,13 +436,19 @@ export class DatabaseStorage implements IStorage {
     
     if (!categoryId) {
       try {
-        const [countResult] = await productsDb
-          .select({ count: sql<number>`count(*)` })
-          .from(products);
+        // Use withRetry for getting total count
+        const getTotalCount = async () => {
+          console.log("Attempting to get total product count");
+          const [countResult] = await productsDb
+            .select({ count: sql<number>`count(*)` })
+            .from(products);
+          return countResult?.count || 0;
+        };
           
-        totalCount = countResult?.count || 0;
+        totalCount = await withRetry(getTotalCount);
       } catch (error) {
-        console.error('Error getting total count:', error);
+        console.error('Error getting total count after retries:', error);
+        totalCount = 0; // Fallback to zero if counting fails
       }
     } else {
       // For category filters with the old query method, calculate total count
@@ -445,14 +460,22 @@ export class DatabaseStorage implements IStorage {
           
         if (catIds.length > 0) {
           const catList = catIds.join(',');
-          const countQuery = await productsPool.query(`
-            SELECT COUNT(*) as total FROM products 
-            WHERE category_id IN (${catList})
-          `);
-          totalCount = parseInt(countQuery.rows[0].total, 10);
+          
+          // Use withRetry for getting category product count
+          const getCategoryProductCount = async () => {
+            console.log(`Attempting to get product count for categories: ${catList}`);
+            const countQuery = await productsPool.query(`
+              SELECT COUNT(*) as total FROM products 
+              WHERE category_id IN (${catList})
+            `);
+            return parseInt(countQuery.rows[0].total, 10);
+          };
+          
+          totalCount = await withRetry(getCategoryProductCount);
         }
       } catch (error) {
-        console.error('Error getting category product count:', error);
+        console.error('Error getting category product count after retries:', error);
+        totalCount = 0; // Fallback to zero if counting fails
       }
     }
     
