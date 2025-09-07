@@ -346,59 +346,49 @@ export class DatabaseStorage implements IStorage {
         return { products: [], totalCount: 0 };
       }
       
-      // Build the IN list as a string for the raw query
-      const categoryList = allCategoriesToInclude.join(',');
-      console.log(`Using category list for SQL: ${categoryList}`);
+      // Use the category array directly with Drizzle's inArray function
+      console.log(`Using category array for Drizzle query: [${allCategoriesToInclude.join(',')}]`);
       
       try {
-        // Execute the raw SQL query using the direct pool connection with retry mechanism
+        // Execute the query using Drizzle with proper parameterization
         const rawQueryResult = await withRetry(async () => {
-          console.log(`Attempting SQL query with category list: ${categoryList}`);
-          return productsPool.query(`
-            SELECT p.*
-            FROM products p
-            WHERE p.category_id IN (${categoryList})
-            ORDER BY ${sortBy === 'name' 
-              ? `p.name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`
-              : 'p.name ASC'
-            }
-            LIMIT ${pageSize} OFFSET ${offset}
-          `);
+          console.log(`Attempting Drizzle query with ${allCategoriesToInclude.length} categories`);
+          
+          // Build the order clause using Drizzle's ordering functions
+          const orderColumn = products.name; // For now, only name sorting is supported here
+          const orderDirection = sortOrder === 'asc' ? asc : desc;
+          
+          return productsDb
+            .select()
+            .from(products)
+            .where(inArray(products.categoryId, allCategoriesToInclude))
+            .orderBy(orderDirection(orderColumn))
+            .limit(pageSize)
+            .offset(offset);
         });
         
-        console.log(`Raw SQL query returned ${rawQueryResult.rows.length} products`);
+        console.log(`Drizzle query returned ${rawQueryResult.length} products`);
         
-        // Convert the raw result to the same structure expected by our code
-        productsResult = rawQueryResult.rows.map((row: any) => ({
-          productId: Number(row.product_id),
-          sku: row.sku,
-          name: row.name,
-          rimiUrl: row.rimi_url,
-          categoryId: Number(row.category_id),
-          quantityValue: row.quantity_value,
-          quantityUnit: row.quantity_unit,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at
-        }));
+        // Drizzle already returns the correct structure
+        productsResult = rawQueryResult;
         
-        console.log(`Mapped ${productsResult.length} products from raw query`);
+        console.log(`Retrieved ${productsResult.length} products from Drizzle query`);
         
-        // Get the total count directly with a separate query for pagination with retry
+        // Get the total count using Drizzle's count function with retry
         const countQueryResult = await withRetry(async () => {
-          console.log(`Attempting count query for categories: ${categoryList}`);
-          return productsPool.query(`
-            SELECT COUNT(*) as total
-            FROM products p
-            WHERE p.category_id IN (${categoryList})
-          `);
+          console.log(`Attempting Drizzle count query for ${allCategoriesToInclude.length} categories`);
+          return productsDb
+            .select({ count: sql<number>`count(*)` })
+            .from(products)
+            .where(inArray(products.categoryId, allCategoriesToInclude));
         });
         
-        // Save the total count from SQL for use at the end of the function
-        totalCountFromSql = parseInt(countQueryResult.rows[0].total, 10);
+        // Save the total count from Drizzle query for use at the end of the function
+        totalCountFromSql = countQueryResult[0]?.count || 0;
         console.log(`Total count of products in these categories: ${totalCountFromSql}`);
         
       } catch (error) {
-        console.error('Error executing raw SQL query:', error);
+        console.error('Error executing Drizzle query:', error);
         
         // Fallback to the basic query
         return this.getProducts({
