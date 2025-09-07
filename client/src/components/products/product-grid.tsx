@@ -21,9 +21,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
   if (products.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <h3 className="text-xl font-medium text-gray-900 mb-2">No products found</h3>
+        <h3 className="text-xl font-medium text-gray-900 mb-2">Produkti nav atrasti</h3>
         <p className="text-gray-600">
-          Try adjusting your filters or search for something else.
+          Mēģiniet pielāgot filtrus vai meklēt kaut ko citu.
         </p>
       </div>
     );
