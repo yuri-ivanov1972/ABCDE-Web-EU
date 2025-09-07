@@ -62,9 +62,17 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
     return 'bg-red-500';
   }, [nutrient, value, thresholds]);
 
+  // Latvian nutrient labels
+  const nutrientLabels = {
+    sugar: 'Cukurs',
+    fat: 'Tauki',
+    protein: 'Olbaltumvielas',
+    salt: 'Sāls'
+  };
+
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className="text-gray-600">{nutrient.charAt(0).toUpperCase() + nutrient.slice(1)}</span>
+      <span className="text-gray-600">{nutrientLabels[nutrient]}</span>
       <div className="flex items-center">
         <span className="font-medium mr-2">{value}{unit}</span>
         <div className="w-16 bg-gray-200 rounded-full h-1.5">
