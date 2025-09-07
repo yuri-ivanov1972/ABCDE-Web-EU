@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
               </nav>
             </div>
             <p className="text-xs text-gray-600 mt-1 hidden md:block">
-              Helping you make healthier food choices with transparent nutritional information.
+              Palīdzam jums izdarīt veselīgāku izvēli par pārtiku, sniedzot pārredzamu informāciju par uzturvērtību.
             </p>
           </div>
 
