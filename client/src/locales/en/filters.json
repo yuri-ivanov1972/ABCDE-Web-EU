@@ -1,0 +1,26 @@
+{
+  "title": "Filters",
+  "applyFilters": "Apply filters",
+  "nutriScore": {
+    "label": "Nutri-Score",
+    "remove": "Remove Nutri-Score filter"
+  },
+  "nutrients": {
+    "title": "Nutrients (per 100g/ml)",
+    "titleShort": "Nutrients (100g/ml)",
+    "sugar": "Sugar",
+    "fat": "Fat",
+    "protein": "Protein",
+    "salt": "Salt",
+    "min": "Min",
+    "max": "Max"
+  },
+  "active": {
+    "title": "Active filters",
+    "removeAll": "Remove all",
+    "removeSugar": "Remove sugar filter",
+    "removeFat": "Remove fat filter",
+    "removeProtein": "Remove protein filter",
+    "removeSalt": "Remove salt filter"
+  }
+}

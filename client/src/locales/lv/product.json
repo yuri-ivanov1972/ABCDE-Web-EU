@@ -1,0 +1,29 @@
+{
+  "backToProducts": "Atpakaļ pie produktiem",
+  "notFound": "Produkts nav atrasts",
+  "notFoundMessage": "Atvainojiet, mēs nevarējām atrast meklēto produktu.",
+  "viewDetails": "Skatīt detaļas",
+  "viewOnRimi": "Skatīt Rimi",
+  "openRimi": "Atvērt Rimi",
+  "search": {
+    "title": "Meklēt produktu pēc Rimi URL",
+    "placeholder": "Ievadiet Rimi produkta URL",
+    "button": "Meklēt",
+    "clear": "Notīrīt meklēšanu",
+    "notFound": "Produkts netika atrasts",
+    "notFoundHint": "Pārbaudiet URL vai mēģiniet citu adresi."
+  },
+  "nutrition": {
+    "facts": "Uzturvērtības fakti",
+    "characteristics": "Uzturvērtības īpatnības",
+    "energy": "Enerģija",
+    "protein": "Olbaltumvielas",
+    "fatTotal": "Kopējie tauki",
+    "fatSaturated": "Piesātinātie tauki",
+    "carbsTotal": "Kopējie oglhidrāti",
+    "sugar": "Cukurs",
+    "fiber": "Šķiedrvielas",
+    "salt": "Sāls"
+  },
+  "ingredients": "Sastāvdaļas"
+}

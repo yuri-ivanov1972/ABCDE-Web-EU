@@ -1,0 +1,26 @@
+{
+  "title": "Filtri",
+  "applyFilters": "Pielietot filtrus",
+  "nutriScore": {
+    "label": "Nutri-Score",
+    "remove": "Noņemt Nutri-Score filtru"
+  },
+  "nutrients": {
+    "title": "Uzturvielas (uz 100g/ml)",
+    "titleShort": "Uzturvielas (100g/ml)",
+    "sugar": "Cukurs",
+    "fat": "Tauki",
+    "protein": "Olbaltumvielas",
+    "salt": "Sāls",
+    "min": "Min",
+    "max": "Max"
+  },
+  "active": {
+    "title": "Aktīvie filtri",
+    "removeAll": "Noņemt visus",
+    "removeSugar": "Noņemt cukura filtru",
+    "removeFat": "Noņemt tauku filtru",
+    "removeProtein": "Noņemt olbaltumvielu filtru",
+    "removeSalt": "Noņemt sāls filtru"
+  }
+}

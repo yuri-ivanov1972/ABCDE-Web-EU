@@ -1,0 +1,21 @@
+{
+  "404": {
+    "title": "404 Lapa Nav Atrasta",
+    "message": "Atvainojiet, bet šī lapa nepastāv.",
+    "backHome": "Atpakaļ uz sākumu"
+  },
+  "products": {
+    "notFound": "Produkti nav atrasti",
+    "notFoundHint": "Mēģiniet pielāgot filtrus vai meklēt kaut ko citu.",
+    "loadError": "Kļūda ielādējot produktus"
+  },
+  "api": {
+    "categoriesFailed": "Neizdevās ielādēt kategorijas",
+    "categoryFailed": "Neizdevās ielādēt kategoriju",
+    "categoryPathFailed": "Neizdevās ielādēt kategorijas ceļu",
+    "productsFailed": "Neizdevās ielādēt produktus",
+    "productFailed": "Neizdevās ielādēt produktu",
+    "productBySkuFailed": "Neizdevās ielādēt produktu pēc SKU",
+    "productByUrlFailed": "Neizdevās ielādēt produktu pēc URL"
+  }
+}

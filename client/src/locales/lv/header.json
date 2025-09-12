@@ -1,0 +1,12 @@
+{
+  "search": {
+    "placeholder": "Meklēt produktu...",
+    "button": "Meklēt",
+    "clear": "Notīrīt meklēšanu"
+  },
+  "language": {
+    "switch": "Mainīt valodu",
+    "latvian": "Latviešu",
+    "english": "English"
+  }
+}

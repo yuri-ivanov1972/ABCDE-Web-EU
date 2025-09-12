@@ -1,0 +1,13 @@
+{
+  "searchResults": "Search results: ",
+  "allProducts": "All products",
+  "sorting": {
+    "label": "Sort by:",
+    "name": "Name",
+    "nutriScore": "Nutri-Score",
+    "sugarLowHigh": "Sugar (low to high)",
+    "fatLowHigh": "Fat (low to high)",
+    "proteinHighLow": "Protein (high to low)",
+    "saltLowHigh": "Salt (low to high)"
+  }
+}

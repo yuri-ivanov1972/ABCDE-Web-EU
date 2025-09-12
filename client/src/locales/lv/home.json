@@ -1,0 +1,13 @@
+{
+  "searchResults": "Meklēšanas rezultāti: ",
+  "allProducts": "Visi produkti",
+  "sorting": {
+    "label": "Kārtot pēc:",
+    "name": "Nosaukuma",
+    "nutriScore": "Nutri-Score",
+    "sugarLowHigh": "Cukura (no zema uz augstu)",
+    "fatLowHigh": "Tauki (no zema uz augstu)", 
+    "proteinHighLow": "Olbaltumvielas (no augsta uz zemu)",
+    "saltLowHigh": "Sāls (no zema uz augstu)"
+  }
+}

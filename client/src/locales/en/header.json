@@ -1,0 +1,12 @@
+{
+  "search": {
+    "placeholder": "Search products...",
+    "button": "Search",
+    "clear": "Clear search"
+  },
+  "language": {
+    "switch": "Switch language",
+    "latvian": "Latviešu",
+    "english": "English"
+  }
+}
