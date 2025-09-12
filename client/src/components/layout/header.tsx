@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import MobileMenu from './mobile-menu';
 import abcdeLogo from '@assets/abcde_logo.svg';
 import { NutriScoreGrade } from '@/types';
@@ -115,20 +116,29 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
             </div>
           </form>
 
-          {/* Mobile menu button */}
-          <button 
-            className="md:hidden text-gray-500 focus:outline-none"
-            onClick={toggleMobileMenu}
-            aria-label={t('header:menu.toggle')}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {/* Desktop Language Switcher and Mobile Menu */}
+          <div className="flex items-center gap-2">
+            {/* Language Switcher - Desktop */}
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
+            
+            {/* Mobile menu button */}
+            <button 
+              className="md:hidden text-gray-500 focus:outline-none"
+              onClick={toggleMobileMenu}
+              aria-label={t('header:menu.toggle')}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Search Bar - Mobile */}
-        <div className="md:hidden px-4 pb-3">
+        {/* Search Bar and Language Switcher - Mobile */}
+        <div className="md:hidden px-4 pb-3 space-y-3">
+          {/* Mobile Search */}
           <form onSubmit={handleSearchSubmit}>
             <div className="relative">
               <input
@@ -160,6 +170,11 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
               </button>
             </div>
           </form>
+          
+          {/* Mobile Language Switcher */}
+          <div className="flex justify-center">
+            <LanguageSwitcher showLabel={true} />
+          </div>
         </div>
       </header>
 
