@@ -1,41 +1,23 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Router, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useState } from "react";
-import Home from "@/pages/home";
-import ProductDetails from "@/pages/product-details";
-import ProductSearch from "@/pages/product-search";
-import NotFound from "@/pages/not-found";
-import DebugPage from "@/pages/debug";
+import LanguageRouter from "@/components/routing/LanguageRouter";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-
-function Router({ searchQuery }: { searchQuery: string }) {
-  return (
-    <Switch>
-      <Route path="/">
-        {() => <Home initialSearchQuery={searchQuery} />}
-      </Route>
-      <Route path="/category/:id">
-        {(params) => <Home categoryId={Number(params.id)} initialSearchQuery={searchQuery} />}
-      </Route>
-      <Route path="/product/:id" component={ProductDetails} />
-      <Route path="/product-search" component={ProductSearch} />
-      <Route path="/debug" component={DebugPage} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Extract current category ID from URL
+  // Extract current category ID from URL (considering language prefix)
   const [location] = useLocation();
-  // Check if URL is like /category/123
-  const categoryIdMatch = /^\/category\/(\d+)$/.exec(location);
+  const pathWithoutLang = getPathWithoutLanguage(location);
+  
+  // Check if URL is like /category/123 (after removing language prefix)
+  const categoryIdMatch = /^\/category\/(\d+)$/.exec(pathWithoutLang);
   const currentCategoryId = categoryIdMatch ? Number(categoryIdMatch[1]) : undefined;
 
   const toggleMobileMenu = () => {
@@ -50,19 +32,21 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
-        <Header 
-          isMobileMenuOpen={isMobileMenuOpen} 
-          toggleMobileMenu={toggleMobileMenu}
-          onSearch={handleSearch}
-          categoryId={currentCategoryId}
-        />
-        <div className="flex-grow">
-          <Router searchQuery={searchQuery} />
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Header 
+            isMobileMenuOpen={isMobileMenuOpen} 
+            toggleMobileMenu={toggleMobileMenu}
+            onSearch={handleSearch}
+            categoryId={currentCategoryId}
+          />
+          <div className="flex-grow">
+            <LanguageRouter searchQuery={searchQuery} />
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-      <Toaster />
+        <Toaster />
+      </Router>
     </QueryClientProvider>
   );
 }
