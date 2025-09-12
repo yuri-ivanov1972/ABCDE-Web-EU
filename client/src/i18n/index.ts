@@ -32,48 +32,54 @@ const detectionOptions = {
   excludeCacheFor: ['cimode'],
 };
 
-// Initialize i18next
-i18n
-  .use(resourcesToBackend((language: string, namespace: string) => {
-    return import(`../locales/${language}/${namespace}.json`);
-  }))
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    supportedLngs: SUPPORTED_LANGUAGES,
-    fallbackLng: DEFAULT_LANGUAGE,
-    debug: import.meta.env.DEV,
-    
-    // Language detection
-    detection: detectionOptions,
-    
-    // Namespace configuration
-    ns: NAMESPACES,
-    defaultNS: 'common',
-    
-    // Interpolation
-    interpolation: {
-      escapeValue: false, // React already escapes values
-    },
-    
-    // Return empty string for missing keys in development
-    returnEmptyString: false,
-    returnNull: false,
-    
-    // React configuration
-    react: {
-      useSuspense: false, // We'll handle loading states manually
-    }
-  });
+// Initialize i18next (guard against double initialization)
+if (!i18n.isInitialized) {
+  i18n
+    .use(resourcesToBackend((language: string, namespace: string) => {
+      return import(`../locales/${language}/${namespace}.json`);
+    }))
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      supportedLngs: SUPPORTED_LANGUAGES,
+      fallbackLng: DEFAULT_LANGUAGE,
+      debug: import.meta.env.DEV,
+      
+      // Language detection
+      detection: detectionOptions,
+      
+      // Namespace configuration
+      ns: NAMESPACES,
+      defaultNS: 'common',
+      
+      // Interpolation
+      interpolation: {
+        escapeValue: false, // React already escapes values
+      },
+      
+      // Return empty string for missing keys in development
+      returnEmptyString: false,
+      returnNull: false,
+      
+      // React configuration
+      react: {
+        useSuspense: false, // We'll handle loading states manually
+      }
+    });
+}
 
 // Helper function to get current language from URL
-export const getLanguageFromPath = (pathname: string): SupportedLanguage => {
+export const getLanguageFromPath = (pathname?: string): SupportedLanguage => {
+  if (!pathname) return DEFAULT_LANGUAGE;
+  
   const pathLang = pathname.split('/')[1] as SupportedLanguage;
   return SUPPORTED_LANGUAGES.includes(pathLang) ? pathLang : DEFAULT_LANGUAGE;
 };
 
 // Helper function to get path without language prefix
-export const getPathWithoutLanguage = (pathname: string): string => {
+export const getPathWithoutLanguage = (pathname?: string): string => {
+  if (!pathname) return '/';
+  
   const pathLang = pathname.split('/')[1];
   if (SUPPORTED_LANGUAGES.includes(pathLang as SupportedLanguage)) {
     return pathname.replace(`/${pathLang}`, '') || '/';

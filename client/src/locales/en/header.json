@@ -1,11 +1,18 @@
 {
+  "tagline": "We help you make healthier food choices by providing transparent nutritional information.",
+  "logo": {
+    "alt": "ABCDE.lv logo"
+  },
   "search": {
     "placeholder": "Search products...",
     "button": "Search",
     "clear": "Clear search"
   },
+  "menu": {
+    "toggle": "Menu"
+  },
   "language": {
-    "switch": "Switch language",
+    "switch": "Change language",
     "latvian": "Latviešu",
     "english": "English"
   }

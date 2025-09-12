@@ -1,0 +1,42 @@
+{
+  "header": {
+    "Palīdzam jums izdarīt veselīgāku izvēli par pārtiku, sniedzot pārredzamu informāciju par uzturvērtību.": "tagline",
+    "Meklēt produktus...": "search.placeholder",
+    "Notīrīt meklēšanu": "search.clear",
+    "Izvēlne": "menu.toggle",
+    "ABCDE Logo": "logo.alt"
+  },
+  "home": {
+    "Meklēšanas rezultāti: ": "searchResults",
+    "Visi produkti": "allProducts",
+    "Kārtot pēc:": "sorting.label",
+    "Nosaukuma": "sorting.name",
+    "Nutri-Score": "sorting.nutriScore",
+    "Cukura (no zema uz augstu)": "sorting.sugarLowHigh",
+    "Tauki (no zema uz augstu)": "sorting.fatLowHigh",
+    "Olbaltumvielas (no augsta uz zemu)": "sorting.proteinHighLow",
+    "Sāls (no zema uz augstu)": "sorting.saltLowHigh",
+    "Ielādē...": "loading"
+  },
+  "product": {
+    "Produkts nav atrasts": "notFound",
+    "Atvainojiet, mēs nevarējām atrast meklēto produktu.": "notFoundMessage",
+    "Atpakaļ pie produktiem": "backToProducts",
+    "Skatīt detaļas": "viewDetails",
+    "Skatīt Rimi": "viewOnRimi",
+    "Atvērt Rimi": "openRimi",
+    "Uzturvērtības fakti": "nutrition.facts",
+    "Uzturvērtības īpatnības": "nutrition.characteristics",
+    "Enerģija": "nutrition.energy",
+    "Olbaltumvielas": "nutrition.protein",
+    "Kopējie tauki": "nutrition.fatTotal",
+    "Piesātinātie tauki": "nutrition.fatSaturated",
+    "Kopējie oglhidrāti": "nutrition.carbsTotal",
+    "Cukurs": "nutrition.sugar",
+    "Šķiedrvielas": "nutrition.fiber",
+    "Sāls": "nutrition.salt",
+    "Sastāvdaļas": "ingredients",
+    "Nav pieejams": "notAvailable",
+    "Uz 100g/ml": "per100g"
+  }
+}
