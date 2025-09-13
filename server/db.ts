@@ -6,40 +6,30 @@ import * as schema from "@shared/schema";
 // Configure Neon to use WebSockets
 neonConfig.webSocketConstructor = ws;
 
-// Log database URLs (just the beginning for security)
-const categoriesUrlStart = process.env.CATEGORIES_DB_URL 
-  ? process.env.CATEGORIES_DB_URL.substring(0, 20) + "..." 
-  : "undefined";
-const productsUrlStart = process.env.PRODUCTS_DB_URL
-  ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..."
-  : "undefined";
+// Get database connection string from Replit's built-in PostgreSQL
+const DATABASE_URL = process.env.DATABASE_URL;
 
-console.log("CATEGORIES_DB_URL starts with:", categoriesUrlStart);
-console.log("PRODUCTS_DB_URL starts with:", productsUrlStart);
-
-// Get database connection strings
-const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
-const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
-
-if (!CATEGORIES_DB_URL) {
-  throw new Error("CATEGORIES_DB_URL is not set. Please provide this environment variable.");
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set. Please provide this environment variable.");
 }
 
-if (!PRODUCTS_DB_URL) {
-  throw new Error("PRODUCTS_DB_URL is not set. Please provide this environment variable.");
-}
+console.log("Using Replit's built-in PostgreSQL database");
 
-// Create connection pools
-export const categoriesPool = new Pool({ 
-  connectionString: CATEGORIES_DB_URL
+// Create single connection pool
+export const pool = new Pool({ 
+  connectionString: DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
-export const productsPool = new Pool({ 
-  connectionString: PRODUCTS_DB_URL
-});
+// Create single drizzle client for both categories and products
+export const db = drizzle({ client: pool, schema });
 
-// Create drizzle clients
-export const categoriesDb = drizzle({ client: categoriesPool, schema });
-export const productsDb = drizzle({ client: productsPool, schema });
+// Export the same reference for backward compatibility
+export const categoriesDb = db;
+export const productsDb = db;
+export const categoriesPool = pool;
+export const productsPool = pool;
 
-console.log("Database connections established with original URLs");
+console.log("Database connection established with built-in PostgreSQL");
