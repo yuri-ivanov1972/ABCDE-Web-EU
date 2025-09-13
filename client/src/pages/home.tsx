@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 
 import { getProducts, getCategoryById } from '@/api';
@@ -18,6 +19,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
+  const { t, ready } = useTranslation(['home', 'common']);
   const params = useParams<{ id?: string }>();
   const urlCategoryId = params.id ? parseInt(params.id, 10) : undefined;
   const categoryId = propCategoryId || urlCategoryId;
@@ -197,6 +199,27 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     }
   };
 
+  // Return loading state while translations are loading
+  if (!ready) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
+        <div className="w-64 hidden md:block">
+          <div className="bg-gray-100 rounded-md h-96 animate-pulse"></div>
+        </div>
+        <main className="flex-grow">
+          <div className="mb-6">
+            <div className="h-8 bg-gray-100 rounded-md w-64 mb-4 animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-md h-64 animate-pulse"></div>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
       {/* Mobile Menu - shown/hidden based on state */}
@@ -223,7 +246,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
             onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
           >
             <SlidersHorizontal className="h-5 w-5" />
-            <span>Filters</span>
+            <span>{t('home:filters')}</span>
           </button>
         </div>
 
@@ -231,10 +254,10 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {searchQuery && searchQuery.length > 0
-              ? `Meklēšanas rezultāti: "${searchQuery}"`
+              ? `${t('home:searchResults')}"${searchQuery}"`
               : category 
                 ? category.nameLv 
-                : 'Visi produkti'
+                : t('home:allProducts')
             }
           </h1>
           
@@ -253,7 +276,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
             {/* Loading indicator */}
             {isLoading && (
               <p className="text-sm text-gray-600 mr-auto">
-                Ielādē produktus...
+                {t('home:loading')}
               </p>
             )}
             
@@ -264,12 +287,12 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
                 value={sortOption === 'nutriScore' ? 'nutri-score' : sortOption}
                 onChange={handleSortChange}
               >
-                <option value="name">Kārtot pēc: Nosaukuma</option>
-                <option value="nutri-score">Kārtot pēc: Nutri-Score</option>
-                <option value="sugar">Kārtot pēc: Cukura (no zema uz augstu)</option>
-                <option value="fat">Kārtot pēc: Tauki (no zema uz augstu)</option>
-                <option value="protein">Kārtot pēc: Olbaltumvielas (no augsta uz zemu)</option>
-                <option value="salt">Kārtot pēc: Sāls (no zema uz augstu)</option>
+                <option value="name">{t('home:sorting.label')} {t('home:sorting.name')}</option>
+                <option value="nutri-score">{t('home:sorting.label')} {t('home:sorting.nutriScore')}</option>
+                <option value="sugar">{t('home:sorting.label')} {t('home:sorting.sugarLowHigh')}</option>
+                <option value="fat">{t('home:sorting.label')} {t('home:sorting.fatLowHigh')}</option>
+                <option value="protein">{t('home:sorting.label')} {t('home:sorting.proteinHighLow')}</option>
+                <option value="salt">{t('home:sorting.label')} {t('home:sorting.saltLowHigh')}</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

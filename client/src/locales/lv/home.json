@@ -1,6 +1,8 @@
 {
   "searchResults": "Meklēšanas rezultāti: ",
   "allProducts": "Visi produkti",
+  "filters": "Filtri",
+  "loading": "Ielādē produktus...",
   "sorting": {
     "label": "Kārtot pēc:",
     "name": "Nosaukuma",

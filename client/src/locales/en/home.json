@@ -1,6 +1,8 @@
 {
   "searchResults": "Search results: ",
-  "allProducts": "All products",
+  "allProducts": "All products", 
+  "filters": "Filters",
+  "loading": "Loading products...",
   "sorting": {
     "label": "Sort by:",
     "name": "Name",
