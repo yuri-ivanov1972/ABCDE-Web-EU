@@ -75,7 +75,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   
   // Format energy value
   const formatEnergy = (kcal?: number | null, kj?: number | null) => {
-    if (kcal === null || kcal === undefined) return 'Nav pieejams';
+    if (kcal === null || kcal === undefined) return t('common:notAvailable');
     if (kj === null || kj === undefined) return `${kcal} kcal`;
     return `${kcal} kcal / ${kj} kJ`;
   };
@@ -123,7 +123,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
           {/* Product Image */}
           <div className="md:w-1/2 bg-gray-100">
             <img 
-              src={mainPhoto?.photoUrl || 'https://via.placeholder.com/600x400?text=Nav+attēla'} 
+              src={mainPhoto?.photoUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
               alt={mainPhoto?.altText || product.name}
               className="w-full h-full object-contain md:max-h-[500px]"
             />
@@ -144,77 +144,77 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
 
             {product.nutrition && (
               <>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-8">Uzturvērtības fakti</h2>
-                <p className="text-sm text-gray-500 mb-4">Uz 100g/ml</p>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-8">{t('product:nutrition.facts')}</h2>
+                <p className="text-sm text-gray-500 mb-4">{t('common:per100g')}</p>
 
                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Enerģija</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.energy')}</p>
                     <p className="text-gray-900">{formatEnergy(product.nutrition.energyKcal, product.nutrition.energyKj)}</p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Olbaltumvielas</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.protein')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.protein !== null ? `${product.nutrition.protein}g` : 'Nav pieejams'}
+                      {product.nutrition.protein != null ? `${product.nutrition.protein}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Kopējie tauki</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatTotal')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.fatTotal !== null ? `${product.nutrition.fatTotal}g` : 'Nav pieejams'}
+                      {product.nutrition.fatTotal != null ? `${product.nutrition.fatTotal}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Piesātinātie tauki</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatSaturated')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.fatSaturated !== null ? `${product.nutrition.fatSaturated}g` : 'Nav pieejams'}
+                      {product.nutrition.fatSaturated != null ? `${product.nutrition.fatSaturated}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Kopējie oglhidrāti</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.carbsTotal')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.carbsTotal !== null ? `${product.nutrition.carbsTotal}g` : 'Nav pieejams'}
+                      {product.nutrition.carbsTotal != null ? `${product.nutrition.carbsTotal}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Cukurs</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.sugar')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.carbsSugars !== null ? `${product.nutrition.carbsSugars}g` : 'Nav pieejams'}
+                      {product.nutrition.carbsSugars != null ? `${product.nutrition.carbsSugars}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Šķiedrvielas</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fiber')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.fiber !== null ? `${product.nutrition.fiber}g` : 'Nav pieejams'}
+                      {product.nutrition.fiber != null ? `${product.nutrition.fiber}g` : t('common:notAvailable')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Sāls</p>
+                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.salt')}</p>
                     <p className="text-gray-900">
-                      {product.nutrition.salt !== null ? `${product.nutrition.salt}g` : 'Nav pieejams'}
+                      {product.nutrition.salt != null ? `${product.nutrition.salt}g` : t('common:notAvailable')}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Uzturvērtības īpatnības</h3>
-                  {product.nutrition.carbsSugars !== null && (
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('product:nutrition.characteristics')}</h3>
+                  {product.nutrition.carbsSugars != null && (
                     <NutrientBar nutrient="sugar" value={Number(product.nutrition.carbsSugars)} />
                   )}
-                  {product.nutrition.fatTotal !== null && (
+                  {product.nutrition.fatTotal != null && (
                     <NutrientBar nutrient="fat" value={Number(product.nutrition.fatTotal)} />
                   )}
-                  {product.nutrition.protein !== null && (
+                  {product.nutrition.protein != null && (
                     <NutrientBar nutrient="protein" value={Number(product.nutrition.protein)} />
                   )}
-                  {product.nutrition.salt !== null && (
+                  {product.nutrition.salt != null && (
                     <NutrientBar nutrient="salt" value={Number(product.nutrition.salt)} />
                   )}
                 </div>
@@ -223,7 +223,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
 
             {product.nutrition?.ingredientsText && (
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Sastāvdaļas</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('product:ingredients')}</h2>
                 <p className="text-gray-700 text-sm">{product.nutrition.ingredientsText}</p>
               </div>
             )}
@@ -236,7 +236,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   rel="noopener noreferrer" 
                   className="text-primary hover:text-primary/90 font-medium flex items-center"
                 >
-                  Skatīt Rimi
+                  {t('product:viewOnRimi')}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </a>
               </div>
