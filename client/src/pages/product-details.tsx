@@ -16,7 +16,6 @@ interface ProductDetailsProps {
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
-  console.log('ProductDetails props:', { lang, id });
   const { t, ready, i18n } = useTranslation(['product', 'common']);
   
   const productId = Number(id);

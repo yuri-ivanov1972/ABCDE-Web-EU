@@ -68,7 +68,15 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => 
       </Route>
       
       {/* Product routes with language prefix */}
-      <LanguageAwareRoute path="/product/:id" component={ProductDetails} />
+      <Route path="/:lang/product/:id">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/product/${params?.id}`} replace />;
+          }
+          return <ProductDetails {...params} />;
+        }}
+      </Route>
       
       {/* Product search route with language prefix (handles both /search and /product-search) */}
       <LanguageAwareRoute path="/search" component={ProductSearch} />
@@ -109,9 +117,9 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => 
         <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />
       </Route>
       
-      {/* Generic catch-all for any other legacy URLs - redirect to default language */}
-      <Route path="/:path*">
-        {() => {
+      {/* Legacy routes catch-all for specific patterns only */}
+      <Route path="/(category|product|search|product-search|debug)/:rest*">
+        {(params) => {
           const pathWithoutLang = getPathWithoutLanguage(location);
           const targetPath = pathWithoutLang === '/' ? '' : pathWithoutLang;
           return <Redirect to={`/${DEFAULT_LANGUAGE}${targetPath}`} replace />;
