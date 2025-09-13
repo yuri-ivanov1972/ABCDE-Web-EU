@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface NutrientBarProps {
   nutrient: 'sugar' | 'fat' | 'protein' | 'salt';
@@ -62,12 +63,14 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
     return 'bg-red-500';
   }, [nutrient, value, thresholds]);
 
-  // Latvian nutrient labels
+  const { t } = useTranslation('common');
+  
+  // Get translated nutrient labels
   const nutrientLabels = {
-    sugar: 'Cukurs',
-    fat: 'Tauki',
-    protein: 'Olbaltumvielas',
-    salt: 'Sāls'
+    sugar: t('nutrients.sugar'),
+    fat: t('nutrients.fat'),
+    protein: t('nutrients.protein'),
+    salt: t('nutrients.salt')
   };
 
   return (

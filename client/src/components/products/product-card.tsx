@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import { ProductWithDetails } from '@/types';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
@@ -10,6 +11,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { t } = useTranslation('common');
   const { productId, name, quantityValue, quantityUnit, nutrition, photos } = product;
   
   // Get primary photo or first photo
@@ -25,7 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <LangLink href={`/product/${productId}`} className="block">
         <div className="relative">
           <img 
-            src={mainPhoto?.photoUrl || 'https://via.placeholder.com/300x200?text=No+Image'}
+            src={mainPhoto?.photoUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`}
             alt={mainPhoto?.altText || name}
             className="w-full h-40 object-cover"
           />
