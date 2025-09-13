@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRoute, Link } from 'wouter';
+import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
@@ -10,19 +10,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
 import NotFound from '@/pages/not-found';
 
-const ProductDetails: React.FC = () => {
+interface ProductDetailsProps {
+  lang?: string;
+  id?: string;
+}
+
+const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   const { t, ready, i18n } = useTranslation(['product', 'common']);
-  const [match, params] = useRoute('/:lang/product/:id');
   
-  // If route doesn't match, show 404
-  if (!match) {
-    return <NotFound />;
-  }
+  const productId = Number(id);
   
-  const productId = parseInt(params!.id, 10);
-  
-  // Guard against invalid product IDs
-  if (!Number.isFinite(productId) || productId <= 0) {
+  // If product ID is invalid, show 404
+  if (!id || isNaN(productId) || productId <= 0) {
     return <NotFound />;
   }
 
