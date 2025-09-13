@@ -14,6 +14,7 @@ const ProductDetails: React.FC = () => {
   const params = useParams<{ id: string }>();
   const productId = parseInt(params.id, 10);
 
+
   // Don't render until translations are ready
   if (!ready) {
     return <ProductDetailsSkeleton />;
