@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'wouter';
+import { useTranslation } from 'react-i18next';
 
 const Footer: React.FC = () => {
+  const { t } = useTranslation('common');
   return (
     <footer className="bg-white border-t border-gray-200 py-8">
       <div className="container mx-auto px-4">
@@ -14,11 +16,11 @@ const Footer: React.FC = () => {
             <span className="font-bold text-gray-800">ABCDE.lv</span>
           </div>
           <div>
-            <a href="https://en.wikipedia.org/wiki/Nutri-Score" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-primary">About Nutri-Score</a>
+            <a href="https://en.wikipedia.org/wiki/Nutri-Score" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-primary">{t('footer.aboutNutriScore')}</a>
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-8 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ABCDE.lv. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ABCDE.lv. {t('footer.allRightsReserved')}</p>
         </div>
       </div>
     </footer>

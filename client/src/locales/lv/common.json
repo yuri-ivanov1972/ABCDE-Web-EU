@@ -18,5 +18,9 @@
     "protein": "Olbaltumvielas",
     "salt": "Sāls"
   },
-  "noImage": "Nav attēla"
+  "noImage": "Nav attēla",
+  "footer": {
+    "aboutNutriScore": "Par Nutri-Score",
+    "allRightsReserved": "Visas tiesības aizsargātas."
+  }
 }

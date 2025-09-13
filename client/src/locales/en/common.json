@@ -18,5 +18,9 @@
     "protein": "Protein",
     "salt": "Salt"
   },
-  "noImage": "No Image"
+  "noImage": "No Image",
+  "footer": {
+    "aboutNutriScore": "About Nutri-Score",
+    "allRightsReserved": "All rights reserved."
+  }
 }
