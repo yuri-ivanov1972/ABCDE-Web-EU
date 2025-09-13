@@ -20,21 +20,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   
   const productId = Number(id);
   
-  // If product ID is invalid, show 404
-  if (!id || isNaN(productId) || productId <= 0) {
-    return <NotFound />;
-  }
-
-  // Don't render until translations are ready
-  if (!ready) {
-    return <ProductDetailsSkeleton />;
-  }
-
-  // Fetch product details
+  // Always call all hooks first before any early returns
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['/api/products', productId],
     queryFn: () => getProductById(productId),
-    enabled: ready && Number.isFinite(productId) && productId > 0
+    enabled: ready && Number.isFinite(productId) && productId > 0 && !!id && !isNaN(productId)
   });
 
   // Fetch category path
@@ -43,6 +33,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     queryFn: () => getCategoryPath(product!.categoryId),
     enabled: !!product?.categoryId
   });
+
+  // Now handle early returns after all hooks are called
+  if (!id || isNaN(productId) || productId <= 0) {
+    return <NotFound />;
+  }
+
+  // Don't render until translations are ready
+  if (!ready) {
+    return <ProductDetailsSkeleton />;
+  }
 
   if (isLoading) {
     return <ProductDetailsSkeleton />;
