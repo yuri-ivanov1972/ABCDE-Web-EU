@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PaginationProps {
   currentPage: number;
@@ -12,6 +13,7 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages, 
   onPageChange 
 }) => {
+  const { t } = useTranslation('pagination');
   // If total pages is 1 or less, don't render pagination
   console.log('Pagination: currentPage =', currentPage, 'totalPages =', totalPages);
   
@@ -61,7 +63,7 @@ const Pagination: React.FC<PaginationProps> = ({
     <div className="flex flex-col items-center mt-8">
       {totalPages > 1 && (
         <p className="text-sm text-gray-600 mb-3">
-          {`Lapa ${currentPage} no ${totalPages}`}
+          {t('pageInfo', { currentPage, totalPages })}
         </p>
       )}
       <nav className="inline-flex rounded-md shadow-md" aria-label="Pagination">
@@ -75,9 +77,9 @@ const Pagination: React.FC<PaginationProps> = ({
           `}
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          aria-label="Iepriekšējā lapa"
+          aria-label={t('previousPage')}
         >
-          <span className="sr-only">Iepriekšējā</span>
+          <span className="sr-only">{t('previous')}</span>
           <ChevronLeft className="h-5 w-5" />
         </button>
         
@@ -119,9 +121,9 @@ const Pagination: React.FC<PaginationProps> = ({
           `}
           onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          aria-label="Nākamā lapa"
+          aria-label={t('nextPage')}
         >
-          <span className="sr-only">Nākamā</span>
+          <span className="sr-only">{t('next')}</span>
           <ChevronRight className="h-5 w-5" />
         </button>
       </nav>
