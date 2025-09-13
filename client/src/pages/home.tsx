@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { getPathWithoutLanguage } from '@/i18n';
 import { SlidersHorizontal } from 'lucide-react';
 
 import { getProducts, getCategoryById } from '@/api';
@@ -20,8 +21,15 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
   const { t, ready, i18n } = useTranslation(['home', 'common']);
+  const [location] = useLocation();
   const params = useParams<{ id?: string }>();
-  const urlCategoryId = params.id ? parseInt(params.id, 10) : undefined;
+  
+  // Get the current path without language prefix to check if we're on a category page
+  const pathWithoutLang = getPathWithoutLanguage(location);
+  const isCategoryRoute = /^\/category\/\d+$/.test(pathWithoutLang);
+  
+  // Only use URL category ID if we're actually on a category route
+  const urlCategoryId = isCategoryRoute && params.id ? parseInt(params.id, 10) : undefined;
   const categoryId = propCategoryId || urlCategoryId;
   
   // States
