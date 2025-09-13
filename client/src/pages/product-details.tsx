@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'wouter';
+import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
@@ -8,12 +8,23 @@ import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
+import NotFound from '@/pages/not-found';
 
 const ProductDetails: React.FC = () => {
   const { t, ready, i18n } = useTranslation(['product', 'common']);
-  const params = useParams<{ id: string }>();
-  const productId = parseInt(params.id, 10);
-
+  const [match, params] = useRoute('/:lang/product/:id');
+  
+  // If route doesn't match, show 404
+  if (!match) {
+    return <NotFound />;
+  }
+  
+  const productId = parseInt(params!.id, 10);
+  
+  // Guard against invalid product IDs
+  if (!Number.isFinite(productId) || productId <= 0) {
+    return <NotFound />;
+  }
 
   // Don't render until translations are ready
   if (!ready) {
@@ -23,7 +34,8 @@ const ProductDetails: React.FC = () => {
   // Fetch product details
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['/api/products', productId],
-    queryFn: () => getProductById(productId)
+    queryFn: () => getProductById(productId),
+    enabled: ready && Number.isFinite(productId) && productId > 0
   });
 
   // Fetch category path
