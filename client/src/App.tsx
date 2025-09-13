@@ -9,7 +9,7 @@ import Footer from "@/components/layout/footer";
 import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 
 function App() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Extract current category ID from URL (considering language prefix)
@@ -23,8 +23,8 @@ function App() {
   // Clear search query only when clicking logo or "All categories" link
   // This effect has been removed to allow search functionality on the home page
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleMobileFilters = () => {
+    setIsMobileFiltersOpen(!isMobileFiltersOpen);
   };
 
   const handleSearch = (query: string) => {
@@ -38,8 +38,8 @@ function App() {
       <Router>
         <div className="min-h-screen flex flex-col">
           <Header 
-            isMobileMenuOpen={isMobileMenuOpen} 
-            toggleMobileMenu={toggleMobileMenu}
+            isMobileFiltersOpen={isMobileFiltersOpen} 
+            toggleMobileFilters={toggleMobileFilters}
             onSearch={handleSearch}
             categoryId={currentCategoryId}
           />

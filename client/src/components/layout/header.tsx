@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -8,16 +8,17 @@ import abcdeLogo from '@assets/abcde_logo.svg';
 import { NutriScoreGrade } from '@/types';
 
 interface HeaderProps {
-  isMobileMenuOpen: boolean;
-  toggleMobileMenu: () => void;
+  isMobileFiltersOpen: boolean;
+  toggleMobileFilters: () => void;
   onSearch: (query: string) => void;
   categoryId?: number;
   onApplyMobileFilters?: (nutriScores: NutriScoreGrade[], sugarMin?: number, sugarMax?: number, 
     fatMin?: number, fatMax?: number, proteinMin?: number, proteinMax?: number, 
     saltMin?: number, saltMax?: number) => void;
+  hasActiveFilters?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onSearch, categoryId, onApplyMobileFilters }) => {
+const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilters, onSearch, categoryId, onApplyMobileFilters, hasActiveFilters = false }) => {
   const { t, ready } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -43,11 +44,11 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
               />
             </div>
           </div>
-          <button className="md:hidden text-gray-500" disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="md:hidden text-gray-500" disabled>
+              <SlidersHorizontal className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </header>
     );
@@ -116,29 +117,36 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
             </div>
           </form>
 
-          {/* Desktop Language Switcher and Mobile Menu */}
-          <div className="flex items-center gap-2">
+          {/* Desktop Language Switcher and Mobile Actions */}
+          <div className="flex items-center gap-3">
             {/* Language Switcher - Desktop */}
             <div className="hidden md:block">
               <LanguageSwitcher />
             </div>
             
-            {/* Mobile menu button */}
-            <button 
-              className="md:hidden text-gray-500 focus:outline-none"
-              onClick={toggleMobileMenu}
-              aria-label={t('header:menu.toggle')}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            {/* Mobile Actions - Language + Filter */}
+            <div className="md:hidden flex items-center gap-2">
+              {/* Compact Language Switcher */}
+              <LanguageSwitcher compact={true} />
+              
+              {/* Filter button */}
+              <button 
+                className="relative text-gray-600 hover:text-primary focus:outline-none transition-colors p-2"
+                onClick={toggleMobileFilters}
+                aria-label={t('header:filters.toggle')}
+                data-testid="mobile-filter-button"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+                {hasActiveFilters && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Search Bar and Language Switcher - Mobile */}
-        <div className="md:hidden px-4 pb-3 space-y-3">
-          {/* Mobile Search */}
+        {/* Mobile Search Bar */}
+        <div className="md:hidden px-4 pb-3">
           <form onSubmit={handleSearchSubmit}>
             <div className="relative">
               <input
@@ -147,6 +155,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
                 className="w-full px-4 py-2 pr-16 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearchInput}
+                data-testid="mobile-search-input"
               />
               {searchQuery && (
                 <button 
@@ -157,6 +166,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
                     onSearch(''); // Clear search results
                   }}
                   aria-label={t('header:search.clear')}
+                  data-testid="clear-search-button"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -165,16 +175,12 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu, onS
                 type="submit"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
                 aria-label={t('header:search.button')}
+                data-testid="mobile-search-button"
               >
                 <Search className="h-5 w-5" />
               </button>
             </div>
           </form>
-          
-          {/* Mobile Language Switcher */}
-          <div className="flex justify-center">
-            <LanguageSwitcher showLabel={true} />
-          </div>
         </div>
       </header>
 

@@ -7,9 +7,10 @@ import { getLanguageFromPath, getPathWithoutLanguage, addLanguageToPath, type Su
 interface LanguageSwitcherProps {
   className?: string;
   showLabel?: boolean;
+  compact?: boolean;
 }
 
-const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', showLabel = false }) => {
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', showLabel = false, compact = false }) => {
   const { t, i18n } = useTranslation(['header']);
   const [location, navigate] = useLocation();
   
@@ -37,14 +38,17 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', sho
       aria-label={t('header:language.switch')}
       data-testid="language-switcher"
     >
-      <Globe className="h-4 w-4" />
-      {showLabel && (
+      {!compact && <Globe className="h-4 w-4" />}
+      {showLabel && !compact && (
         <span className="hidden sm:inline">
           {t('header:language.switch')}
         </span>
       )}
-      <span className="font-semibold">
-        {targetLanguage === 'en' ? t('header:language.english') : t('header:language.latvian')}
+      <span className={compact ? "text-xs font-bold" : "font-semibold"}>
+        {compact 
+          ? (targetLanguage === 'en' ? 'EN' : 'LV')
+          : (targetLanguage === 'en' ? t('header:language.english') : t('header:language.latvian'))
+        }
       </span>
     </button>
   );

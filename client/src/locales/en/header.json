@@ -11,6 +11,9 @@
   "menu": {
     "toggle": "Menu"
   },
+  "filters": {
+    "toggle": "Filters"
+  },
   "language": {
     "switch": "Change language",
     "latvian": "Latviešu",
