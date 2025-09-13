@@ -11,9 +11,12 @@ import Debug from '@/pages/debug';
 
 interface LanguageRouterProps {
   searchQuery?: string;
+  isMobileFiltersOpen?: boolean;
+  toggleMobileFilters?: () => void;
+  onFiltersChange?: (hasActiveFilters: boolean) => void;
 }
 
-const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => {
+const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMobileFiltersOpen = false, toggleMobileFilters, onFiltersChange }) => {
   const [location, setLocation] = useLocation();
   const { i18n } = useTranslation();
 
@@ -63,7 +66,7 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => 
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}/category/${params?.id}`} replace />;
           }
-          return <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} {...params} />;
+          return <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />;
         }}
       </Route>
       
@@ -92,7 +95,7 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => 
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}`} replace />;
           }
-          return <Home initialSearchQuery={searchQuery} {...params} />;
+          return <Home initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />;
         }}
       </Route>
       

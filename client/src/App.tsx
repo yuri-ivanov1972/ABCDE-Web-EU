@@ -11,6 +11,7 @@ import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 function App() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
   // Extract current category ID from URL (considering language prefix)
   const [location] = useLocation();
@@ -33,6 +34,10 @@ function App() {
     setSearchQuery(trimmedQuery);
   };
 
+  const handleFiltersChange = (hasFilters: boolean) => {
+    setHasActiveFilters(hasFilters);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -42,9 +47,15 @@ function App() {
             toggleMobileFilters={toggleMobileFilters}
             onSearch={handleSearch}
             categoryId={currentCategoryId}
+            hasActiveFilters={hasActiveFilters}
           />
           <div className="flex-grow">
-            <LanguageRouter searchQuery={searchQuery} />
+            <LanguageRouter 
+              searchQuery={searchQuery} 
+              isMobileFiltersOpen={isMobileFiltersOpen}
+              toggleMobileFilters={toggleMobileFilters}
+              onFiltersChange={handleFiltersChange}
+            />
           </div>
           <Footer />
         </div>

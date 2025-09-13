@@ -3,22 +3,17 @@ import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-import MobileMenu from './mobile-menu';
 import abcdeLogo from '@assets/abcde_logo.svg';
-import { NutriScoreGrade } from '@/types';
 
 interface HeaderProps {
   isMobileFiltersOpen: boolean;
   toggleMobileFilters: () => void;
   onSearch: (query: string) => void;
   categoryId?: number;
-  onApplyMobileFilters?: (nutriScores: NutriScoreGrade[], sugarMin?: number, sugarMax?: number, 
-    fatMin?: number, fatMax?: number, proteinMin?: number, proteinMax?: number, 
-    saltMin?: number, saltMax?: number) => void;
   hasActiveFilters?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilters, onSearch, categoryId, onApplyMobileFilters, hasActiveFilters = false }) => {
+const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilters, onSearch, categoryId, hasActiveFilters = false }) => {
   const { t, ready } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -184,17 +179,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
         </div>
       </header>
 
-      {/* 
-        Mobile Menu is now handled directly in the Home component 
-        to allow direct access to filter state
-      */}
-      {/* 
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        categoryId={categoryId} 
-        onApplyFilters={onApplyMobileFilters} 
-      />
-      */}
+      {/* Mobile Menu is now rendered in the Home component and triggered via header button */}
     </>
   );
 };

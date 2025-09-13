@@ -17,9 +17,12 @@ import ActiveFilters from '@/components/filters/active-filters';
 interface HomeProps {
   initialSearchQuery?: string;
   categoryId?: number;
+  isMobileFiltersOpen?: boolean;
+  toggleMobileFilters?: () => void;
+  onFiltersChange?: (hasActiveFilters: boolean) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
+const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId, isMobileFiltersOpen = false, toggleMobileFilters, onFiltersChange }) => {
   const { t, ready, i18n } = useTranslation(['home', 'common']);
   const [location] = useLocation();
   const params = useParams<{ id?: string }>();
@@ -34,7 +37,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   
   // States
   const [page, setPage] = useState(1);
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     nutriScores: [],
     sugar: {},
@@ -97,6 +99,21 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const calculatedPages = data?.totalCount ? Math.ceil(data.totalCount / 12) : 1;
   // Use real page count from API response to ensure proper pagination with filters
   const totalPages = calculatedPages;
+  
+  // Check if there are any active filters for the header indicator
+  const hasActiveFilters = 
+    filters.nutriScores.length > 0 ||
+    Object.values(filters.sugar).some(v => v !== undefined) ||
+    Object.values(filters.fat).some(v => v !== undefined) ||
+    Object.values(filters.protein).some(v => v !== undefined) ||
+    Object.values(filters.salt).some(v => v !== undefined);
+  
+  // Notify parent when filters change
+  useEffect(() => {
+    if (onFiltersChange) {
+      onFiltersChange(hasActiveFilters);
+    }
+  }, [hasActiveFilters, onFiltersChange]);
   
   // Log data for debugging pagination with filters
   useEffect(() => {
@@ -170,7 +187,9 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     saltMin?: number, saltMax?: number
   ) => {
     // Close mobile filters panel
-    setIsMobileFiltersOpen(false);
+    if (isMobileFiltersOpen && toggleMobileFilters) {
+      toggleMobileFilters();
+    }
     
     // Apply the filter values to the main filters state
     const newFilters: Filters = {
@@ -247,16 +266,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       
       {/* Main Content */}
       <main className="flex-grow">
-        {/* Mobile filter button */}
-        <div className="md:hidden mb-4">
-          <button 
-            className="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 rounded-md px-4 py-2 text-gray-600 hover:bg-gray-50"
-            onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-          >
-            <SlidersHorizontal className="h-5 w-5" />
-            <span>{t('home:filters')}</span>
-          </button>
-        </div>
+        {/* Mobile filter button moved to header, this section is now empty */}
 
         {/* Title and Active Filters */}
         <div className="mb-6">

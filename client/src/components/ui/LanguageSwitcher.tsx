@@ -46,7 +46,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', sho
       )}
       <span className={compact ? "text-xs font-bold" : "font-semibold"}>
         {compact 
-          ? (targetLanguage === 'en' ? 'EN' : 'LV')
+          ? (currentLanguage === 'en' ? 'EN' : 'LV')
           : (targetLanguage === 'en' ? t('header:language.english') : t('header:language.latvian'))
         }
       </span>
