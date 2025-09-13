@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Filters, NutrientFilter } from '@/types';
 
 interface NutrientFiltersProps {
@@ -14,6 +15,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
   filters, 
   onUpdateFilter 
 }) => {
+  const { t } = useTranslation('filters');
   // Display values for the sliders
   const [displayValues, setDisplayValues] = useState({
     sugar: filters.sugar.max ? `< ${filters.sugar.max}g` : '< 5g',
@@ -57,12 +59,12 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-700 mb-2">Uzturvielas (uz 100g/ml)</h3>
+      <h3 className="text-sm font-medium text-gray-700 mb-2">{t('nutrients.title')}</h3>
       
       {/* Sugar Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Cukurs</span>
+          <span>{t('nutrients.sugar')}</span>
           <span>{displayValues.sugar}</span>
         </label>
         <input 
@@ -79,7 +81,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Fat Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Tauki</span>
+          <span>{t('nutrients.fat')}</span>
           <span>{displayValues.fat}</span>
         </label>
         <input 
@@ -96,7 +98,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Protein Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Olbaltumvielas</span>
+          <span>{t('nutrients.protein')}</span>
           <span>{displayValues.protein}</span>
         </label>
         <input 
@@ -113,7 +115,7 @@ const NutrientFilters: React.FC<NutrientFiltersProps> = ({
       {/* Salt Filter */}
       <div className="mb-4">
         <label className="flex justify-between text-xs text-gray-600 mb-1">
-          <span>Sāls</span>
+          <span>{t('nutrients.salt')}</span>
           <span>{displayValues.salt}</span>
         </label>
         <input 

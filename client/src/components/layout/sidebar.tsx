@@ -113,6 +113,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
 
 const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters, onApplyFilters }) => {
   const [location] = useLocation();
+  const { t } = useTranslation(['filters', 'categories']);
   
   // Fetch main level categories
   const { data: mainCategories = [], isLoading: isLoadingCategories } = useQuery({
@@ -174,12 +175,12 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
     <aside className="hidden md:block w-64 flex-shrink-0 pr-6">
       {/* Categories */}
       <div className="mb-8">
-        <h2 className="font-medium text-lg text-gray-900 mb-3">Kategorijas</h2>
+        <h2 className="font-medium text-lg text-gray-900 mb-3">{t('categories:title')}</h2>
         
         {/* Home link without breadcrumbs */}
         <div className="mb-4">
           <div className="flex items-center text-sm text-gray-500 mb-2">
-            <Link href="/" className="hover:text-primary">Visas kategorijas</Link>
+            <Link href="/" className="hover:text-primary">{t('categories:allCategories')}</Link>
           </div>
         </div>
         
@@ -207,11 +208,11 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
 
       {/* Filters */}
       <div>
-        <h2 className="font-medium text-lg text-gray-900 mb-3">Filtri</h2>
+        <h2 className="font-medium text-lg text-gray-900 mb-3">{t('filters:title')}</h2>
         
         {/* Nutri-Score Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Nutri-Score</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">{t('filters:nutriScore.label')}</h3>
           <NutriScoreFilter 
             selectedScores={filters.nutriScores}
             onToggleScore={handleToggleNutriScore}
@@ -229,7 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
           className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mt-2"
           onClick={onApplyFilters}
         >
-          Pielietot filtrus
+          {t('filters:applyFilters')}
         </button>
       </div>
     </aside>
