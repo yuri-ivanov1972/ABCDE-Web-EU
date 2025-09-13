@@ -81,3 +81,25 @@ Preferred communication style: Simple, everyday language.
 ### Text Processing
 - **Latvian Language Support**: Character normalization for diacritics and special characters
 - **Search Optimization**: Text processing for improved product discovery
+
+## Recent Changes
+
+### Internationalization Implementation (September 2025) ✅ COMPLETED
+- Added comprehensive internationalization (i18n) support using react-i18next
+- Implemented URL-based language routing with `/lv` (Latvian, default) and `/en` (English) prefixes
+- Created translation files with complete coverage across all components:
+  - Common translations (loading states, navigation)
+  - Header translations (tagline, search, language switcher)
+  - Home page translations (product listings, sorting, filters)
+  - Product page translations (details, nutrition facts, ingredients)
+  - Category translations (navigation, breadcrumbs)
+  - Filter translations (Nutri-Score, nutrients, active filters)
+  - Pagination translations (navigation controls)
+  - Error page translations (404, API errors)
+- Established language detection and persistence using browser storage
+- Implemented language-aware navigation components (LangLink, LanguageRouter)
+- Set up lazy loading for translation resources with loading states
+- Category localization supports both Latvian names (primary) and English names (fallback)
+- Complete routing system supports language-prefixed URLs for all pages
+- **CRITICAL FIX**: Resolved ProductDetails 404 routing issue by replacing LanguageAwareRoute abstraction with explicit route definitions and removing problematic catch-all routes
+- **VERIFIED WORKING**: Full internationalization workflow confirmed functional - routing, translations, product pages, and language switching all operational
