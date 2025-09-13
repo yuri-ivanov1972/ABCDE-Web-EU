@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'wouter';
+import LangLink from '@/components/routing/LangLink';
 import { ProductWithDetails } from '@/types';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 import NutrientBar from '@/components/ui/nutrient-bar';
@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <Link href={`/product/${productId}`} className="block">
+      <LangLink href={`/product/${productId}`} className="block">
         <div className="relative">
           <img 
             src={mainPhoto?.photoUrl || 'https://via.placeholder.com/300x200?text=No+Image'}
@@ -74,7 +74,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
         </div>
-      </Link>
+      </LangLink>
     </div>
   );
 };

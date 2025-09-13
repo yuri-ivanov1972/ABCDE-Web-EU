@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Search, ExternalLink } from 'lucide-react';
 import { getProductByRimiUrl } from '@/api';
+import { addLanguageToPath, getLanguageFromPath } from '@/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
@@ -10,7 +11,7 @@ import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 const ProductSearch: React.FC = () => {
   const [url, setUrl] = useState('');
   const [rimiUrl, setRimiUrl] = useState<string | null>(null);
-  const [, navigate] = useLocation();
+  const [currentLocation, navigate] = useLocation();
 
   // Query for fetching product by URL
   const { data: product, isLoading, error, refetch } = useQuery({
@@ -29,7 +30,9 @@ const ProductSearch: React.FC = () => {
 
   const handleViewProductDetails = () => {
     if (product) {
-      navigate(`/product/${product.productId}`);
+      const currentLanguage = getLanguageFromPath(currentLocation);
+      const languageAwarePath = addLanguageToPath(`/product/${product.productId}`, currentLanguage);
+      navigate(languageAwarePath);
     }
   };
 

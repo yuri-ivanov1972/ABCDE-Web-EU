@@ -94,10 +94,7 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => 
       </Route>
       
       <Route path="/product/:id">
-        {(params) => {
-          console.log('Redirecting /product/:id', params);
-          return <Redirect to={`/${DEFAULT_LANGUAGE}/product/${params?.id}`} replace />;
-        }}
+        {(params) => <Redirect to={`/${DEFAULT_LANGUAGE}/product/${params?.id}`} replace />}
       </Route>
       
       <Route path="/search">
