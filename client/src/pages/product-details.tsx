@@ -56,7 +56,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
           <p className="text-gray-600 mb-6">
             {t('product:notFoundMessage')}
           </p>
-          <Link href="/" className="text-primary hover:text-primary/90 font-medium flex items-center justify-center">
+          <Link href={`/${lang}`} className="text-primary hover:text-primary/90 font-medium flex items-center justify-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('product:backToProducts')}
           </Link>
@@ -85,7 +85,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
       {/* Back link */}
       <div className="mb-6">
         <Link 
-          href={product.categoryId ? `/category/${product.categoryId}` : '/'} 
+          href={product.categoryId ? `/${lang}/category/${product.categoryId}` : `/${lang}`} 
           className="text-primary hover:text-primary/90 font-medium flex items-center"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -98,7 +98,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
         <nav className="mb-6">
           <ol className="flex flex-wrap items-center text-sm text-gray-500">
             <li>
-              <Link href="/" className="hover:text-primary">{t('common:backToHome')}</Link>
+              <Link href={`/${lang}`} className="hover:text-primary">{t('common:backToHome')}</Link>
             </li>
             {categoryPath.map((category: Category, index: number) => (
               <li key={category.categoryId} className="flex items-center">
@@ -108,7 +108,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
                   </span>
                 ) : (
-                  <Link href={`/category/${category.categoryId}`} className="hover:text-primary">
+                  <Link href={`/${lang}/category/${category.categoryId}`} className="hover:text-primary">
                     {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
                   </Link>
                 )}
