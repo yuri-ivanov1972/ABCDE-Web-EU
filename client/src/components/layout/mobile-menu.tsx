@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getCategories } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import { NutriScoreGrade, Category } from '@/types';
@@ -23,6 +24,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
   category,
   currentCategoryId
 }) => {
+  const { i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(currentCategoryId === category.categoryId);
   
   // Always fetch subcategories so we know if there are any
@@ -55,7 +57,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
           }`}
           onClick={handleCategoryClick}
         >
-          <span>{category.nameLv}</span>
+          <span>{i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}</span>
           
           {hasSubcategories && (
             <svg 

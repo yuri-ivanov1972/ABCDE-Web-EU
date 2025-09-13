@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
 
 const ProductDetails: React.FC = () => {
+  const { i18n } = useTranslation();
   const params = useParams<{ id: string }>();
   const productId = parseInt(params.id, 10);
 
@@ -85,10 +87,12 @@ const ProductDetails: React.FC = () => {
               <li key={category.categoryId} className="flex items-center">
                 <ChevronRight className="h-4 w-4 mx-1" />
                 {index === categoryPath.length - 1 ? (
-                  <span className="font-medium text-gray-700">{category.nameLv}</span>
+                  <span className="font-medium text-gray-700">
+                    {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
+                  </span>
                 ) : (
                   <Link href={`/category/${category.categoryId}`} className="hover:text-primary">
-                    {category.nameLv}
+                    {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
                   </Link>
                 )}
               </li>

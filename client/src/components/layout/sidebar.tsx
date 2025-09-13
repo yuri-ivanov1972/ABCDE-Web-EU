@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Category } from '@/types';
 import { getCategories, getCategoryById, getCategoryPath } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
@@ -29,6 +30,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   depth,
   pathOfOpenCategories
 }) => {
+  const { i18n } = useTranslation();
   // Initialize expanded state based on:
   // 1. Whether this category is in the path of open categories
   // 2. Whether this category is the currently selected category
@@ -70,7 +72,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span>{category.nameLv}</span>
+            <span>{i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}</span>
             
             {hasSubcategories && (
               <svg 
