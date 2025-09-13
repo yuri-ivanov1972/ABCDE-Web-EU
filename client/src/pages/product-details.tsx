@@ -10,9 +10,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
 
 const ProductDetails: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { t, ready, i18n } = useTranslation(['product', 'common']);
   const params = useParams<{ id: string }>();
   const productId = parseInt(params.id, 10);
+
+  // Don't render until translations are ready
+  if (!ready) {
+    return <ProductDetailsSkeleton />;
+  }
 
   // Fetch product details
   const { data: product, isLoading, error } = useQuery({
@@ -35,13 +40,13 @@ const ProductDetails: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Produkts nav atrasts</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('product:notFound')}</h1>
           <p className="text-gray-600 mb-6">
-            Atvainojiet, mēs nevarējām atrast meklēto produktu.
+            {t('product:notFoundMessage')}
           </p>
           <Link href="/" className="text-primary hover:text-primary/90 font-medium flex items-center justify-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Atpakaļ pie produktiem
+            {t('product:backToProducts')}
           </Link>
         </div>
       </div>
@@ -72,7 +77,7 @@ const ProductDetails: React.FC = () => {
           className="text-primary hover:text-primary/90 font-medium flex items-center"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Atpakaļ pie produktiem
+          {t('product:backToProducts')}
         </Link>
       </div>
 
@@ -81,7 +86,7 @@ const ProductDetails: React.FC = () => {
         <nav className="mb-6">
           <ol className="flex flex-wrap items-center text-sm text-gray-500">
             <li>
-              <Link href="/" className="hover:text-primary">Sākums</Link>
+              <Link href="/" className="hover:text-primary">{t('common:backToHome')}</Link>
             </li>
             {categoryPath.map((category: Category, index: number) => (
               <li key={category.categoryId} className="flex items-center">
