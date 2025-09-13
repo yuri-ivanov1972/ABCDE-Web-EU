@@ -11,5 +11,12 @@
   "more": "More",
   "less": "Less",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "nutrients": {
+    "sugar": "Sugar",
+    "fat": "Fat",
+    "protein": "Protein",
+    "salt": "Salt"
+  },
+  "noImage": "No+Image"
 }

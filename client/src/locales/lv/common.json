@@ -11,5 +11,12 @@
   "more": "Vairāk",
   "less": "Mazāk",
   "yes": "Jā",
-  "no": "Nē"
+  "no": "Nē",
+  "nutrients": {
+    "sugar": "Cukurs",
+    "fat": "Tauki",
+    "protein": "Olbaltumvielas",
+    "salt": "Sāls"
+  },
+  "noImage": "Nav+attēla"
 }
