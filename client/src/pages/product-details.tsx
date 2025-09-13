@@ -11,11 +11,15 @@ import { Category } from '@/types';
 import NotFound from '@/pages/not-found';
 
 const ProductDetails: React.FC = () => {
+  console.log('ProductDetails component rendered');
   const { t, ready, i18n } = useTranslation(['product', 'common']);
   const [match, params] = useRoute('/:lang/product/:id');
   
+  console.log('ProductDetails useRoute result:', { match, params });
+  
   // If route doesn't match, show 404
   if (!match) {
+    console.log('ProductDetails: Route does not match, showing NotFound');
     return <NotFound />;
   }
   
