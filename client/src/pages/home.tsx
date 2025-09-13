@@ -19,7 +19,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
-  const { t, ready } = useTranslation(['home', 'common']);
+  const { t, ready, i18n } = useTranslation(['home', 'common']);
   const params = useParams<{ id?: string }>();
   const urlCategoryId = params.id ? parseInt(params.id, 10) : undefined;
   const categoryId = propCategoryId || urlCategoryId;
@@ -256,7 +256,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
             {searchQuery && searchQuery.length > 0
               ? `${t('home:searchResults')}"${searchQuery}"`
               : category 
-                ? category.nameLv 
+                ? (i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv)
                 : t('home:allProducts')
             }
           </h1>
