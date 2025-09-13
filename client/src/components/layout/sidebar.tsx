@@ -8,6 +8,7 @@ import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import NutrientFilters from '@/components/filters/nutrient-filters';
 import { Filters, NutrientFilter, NutriScoreGrade } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import LangLink from '@/components/routing/LangLink';
 
 interface SidebarProps {
   categoryId?: number;
@@ -62,7 +63,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   return (
     <li>
       <div className="flex items-center">
-        <Link 
+        <LangLink 
           href={`/category/${category.categoryId}`}
           onClick={handleCategoryClick}
           className={`flex-grow block px-3 py-1.5 rounded-md ${
@@ -90,7 +91,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
               </svg>
             )}
           </div>
-        </Link>
+        </LangLink>
       </div>
       
       {/* Display subcategories if expanded */}
@@ -180,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
         {/* Home link without breadcrumbs */}
         <div className="mb-4">
           <div className="flex items-center text-sm text-gray-500 mb-2">
-            <Link href="/" className="hover:text-primary">{t('categories:allCategories')}</Link>
+            <LangLink href="/" className="hover:text-primary">{t('categories:allCategories')}</LangLink>
           </div>
         </div>
         
