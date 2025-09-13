@@ -20,12 +20,8 @@ function App() {
   const categoryIdMatch = /^\/category\/(\d+)$/.exec(pathWithoutLang);
   const currentCategoryId = categoryIdMatch ? Number(categoryIdMatch[1]) : undefined;
 
-  // Clear search query when navigating to home page (no category)
-  useEffect(() => {
-    if (pathWithoutLang === '/' && searchQuery) {
-      setSearchQuery('');
-    }
-  }, [pathWithoutLang, searchQuery]);
+  // Clear search query only when clicking logo or "All categories" link
+  // This effect has been removed to allow search functionality on the home page
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
