@@ -117,7 +117,7 @@ export class DatabaseStorage implements IStorage {
       .from(categories);
     
     if (level !== undefined) {
-      query = query.where(eq(categories.level, level));
+      query = query.where(eq(categories.level, level)) as any;
     }
     
     // Execute the query with the order by clause
@@ -199,9 +199,6 @@ export class DatabaseStorage implements IStorage {
   
   // Product methods
   async getProducts(options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }> {
-    // Variable to store count from SQL query, used when fetching category products
-    let totalCountFromSql: number | undefined = undefined;
-    
     const {
       categoryId,
       page = 1,
@@ -219,12 +216,14 @@ export class DatabaseStorage implements IStorage {
       sortOrder = 'asc'
     } = options;
     
-    // Build where conditions
-    const whereConditions = [];
+    console.log(`GET products with options`, JSON.stringify(options));
     
-    if (categoryId) {
-      try {
-        // First, let's get the current category to determine its level
+    try {
+      // Step 1: Build category list to include (keep this logic as it's necessary for hierarchical categories)
+      let allCategoriesToInclude: number[] = [];
+      
+      if (categoryId) {
+        // Get the current category to determine its level
         const [currentCategory] = await categoriesDb
           .select()
           .from(categories)
@@ -233,391 +232,263 @@ export class DatabaseStorage implements IStorage {
         if (currentCategory) {
           console.log(`Current category: ${currentCategory.nameLv} (ID: ${currentCategory.categoryId}, Level: ${currentCategory.level})`);
           
-          // Get all subcategories of this category to include their products too
-          const allCategoriesToInclude = [categoryId];
+          allCategoriesToInclude = [categoryId];
           
-          // If this is level 1 or 2, we need to include subcategories
+          // If this is level 1 or 2, include subcategories
           if (currentCategory.level < 3) {
-            // Find all direct subcategories
             const subcategories = await categoriesDb
               .select()
               .from(categories)
               .where(eq(categories.parentCategoryId, categoryId));
             
-            console.log(`Found ${subcategories.length} direct subcategories`);
-            
-            // Add subcategory IDs
             allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
             
-            // If this is level 1, we need to go one level deeper
+            // If level 1, go one level deeper
             if (currentCategory.level === 1) {
-              // For each level 2 subcategory, find their children (level 3)
               for (const subcat of subcategories) {
                 const subsubcategories = await categoriesDb
                   .select()
                   .from(categories)
                   .where(eq(categories.parentCategoryId, subcat.categoryId));
                 
-                console.log(`Found ${subsubcategories.length} subsubcategories for ${subcat.nameLv}`);
-                
-                // Add sub-subcategory IDs
                 allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
               }
             }
           }
           
-          // Now let's check if there are any products directly in these categories
-          const productCounts = await productsDb
-            .select({
-              categoryId: products.categoryId,
-              count: sql<number>`count(*)`
-            })
-            .from(products)
-            .where(inArray(products.categoryId, allCategoriesToInclude))
-            .groupBy(products.categoryId);
-          
-          console.log('Product counts by category:', JSON.stringify(productCounts));
-          
-          // Use the IN operator to match any category in our list
-          whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
           console.log(`Including products from categories: ${allCategoriesToInclude.join(', ')}`);
         }
-      } catch (error) {
-        console.error("Error getting subcategories:", error);
-        // Fallback to just the current category
-        whereConditions.push(eq(products.categoryId, categoryId));
       }
-    }
-    
-    // Calculate offset for pagination
-    const offset = (page - 1) * pageSize;
-    
-    // Declare the variable here so it's available in all scopes
-    let productsResult: any[] = [];
-    
-    // Create a custom raw SQL query
-    if (categoryId) {
-      console.log(`Executing raw SQL query for category ${categoryId} with all included categories`);
       
-      // Use the allCategoriesToInclude array that was built earlier
-      // Now let's ensure we have the list of category IDs
-      // This section needs to use the same logic as the earlier code that built allCategoriesToInclude
-      let allCategoriesToInclude: number[] = [categoryId];
+      // Step 2: Build WHERE conditions for nutritional filters
+      let whereConditions: any[] = [];
       
-      try {
-        // Get the current category to check its level
-        const [currentCategory] = await categoriesDb
-          .select()
-          .from(categories)
-          .where(eq(categories.categoryId, categoryId));
+      // Add category filter if specified
+      if (allCategoriesToInclude.length > 0) {
+        whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
+      }
+      
+      // Add nutritional filters
+      if (nutriScores && nutriScores.length > 0) {
+        whereConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
+      }
+      
+      if (sugarMin !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.carbsSugars} >= ${sugarMin}`);
+      }
+      if (sugarMax !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.carbsSugars} <= ${sugarMax}`);
+      }
+      
+      if (fatMin !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.fatTotal} >= ${fatMin}`);
+      }
+      if (fatMax !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.fatTotal} <= ${fatMax}`);
+      }
+      
+      if (proteinMin !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.protein} >= ${proteinMin}`);
+      }
+      if (proteinMax !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.protein} <= ${proteinMax}`);
+      }
+      
+      if (saltMin !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.salt} >= ${saltMin}`);
+      }
+      if (saltMax !== undefined) {
+        whereConditions.push(sql`${nutritionFacts.salt} <= ${saltMax}`);
+      }
+      
+      // Step 3: Build ORDER BY clause
+      let orderByClause: any;
+      
+      if (sortBy === 'name') {
+        orderByClause = sortOrder === 'asc' ? asc(products.name) : desc(products.name);
+      } else if (sortBy === 'nutriScore') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`CASE WHEN ${nutritionFacts.nutriScoreGrade} IS NULL THEN 'Z' ELSE ${nutritionFacts.nutriScoreGrade} END ASC`
+          : sql`CASE WHEN ${nutritionFacts.nutriScoreGrade} IS NULL THEN 'Z' ELSE ${nutritionFacts.nutriScoreGrade} END DESC`;
+      } else if (sortBy === 'sugar') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.carbsSugars} ASC NULLS LAST`
+          : sql`${nutritionFacts.carbsSugars} DESC NULLS LAST`;
+      } else if (sortBy === 'fat') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.fatTotal} ASC NULLS LAST`
+          : sql`${nutritionFacts.fatTotal} DESC NULLS LAST`;
+      } else if (sortBy === 'protein') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.protein} ASC NULLS LAST`
+          : sql`${nutritionFacts.protein} DESC NULLS LAST`;
+      } else if (sortBy === 'salt') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.salt} ASC NULLS LAST`
+          : sql`${nutritionFacts.salt} DESC NULLS LAST`;
+      } else {
+        // Default to name sorting
+        orderByClause = asc(products.name);
+      }
+      
+      // Step 4: Execute main query with JOIN, WHERE, ORDER BY, and pagination
+      const offset = (page - 1) * pageSize;
+      
+      const mainQuery = await withRetry(async () => {
+        console.log(`Executing main query with ${whereConditions.length} WHERE conditions`);
         
-        // If this is level 1 or 2, include subcategories
-        if (currentCategory && currentCategory.level < 3) {
-          // Find all direct subcategories
-          const subcategories = await categoriesDb
+        let query = productsDb
+          .select({
+            // Product fields
+            productId: products.productId,
+            sku: products.sku,
+            name: products.name,
+            nameNorm: products.name_norm,
+            categoryId: products.categoryId,
+            rimiUrl: products.rimiUrl,
+            quantityValue: products.quantityValue,
+            quantityUnit: products.quantityUnit,
+            createdAt: products.createdAt,
+            updatedAt: products.updatedAt,
+            // Nutrition facts fields
+            nutritionId: nutritionFacts.nutritionId,
+            ingredientsText: nutritionFacts.ingredientsText,
+            energyKcal: nutritionFacts.energyKcal,
+            energyKj: nutritionFacts.energyKj,
+            fatTotal: nutritionFacts.fatTotal,
+            fatSaturated: nutritionFacts.fatSaturated,
+            carbsTotal: nutritionFacts.carbsTotal,
+            carbsSugars: nutritionFacts.carbsSugars,
+            protein: nutritionFacts.protein,
+            salt: nutritionFacts.salt,
+            fiber: nutritionFacts.fiber,
+            nutriScoreGrade: nutritionFacts.nutriScoreGrade,
+            nutriScorePoints: nutritionFacts.nutriScorePoints,
+            dataSourceDate: nutritionFacts.dataSourceDate
+          })
+          .from(products)
+          .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
+        
+        if (whereConditions.length > 0) {
+          query = query.where(and(...whereConditions)) as any;
+        }
+        
+        return query
+          .orderBy(orderByClause)
+          .limit(pageSize)
+          .offset(offset);
+      });
+      
+      console.log(`Main query returned ${mainQuery.length} products`);
+      
+      // Step 5: Get total count of filtered results (not paginated)
+      const totalCountQuery = await withRetry(async () => {
+        console.log(`Executing count query with ${whereConditions.length} WHERE conditions`);
+        
+        let countQuery = productsDb
+          .select({ count: sql<number>`count(*)` })
+          .from(products)
+          .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
+        
+        if (whereConditions.length > 0) {
+          countQuery = countQuery.where(and(...whereConditions)) as any;
+        }
+        
+        return countQuery;
+      });
+      
+      const totalCount = totalCountQuery[0]?.count || 0;
+      console.log(`Total filtered results count: ${totalCount}`);
+      
+      // Step 6: Fetch additional details (photos and categories) in batch
+      const productIds = mainQuery.map(p => p.productId);
+      
+      let photosMap: Record<number, ProductPhoto[]> = {};
+      let categoryMap: Record<number, Category> = {};
+      
+      if (productIds.length > 0) {
+        // Fetch photos and categories in parallel
+        const [allPhotos, allCategories] = await Promise.all([
+          productsDb
+            .select()
+            .from(productPhotos)
+            .where(inArray(productPhotos.productId, productIds)),
+            
+          categoriesDb
             .select()
             .from(categories)
-            .where(eq(categories.parentCategoryId, categoryId));
-          
-          // Add subcategory IDs
-          allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
-          
-          // If level 1, go one level deeper
-          if (currentCategory.level === 1) {
-            for (const subcat of subcategories) {
-              const subsubcategories = await categoriesDb
-                .select()
-                .from(categories)
-                .where(eq(categories.parentCategoryId, subcat.categoryId));
-              
-              // Add sub-subcategory IDs
-              allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
-            }
+            .where(inArray(categories.categoryId, mainQuery.map(p => p.categoryId)))
+        ]);
+        
+        // Group photos by product ID
+        photosMap = allPhotos.reduce((map, photo) => {
+          if (!map[photo.productId]) {
+            map[photo.productId] = [];
           }
-        }
-      } catch (error) {
-        console.error("Error rebuilding category list:", error);
-        // Just use the original categoryId if there's an error
-        allCategoriesToInclude = [categoryId];
+          map[photo.productId].push(photo);
+          return map;
+        }, {} as Record<number, ProductPhoto[]>);
+        
+        // Create category map
+        categoryMap = allCategories.reduce((map, cat) => {
+          map[cat.categoryId] = cat;
+          return map;
+        }, {} as Record<number, Category>);
       }
       
-      if (allCategoriesToInclude.length === 0) {
-        console.log("No categories found to include!");
-        return { products: [], totalCount: 0 };
-      }
-      
-      // Use the category array directly with Drizzle's inArray function
-      console.log(`Using category array for Drizzle query: [${allCategoriesToInclude.join(',')}]`);
-      
-      try {
-        // Execute the query using Drizzle with proper parameterization
-        const rawQueryResult = await withRetry(async () => {
-          console.log(`Attempting Drizzle query with ${allCategoriesToInclude.length} categories`);
-          
-          // Build the order clause using Drizzle's ordering functions
-          const orderColumn = products.name; // For now, only name sorting is supported here
-          const orderDirection = sortOrder === 'asc' ? asc : desc;
-          
-          return productsDb
-            .select()
-            .from(products)
-            .where(inArray(products.categoryId, allCategoriesToInclude))
-            .orderBy(orderDirection(orderColumn))
-            .limit(pageSize)
-            .offset(offset);
-        });
-        
-        console.log(`Drizzle query returned ${rawQueryResult.length} products`);
-        
-        // Drizzle already returns the correct structure
-        productsResult = rawQueryResult;
-        
-        console.log(`Retrieved ${productsResult.length} products from Drizzle query`);
-        
-        // Get the total count using Drizzle's count function with retry
-        const countQueryResult = await withRetry(async () => {
-          console.log(`Attempting Drizzle count query for ${allCategoriesToInclude.length} categories`);
-          return productsDb
-            .select({ count: sql<number>`count(*)` })
-            .from(products)
-            .where(inArray(products.categoryId, allCategoriesToInclude));
-        });
-        
-        // Save the total count from Drizzle query for use at the end of the function
-        totalCountFromSql = countQueryResult[0]?.count || 0;
-        console.log(`Total count of products in these categories: ${totalCountFromSql}`);
-        
-      } catch (error) {
-        console.error('Error executing Drizzle query:', error);
-        
-        // Fallback to the basic query
-        return this.getProducts({
-          ...options,
-          categoryId: undefined // remove category filter
-        });
-      }
-    } else {
-      // No category filter, use the original query
-      try {
-        productsResult = await withRetry(async () => {
-          console.log("Attempting to get products without category filter");
-          const productsQuery = productsDb
-            .select()
-            .from(products)
-            .limit(pageSize)
-            .offset(offset);
-            
-          // Apply sorting
-          if (sortBy === 'name') {
-            const directionFn = sortOrder === 'asc' ? asc : desc;
-            return await productsQuery.orderBy(directionFn(products.name));
-          } else {
-            return await productsQuery;
-          }
-        });
-      } catch (error) {
-        console.error('Error executing Drizzle query after retries:', error);
-        return { products: [], totalCount: 0 };
-      }
-    }
-    
-    // Get total count for pagination (for cases without a category filter)
-    let totalCount = productsResult.length;
-    
-    if (!categoryId) {
-      try {
-        // Use withRetry for getting total count
-        const getTotalCount = async () => {
-          console.log("Attempting to get total product count");
-          const [countResult] = await productsDb
-            .select({ count: sql<number>`count(*)` })
-            .from(products);
-          return countResult?.count || 0;
+      // Step 7: Construct final products with details
+      const productsWithDetails: ProductWithDetails[] = mainQuery.map(row => {
+        // Extract product data
+        const product: Product = {
+          productId: row.productId,
+          sku: row.sku,
+          name: row.name,
+          name_norm: row.nameNorm,
+          categoryId: row.categoryId,
+          rimiUrl: row.rimiUrl,
+          quantityValue: row.quantityValue,
+          quantityUnit: row.quantityUnit,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt
         };
-          
-        totalCount = await withRetry(getTotalCount);
-      } catch (error) {
-        console.error('Error getting total count after retries:', error);
-        totalCount = 0; // Fallback to zero if counting fails
-      }
-    } else {
-      // For category filters with the old query method, calculate total count
-      try {
-        // Get category IDs from whereConditions
-        const catIds = whereConditions.length > 0 
-          ? (whereConditions[0] as any).rightValue || []
-          : [];
-          
-        if (catIds.length > 0) {
-          const catList = catIds.join(',');
-          
-          // Use withRetry for getting category product count
-          const getCategoryProductCount = async () => {
-            console.log(`Attempting to get product count for categories: ${catList}`);
-            const countQuery = await productsPool.query(`
-              SELECT COUNT(*) as total FROM products 
-              WHERE category_id IN (${catList})
-            `);
-            return parseInt(countQuery.rows[0].total, 10);
-          };
-          
-          totalCount = await withRetry(getCategoryProductCount);
-        }
-      } catch (error) {
-        console.error('Error getting category product count after retries:', error);
-        totalCount = 0; // Fallback to zero if counting fails
-      }
-    }
-    
-    // Get raw product IDs for debugging
-    console.log(`Raw product IDs: ${productsResult.map(p => p.productId).join(', ')}`);
-    
-    // For each product returned, log its actual category ID for debugging
-    for (const product of productsResult) {
-      console.log(`Product '${product.name}' (ID: ${product.productId}) is in category ${product.categoryId}`);
-    }
-    
-    // Fetch additional details in batch instead of individually
-    // First get all product IDs
-    const productIds = productsResult.map(p => p.productId);
-    
-    // Fetch all nutrition facts in one query
-    let nutritionMap: Record<number, NutritionFacts> = {};
-    if (productIds.length > 0) {
-      const allNutritionFacts = await productsDb
-        .select()
-        .from(nutritionFacts)
-        .where(inArray(nutritionFacts.productId, productIds));
+        
+        // Extract nutrition data if available
+        const nutrition: NutritionFacts | undefined = row.nutritionId ? {
+          nutritionId: row.nutritionId,
+          productId: row.productId,
+          ingredientsText: row.ingredientsText,
+          energyKcal: row.energyKcal,
+          energyKj: row.energyKj,
+          fatTotal: row.fatTotal,
+          fatSaturated: row.fatSaturated,
+          carbsTotal: row.carbsTotal,
+          carbsSugars: row.carbsSugars,
+          protein: row.protein,
+          salt: row.salt,
+          fiber: row.fiber,
+          nutriScoreGrade: row.nutriScoreGrade,
+          nutriScorePoints: row.nutriScorePoints,
+          dataSourceDate: row.dataSourceDate
+        } : undefined;
+        
+        return {
+          ...product,
+          nutrition,
+          photos: photosMap[product.productId] || [],
+          category: categoryMap[product.categoryId]
+        };
+      });
       
-      // Create a map for fast lookup
-      nutritionMap = allNutritionFacts.reduce((map, nf) => {
-        map[nf.productId] = nf;
-        return map;
-      }, {} as Record<number, NutritionFacts>);
-    }
-    
-    // Fetch all photos in one query
-    let photosMap: Record<number, ProductPhoto[]> = {};
-    if (productIds.length > 0) {
-      const allPhotos = await productsDb
-        .select()
-        .from(productPhotos)
-        .where(inArray(productPhotos.productId, productIds));
-      
-      // Group photos by product ID
-      photosMap = allPhotos.reduce((map, photo) => {
-        if (!map[photo.productId]) {
-          map[photo.productId] = [];
-        }
-        map[photo.productId].push(photo);
-        return map;
-      }, {} as Record<number, ProductPhoto[]>);
-    }
-    
-    // Fetch all categories in one query
-    const categoryIds = productsResult.map(p => p.categoryId);
-    let categoryMap: Record<number, Category> = {};
-    if (categoryIds.length > 0) {
-      const allCategories = await categoriesDb
-        .select()
-        .from(categories)
-        .where(inArray(categories.categoryId, categoryIds));
-      
-      // Create a map for fast lookup
-      categoryMap = allCategories.reduce((map, cat) => {
-        map[cat.categoryId] = cat;
-        return map;
-      }, {} as Record<number, Category>);
-    }
-    
-    // Now create the product details without additional queries
-    const productsWithDetails: ProductWithDetails[] = productsResult.map(product => {
-      const nutrition = nutritionMap[product.productId];
-      const photos = photosMap[product.productId] || [];
-      const category = categoryMap[product.categoryId];
-      
-      // Apply nutrition filters
-      if (
-        (nutriScores && nutrition?.nutriScoreGrade && !nutriScores.includes(nutrition.nutriScoreGrade as NutriScoreGrade)) ||
-        (sugarMin !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) < sugarMin)) ||
-        (sugarMax !== undefined && (nutrition?.carbsSugars === null || Number(nutrition.carbsSugars) > sugarMax)) ||
-        (fatMin !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) < fatMin)) ||
-        (fatMax !== undefined && (nutrition?.fatTotal === null || Number(nutrition.fatTotal) > fatMax)) ||
-        (proteinMin !== undefined && (nutrition?.protein === null || Number(nutrition.protein) < proteinMin)) ||
-        (proteinMax !== undefined && (nutrition?.protein === null || Number(nutrition.protein) > proteinMax)) ||
-        (saltMin !== undefined && (nutrition?.salt === null || Number(nutrition.salt) < saltMin)) ||
-        (saltMax !== undefined && (nutrition?.salt === null || Number(nutrition.salt) > saltMax))
-      ) {
-        return null;
-      }
+      console.log(`GET products with options ${JSON.stringify(options)} returned ${productsWithDetails.length} products, total: ${totalCount}`);
       
       return {
-        ...product,
-        nutrition,
-        photos,
-        category
-      };
-    });
-    
-    // Filter out null products (those that didn't match nutrition filters)
-    const filteredProducts = productsWithDetails.filter(Boolean) as ProductWithDetails[];
-    
-    // Apply nutrition-based sorting if requested
-    if (sortBy === 'nutriScore' && filteredProducts.some(p => p.nutrition?.nutriScoreGrade)) {
-      const nutriScoreOrder = { 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5 };
-      filteredProducts.sort((a, b) => {
-        const scoreA = a.nutrition?.nutriScoreGrade ? nutriScoreOrder[a.nutrition.nutriScoreGrade as keyof typeof nutriScoreOrder] : 999;
-        const scoreB = b.nutrition?.nutriScoreGrade ? nutriScoreOrder[b.nutrition.nutriScoreGrade as keyof typeof nutriScoreOrder] : 999;
-        return sortOrder === 'asc' ? scoreA - scoreB : scoreB - scoreA;
-      });
-    } else if (['sugar', 'fat', 'protein', 'salt'].includes(sortBy) && filteredProducts.length > 0) {
-      const nutritionFieldMap = {
-        'sugar': 'carbsSugars',
-        'fat': 'fatTotal',
-        'protein': 'protein',
-        'salt': 'salt'
+        products: productsWithDetails,
+        totalCount
       };
       
-      const field = nutritionFieldMap[sortBy as keyof typeof nutritionFieldMap];
-      
-      filteredProducts.sort((a, b) => {
-        const valueA = a.nutrition?.[field as keyof NutritionFacts] as number | null | undefined || 0;
-        const valueB = b.nutrition?.[field as keyof NutritionFacts] as number | null | undefined || 0;
-        return sortOrder === 'asc' ? Number(valueA) - Number(valueB) : Number(valueB) - Number(valueA);
-      });
-    }
-    
-    // First check for Maize category (ID 88), set total count to 24 for testing pagination
-    if (categoryId === 88) {
-      console.log("Using fixed count for Maize category to test pagination");
-      return { 
-        products: filteredProducts,
-        totalCount: 24 // Set to 24 to create 2 pages of 12 items each for testing
-      };
-    }
-    
-    // For category queries, use the total count from SQL if available
-    if (categoryId && totalCountFromSql !== undefined) {
-      console.log(`Using SQL-provided total count of ${totalCountFromSql}`);
-      return { 
-        products: filteredProducts,
-        totalCount: totalCountFromSql
-      };
-    }
-    
-    // For non-category queries or fallback, use the standard total count
-    if (totalCount !== undefined) {
-      console.log(`Using database-provided total count of ${totalCount}`);
-      return { 
-        products: filteredProducts,
-        totalCount: totalCount
-      };
-    } else {
-      console.log("Falling back to filtered products length for total count");
-      return { 
-        products: filteredProducts,
-        totalCount: filteredProducts.length 
-      };
+    } catch (error) {
+      console.error('Error in getProducts:', error);
+      return { products: [], totalCount: 0 };
     }
   }
   
@@ -742,30 +613,69 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchProducts(query: string, options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }> {
-    const { page = 1, pageSize = 12 } = options;
+    const {
+      page = 1,
+      pageSize = 12,
+      nutriScores,
+      sugarMin,
+      sugarMax,
+      fatMin,
+      fatMax,
+      proteinMin,
+      proteinMax,
+      saltMin,
+      saltMax,
+      sortBy = 'name',
+      sortOrder = 'asc'
+    } = options;
     
-    // Calculate offset for pagination
-    const offset = (page - 1) * pageSize;
+    console.log(`SEARCH products with query "${query}" and options`, JSON.stringify(options));
     
-    // Normalize the search term
-    const normalizedQuery = normalizeLvText(query);
-    console.log(`Search query: "${query}" normalized to: "${normalizedQuery}"`);
-    
-    // Create search pattern
-    const searchPattern = `%${normalizedQuery}%`;
-    
-    // Get all product names
-    // First approach - exact match using ILIKE (case insensitive)
-    const exactMatchPattern = `%${query}%`;
-    
-    // Execute a simpler SQL query using the pre-normalized name_norm column
-    // Using a two-step approach:
-    // 1. First try to search with the original input for exact matches
-    // 2. Then use the name_norm column with our normalized query
-    const productsQuery = productsDb
-      .select()
-      .from(products)
-      .where(
+    try {
+      // Step 1: Prepare search conditions
+      const normalizedQuery = normalizeLvText(query);
+      console.log(`Search query: "${query}" normalized to: "${normalizedQuery}"`);
+      
+      const searchPattern = `%${normalizedQuery}%`;
+      const exactMatchPattern = `%${query}%`;
+      
+      // Step 2: Build nutritional filter conditions (same as getProducts)
+      let nutritionConditions: any[] = [];
+      
+      if (nutriScores && nutriScores.length > 0) {
+        nutritionConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
+      }
+      
+      if (sugarMin !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.carbsSugars} >= ${sugarMin}`);
+      }
+      if (sugarMax !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.carbsSugars} <= ${sugarMax}`);
+      }
+      
+      if (fatMin !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.fatTotal} >= ${fatMin}`);
+      }
+      if (fatMax !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.fatTotal} <= ${fatMax}`);
+      }
+      
+      if (proteinMin !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.protein} >= ${proteinMin}`);
+      }
+      if (proteinMax !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.protein} <= ${proteinMax}`);
+      }
+      
+      if (saltMin !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.salt} >= ${saltMin}`);
+      }
+      if (saltMax !== undefined) {
+        nutritionConditions.push(sql`${nutritionFacts.salt} <= ${saltMax}`);
+      }
+      
+      // Step 3: Build search conditions
+      const searchConditions = [
         or(
           // Original query (exact match, case insensitive)
           sql`${products.name} ILIKE ${exactMatchPattern}`,
@@ -773,100 +683,201 @@ export class DatabaseStorage implements IStorage {
           // Use the pre-normalized name_norm column for efficient matching
           sql`${products.name_norm} LIKE ${searchPattern}`
         )
-      )
-      .limit(pageSize)
-      .offset(offset);
-
-    console.log('Executing search query with pattern:', searchPattern);
-    const productsResult = await productsQuery;
-    
-    console.log(`Search query "${query}" returned ${productsResult.length} products`);
-    
-    // Get total count for pagination using the same conditions
-    const [countResult] = await productsDb
-      .select({ count: sql<number>`count(*)` })
-      .from(products)
-      .where(
-        or(
-          // Original query (exact match, case insensitive)
-          sql`${products.name} ILIKE ${exactMatchPattern}`,
-          
-          // Use the pre-normalized name_norm column for efficient matching
-          sql`${products.name_norm} LIKE ${searchPattern}`
-        )
-      );
-    
-    const totalCount = countResult?.count || 0;
-    console.log(`Search query "${query}" total count: ${totalCount}`);
-    
-    // First get all product IDs
-    const productIds = productsResult.map(p => p.productId);
-    
-    // Fetch all nutrition facts in one query
-    let nutritionMap: Record<number, NutritionFacts> = {};
-    if (productIds.length > 0) {
-      const allNutritionFacts = await productsDb
-        .select()
-        .from(nutritionFacts)
-        .where(inArray(nutritionFacts.productId, productIds));
+      ];
       
-      // Create a map for fast lookup
-      nutritionMap = allNutritionFacts.reduce((map, nf) => {
-        map[nf.productId] = nf;
-        return map;
-      }, {} as Record<number, NutritionFacts>);
-    }
-    
-    // Fetch all photos in one query
-    let photosMap: Record<number, ProductPhoto[]> = {};
-    if (productIds.length > 0) {
-      const allPhotos = await productsDb
-        .select()
-        .from(productPhotos)
-        .where(inArray(productPhotos.productId, productIds));
+      // Step 4: Build sorting conditions (same as getProducts)
+      let orderByClause: any;
       
-      // Group photos by product ID
-      photosMap = allPhotos.reduce((map, photo) => {
-        if (!map[photo.productId]) {
-          map[photo.productId] = [];
+      if (sortBy === 'name') {
+        orderByClause = sortOrder === 'asc' ? asc(products.name) : desc(products.name);
+      } else if (sortBy === 'nutriScore') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`CASE WHEN ${nutritionFacts.nutriScoreGrade} IS NULL THEN 'Z' ELSE ${nutritionFacts.nutriScoreGrade} END ASC`
+          : sql`CASE WHEN ${nutritionFacts.nutriScoreGrade} IS NULL THEN 'Z' ELSE ${nutritionFacts.nutriScoreGrade} END DESC`;
+      } else if (sortBy === 'sugar') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.carbsSugars} ASC NULLS LAST`
+          : sql`${nutritionFacts.carbsSugars} DESC NULLS LAST`;
+      } else if (sortBy === 'fat') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.fatTotal} ASC NULLS LAST`
+          : sql`${nutritionFacts.fatTotal} DESC NULLS LAST`;
+      } else if (sortBy === 'protein') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.protein} ASC NULLS LAST`
+          : sql`${nutritionFacts.protein} DESC NULLS LAST`;
+      } else if (sortBy === 'salt') {
+        orderByClause = sortOrder === 'asc' 
+          ? sql`${nutritionFacts.salt} ASC NULLS LAST`
+          : sql`${nutritionFacts.salt} DESC NULLS LAST`;
+      } else {
+        // Default to name sorting
+        orderByClause = asc(products.name);
+      }
+      
+      // Step 5: Execute main search query with JOIN, WHERE, ORDER BY, and pagination
+      const offset = (page - 1) * pageSize;
+      
+      // Combine all WHERE conditions
+      const whereConditions = [...searchConditions, ...nutritionConditions];
+      
+      // Main search query: LEFT JOIN with nutritionFacts, apply all filters, sorting, and pagination
+      const searchQuery = await withRetry(async () => {
+        console.log(`Executing main search query with ${whereConditions.length} conditions`);
+        
+        let query = productsDb
+          .select({
+            // Product fields
+            productId: products.productId,
+            sku: products.sku,
+            name: products.name,
+            nameNorm: products.name_norm,
+            categoryId: products.categoryId,
+            rimiUrl: products.rimiUrl,
+            quantityValue: products.quantityValue,
+            quantityUnit: products.quantityUnit,
+            createdAt: products.createdAt,
+            updatedAt: products.updatedAt,
+            // Nutrition facts fields
+            nutritionId: nutritionFacts.nutritionId,
+            ingredientsText: nutritionFacts.ingredientsText,
+            energyKcal: nutritionFacts.energyKcal,
+            energyKj: nutritionFacts.energyKj,
+            fatTotal: nutritionFacts.fatTotal,
+            fatSaturated: nutritionFacts.fatSaturated,
+            carbsTotal: nutritionFacts.carbsTotal,
+            carbsSugars: nutritionFacts.carbsSugars,
+            protein: nutritionFacts.protein,
+            salt: nutritionFacts.salt,
+            fiber: nutritionFacts.fiber,
+            nutriScoreGrade: nutritionFacts.nutriScoreGrade,
+            nutriScorePoints: nutritionFacts.nutriScorePoints,
+            dataSourceDate: nutritionFacts.dataSourceDate
+          })
+          .from(products)
+          .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
+        
+        if (whereConditions.length > 0) {
+          query = query.where(and(...whereConditions)) as any;
         }
-        map[photo.productId].push(photo);
-        return map;
-      }, {} as Record<number, ProductPhoto[]>);
-    }
-    
-    // Fetch all categories in one query
-    const categoryIds = productsResult.map(p => p.categoryId);
-    let categoryMap: Record<number, Category> = {};
-    if (categoryIds.length > 0) {
-      const allCategories = await categoriesDb
-        .select()
-        .from(categories)
-        .where(inArray(categories.categoryId, categoryIds));
+        
+        return query
+          .orderBy(orderByClause)
+          .limit(pageSize)
+          .offset(offset);
+      });
       
-      // Create a map for fast lookup
-      categoryMap = allCategories.reduce((map, cat) => {
-        map[cat.categoryId] = cat;
-        return map;
-      }, {} as Record<number, Category>);
-    }
-    
-    // Now create the product details without additional queries
-    const productsWithDetails: ProductWithDetails[] = productsResult.map(product => {
-      const nutrition = nutritionMap[product.productId];
-      const photos = photosMap[product.productId] || [];
-      const category = categoryMap[product.categoryId];
+      console.log(`Search query returned ${searchQuery.length} products`);
+      
+      // Step 6: Get total count of filtered search results (not paginated)
+      const totalCountQuery = await withRetry(async () => {
+        console.log(`Executing search count query with ${whereConditions.length} conditions`);
+        
+        let countQuery = productsDb
+          .select({ count: sql<number>`count(*)` })
+          .from(products)
+          .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
+        
+        if (whereConditions.length > 0) {
+          countQuery = countQuery.where(and(...whereConditions)) as any;
+        }
+        
+        return countQuery;
+      });
+      
+      const totalCount = totalCountQuery[0]?.count || 0;
+      console.log(`Total filtered search results count: ${totalCount}`);
+      
+      // Step 7: Fetch additional details (photos and categories) in batch
+      const productIds = searchQuery.map(p => p.productId);
+      
+      let photosMap: Record<number, ProductPhoto[]> = {};
+      let categoryMap: Record<number, Category> = {};
+      
+      if (productIds.length > 0) {
+        // Fetch photos and categories in parallel
+        const [allPhotos, allCategories] = await Promise.all([
+          productsDb
+            .select()
+            .from(productPhotos)
+            .where(inArray(productPhotos.productId, productIds)),
+            
+          categoriesDb
+            .select()
+            .from(categories)
+            .where(inArray(categories.categoryId, searchQuery.map(p => p.categoryId)))
+        ]);
+        
+        // Group photos by product ID
+        photosMap = allPhotos.reduce((map, photo) => {
+          if (!map[photo.productId]) {
+            map[photo.productId] = [];
+          }
+          map[photo.productId].push(photo);
+          return map;
+        }, {} as Record<number, ProductPhoto[]>);
+        
+        // Create category map
+        categoryMap = allCategories.reduce((map, cat) => {
+          map[cat.categoryId] = cat;
+          return map;
+        }, {} as Record<number, Category>);
+      }
+      
+      // Step 8: Construct final products with details
+      const productsWithDetails: ProductWithDetails[] = searchQuery.map(row => {
+        // Extract product data
+        const product: Product = {
+          productId: row.productId,
+          sku: row.sku,
+          name: row.name,
+          name_norm: row.nameNorm,
+          categoryId: row.categoryId,
+          rimiUrl: row.rimiUrl,
+          quantityValue: row.quantityValue,
+          quantityUnit: row.quantityUnit,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt
+        };
+        
+        // Extract nutrition data if available
+        const nutrition: NutritionFacts | undefined = row.nutritionId ? {
+          nutritionId: row.nutritionId,
+          productId: row.productId,
+          ingredientsText: row.ingredientsText,
+          energyKcal: row.energyKcal,
+          energyKj: row.energyKj,
+          fatTotal: row.fatTotal,
+          fatSaturated: row.fatSaturated,
+          carbsTotal: row.carbsTotal,
+          carbsSugars: row.carbsSugars,
+          protein: row.protein,
+          salt: row.salt,
+          fiber: row.fiber,
+          nutriScoreGrade: row.nutriScoreGrade,
+          nutriScorePoints: row.nutriScorePoints,
+          dataSourceDate: row.dataSourceDate
+        } : undefined;
+        
+        return {
+          ...product,
+          nutrition,
+          photos: photosMap[product.productId] || [],
+          category: categoryMap[product.categoryId]
+        };
+      });
+      
+      console.log(`SEARCH products with query "${query}" and options ${JSON.stringify(options)} returned ${productsWithDetails.length} products, total: ${totalCount}`);
       
       return {
-        ...product,
-        nutrition,
-        photos,
-        category
+        products: productsWithDetails,
+        totalCount
       };
-    });
-    
-    // Return total count from database for search results
-    return { products: productsWithDetails, totalCount };
+      
+    } catch (error) {
+      console.error('Error in searchProducts:', error);
+      return { products: [], totalCount: 0 };
+    }
   }
 }
 
