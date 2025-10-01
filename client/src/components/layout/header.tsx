@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -64,16 +64,23 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
     <>
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo and Tagline */}
+          {/* Logo and Petition Link */}
           <div className="flex flex-col items-start">
             <div className="flex items-center">
               <LangLink href="/" className="flex items-center">
                 <img src={abcdeLogo} alt={t('header:logo.alt')} className="h-10" />
               </LangLink>
             </div>
-            <p className="text-xs text-gray-600 mt-1 hidden md:block">
-              {t('header:tagline')}
-            </p>
+            <a 
+              href={t('header:petition.url')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs md:text-sm text-primary hover:text-primary/80 mt-1 flex items-center gap-1 transition-colors"
+              data-testid="petition-link"
+            >
+              {t('header:petition.text')}
+              <ExternalLink className="h-3 w-3" />
+            </a>
           </div>
 
           {/* Search Bar - Desktop */}
