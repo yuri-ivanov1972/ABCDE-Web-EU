@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
               data-testid="petition-link"
             >
               {t('header:petition.text')}
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3 hidden md:inline" />
             </a>
           </div>
 
