@@ -1,36 +1,53 @@
 <!DOCTYPE html>
 <html lang="lv">
   <head>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-P46NQX5H');</script>
-    <!-- End Google Tag Manager -->
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TLGL1PJYTC"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-TLGL1PJYTC');
-    </script>
-    <!-- End Google Analytics -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>ABCDE - Veselīgi pārtikas produkti</title>
     <meta name="description" content="ABCDE - Veselīgu pārtikas produktu meklēšanas platforma ar Nutri-Score rādītājiem." />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    
+    <!-- Resource hints for faster external connections -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
   </head>
   <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Analytics loaded after page content (non-blocking) -->
+    <script>
+      // Lazy load analytics after page is interactive
+      function loadAnalytics() {
+        // Google Tag Manager
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-P46NQX5H');
+        
+        // Google Analytics
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-TLGL1PJYTC';
+        document.head.appendChild(script);
+        
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-TLGL1PJYTC');
+      }
+      
+      // Load analytics after 2 seconds or when page is idle
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadAnalytics, { timeout: 2000 });
+      } else {
+        setTimeout(loadAnalytics, 2000);
+      }
+    </script>
+    
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P46NQX5H"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
