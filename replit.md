@@ -115,3 +115,17 @@ Preferred communication style: Simple, everyday language.
 - **Enhanced Search Integration**: Applied same SQL-level improvements to search functionality for consistency
 - **Production Verification**: Successfully tested and published with confirmed working filters for NutriScore grades, sugar/fat/protein/salt ranges, and search queries
 - **DATABASE LEVEL**: All filtering, sorting, and counting now happens at SQL level with proper JOINs, WHERE clauses, and ORDER BY statements for optimal performance and scalability
+
+### Header Updates (October 2025) ✅ COMPLETED
+- **Petition Link Addition**: Replaced tagline with petition link to manabalss.lv for healthy nutrition labeling initiative
+- **Bilingual Support**: Link text in both Latvian ("Par veselīga uztura marķējumu uz preču cenu zīmēm veikalos") and English ("About healthy nutrition labeling on product price tags in stores")
+- **Mobile Optimization**: Icon hidden on mobile to prevent text wrapping issues; visible on desktop
+- **User Experience**: Opens in new tab with proper security attributes (noopener noreferrer)
+- **Styling**: Styled in primary color (green) with hover effects for better visibility
+
+### SEO Improvements (October 2025) ✅ COMPLETED  
+- **robots.txt Implementation**: Added properly formatted robots.txt file to allow search engine crawling
+- **File Location**: Placed in client/ folder for correct Vite build and deployment process
+- **Configuration**: Allows all search engines (User-agent: *) to crawl all content (Allow: /)
+- **PageSpeed Compliance**: Resolved PageSpeed.web.dev error about invalid robots.txt returning HTML
+- **Content Type**: Properly serves as text/plain instead of text/html
