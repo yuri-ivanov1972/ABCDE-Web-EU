@@ -76,7 +76,8 @@ Preferred communication style: Simple, everyday language.
 ### Asset Management
 - **SVG to ICO Conversion**: Favicon generation from vector graphics
 - **Vite Asset Processing**: Optimized asset bundling and serving
-- **Static File Serving**: Efficient delivery of images and other assets
+- **Static File Serving**: Efficient delivery of images and other assets from client/public/ folder
+- **Public Folder Structure**: Static files (robots.txt, favicon.ico) served from client/public/ directory
 
 ### Text Processing
 - **Latvian Language Support**: Character normalization for diacritics and special characters
@@ -125,7 +126,8 @@ Preferred communication style: Simple, everyday language.
 
 ### SEO Improvements (October 2025) ✅ COMPLETED  
 - **robots.txt Implementation**: Added properly formatted robots.txt file to allow search engine crawling
-- **File Location**: Placed in client/ folder for correct Vite build and deployment process
+- **File Location Fix**: Moved to client/public/ folder for correct Vite build and deployment (was incorrectly in client/ root)
 - **Configuration**: Allows all search engines (User-agent: *) to crawl all content (Allow: /)
 - **PageSpeed Compliance**: Resolved PageSpeed.web.dev error about invalid robots.txt returning HTML
 - **Content Type**: Properly serves as text/plain instead of text/html
+- **Static Assets**: Both robots.txt and favicon.ico now correctly placed in client/public/ for production deployment
