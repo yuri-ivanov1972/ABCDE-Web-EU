@@ -87,7 +87,15 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
       <LanguageAwareRoute path="/product-search" component={ProductSearch} />
       
       {/* Scan route with language prefix */}
-      <LanguageAwareRoute path="/scan" component={ScanPage} />
+      <Route path="/:lang/scan">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/scan`} replace />;
+          }
+          return <ScanPage />;
+        }}
+      </Route>
       
       {/* Debug route with language prefix */}
       <LanguageAwareRoute path="/debug" component={Debug} />
