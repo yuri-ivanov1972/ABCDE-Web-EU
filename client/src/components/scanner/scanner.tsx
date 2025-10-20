@@ -9,7 +9,7 @@ interface ScannerProps {
 }
 
 export function Scanner({ onCapture }: ScannerProps) {
-  const { t } = useTranslation('scan');
+  const { t, ready } = useTranslation('scan');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -21,6 +21,8 @@ export function Scanner({ onCapture }: ScannerProps) {
 
   // Check if device is mobile
   useEffect(() => {
+    if (!ready) return;
+    
     const checkMobile = () => {
       const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
@@ -34,7 +36,7 @@ export function Scanner({ onCapture }: ScannerProps) {
     };
 
     checkMobile();
-  }, []);
+  }, [t, ready]);
 
   // Initialize camera
   useEffect(() => {
@@ -157,6 +159,15 @@ export function Scanner({ onCapture }: ScannerProps) {
         });
     }
   };
+
+  // Show loading while translations are loading
+  if (!ready) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Show error state
   if (error && !capturedImage) {
