@@ -65,7 +65,8 @@ export function Scanner({ onCapture }: ScannerProps) {
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play();
+          // Wait for video metadata to load before playing
+          await videoRef.current.play();
         }
 
         setIsLoading(false);
@@ -74,6 +75,8 @@ export function Scanner({ onCapture }: ScannerProps) {
         console.error('Camera error:', err);
         
         if (err instanceof Error) {
+          console.error('Camera error name:', err.name);
+          console.error('Camera error message:', err.message);
           if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
             setError(t('errors.permissionDenied'));
           } else if (err.name === 'NotFoundError') {
@@ -97,7 +100,7 @@ export function Scanner({ onCapture }: ScannerProps) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isMobile]);
+  }, [isMobile, t]);
 
   const handleCapture = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -231,6 +234,9 @@ export function Scanner({ onCapture }: ScannerProps) {
           muted
           className="w-full h-full object-cover"
           data-testid="video-camera"
+          onLoadedMetadata={() => console.log('Video metadata loaded')}
+          onCanPlay={() => console.log('Video can play')}
+          onPlaying={() => console.log('Video is playing')}
         />
         
         {/* Visual overlay to help frame the price tag */}
