@@ -335,6 +335,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Scan product endpoint - accepts base64 image
+  const scanRequestSchema = z.object({
+    image: z.string().min(1, "Image data is required")
+  });
+
+  app.post("/api/scan", async (req: Request, res: Response) => {
+    try {
+      const result = scanRequestSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid request data",
+          errors: result.error.errors
+        });
+      }
+
+      const { image } = result.data;
+
+      // TODO: Integrate with Google Vision API
+      // For now, return a mock success response
+      console.log(`Received image for scanning, size: ${image.length} bytes`);
+
+      res.json({
+        success: true,
+        message: "Image received successfully"
+      });
+    } catch (error) {
+      console.error("Error processing scan:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to process image" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
