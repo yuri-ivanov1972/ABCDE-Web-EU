@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import abcdeLogo from '@assets/abcde_logo.svg';
 
 interface HeaderProps {
@@ -125,21 +124,12 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
           <div className="flex items-center gap-3">
             {/* Scan Button - Desktop */}
             <div className="hidden md:block">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <LangLink href="/scan">
-                      <Button variant="outline" size="sm" data-testid="link-scan-desktop">
-                        <Camera className="h-4 w-4 mr-2" />
-                        {t('header:scan.button')}
-                      </Button>
-                    </LangLink>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t('header:scan.tooltip')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <LangLink href="/scan" className="inline-block">
+                <Button variant="outline" size="sm" data-testid="link-scan-desktop">
+                  <Camera className="h-4 w-4 mr-2" />
+                  {t('header:scan.button')}
+                </Button>
+              </LangLink>
             </div>
             
             {/* Language Switcher - Desktop */}
