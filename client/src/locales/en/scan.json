@@ -1,0 +1,19 @@
+{
+  "title": "Scan Price Tag",
+  "description": "Use your camera to take a photo of the product price tag",
+  "camera": {
+    "loading": "Loading camera...",
+    "frameGuide": "Align the price tag within the frame",
+    "capture": "Take Photo",
+    "retake": "Retake Photo"
+  },
+  "errors": {
+    "mobileOnly": "This feature is designed for mobile devices only.",
+    "notSupported": "Camera access is not supported in your browser.",
+    "permissionDenied": "Camera permission denied. Please enable camera access in your browser settings.",
+    "notFound": "No camera found on this device.",
+    "generic": "Unable to access camera. Please try again.",
+    "restartFailed": "Unable to restart camera. Please refresh the page."
+  },
+  "backToHome": "Back to Home"
+}

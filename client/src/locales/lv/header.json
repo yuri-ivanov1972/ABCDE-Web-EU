@@ -11,6 +11,10 @@
     "button": "Meklēt",
     "clear": "Notīrīt meklēšanu"
   },
+  "scan": {
+    "button": "Skenēt",
+    "tooltip": "Skenēt produkta cenu zīmi"
+  },
   "menu": {
     "toggle": "Izvēlne"
   },

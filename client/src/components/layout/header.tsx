@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Search, X, SlidersHorizontal, ExternalLink } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ExternalLink, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import abcdeLogo from '@assets/abcde_logo.svg';
 
 interface HeaderProps {
@@ -121,15 +123,45 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
 
           {/* Desktop Language Switcher and Mobile Actions */}
           <div className="flex items-center gap-3">
+            {/* Scan Button - Desktop */}
+            <div className="hidden md:block">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <LangLink href="/scan">
+                      <Button variant="outline" size="sm" data-testid="link-scan-desktop">
+                        <Camera className="h-4 w-4 mr-2" />
+                        {t('header:scan.button')}
+                      </Button>
+                    </LangLink>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('header:scan.tooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            
             {/* Language Switcher - Desktop */}
             <div className="hidden md:block">
               <LanguageSwitcher />
             </div>
             
-            {/* Mobile Actions - Language + Filter */}
+            {/* Mobile Actions - Language + Scan + Filter */}
             <div className="md:hidden flex items-center gap-2">
               {/* Compact Language Switcher */}
               <LanguageSwitcher compact={true} />
+              
+              {/* Scan button - Mobile */}
+              <LangLink href="/scan">
+                <button 
+                  className="text-gray-600 hover:text-primary focus:outline-none transition-colors p-2"
+                  aria-label={t('header:scan.button')}
+                  data-testid="link-scan-mobile"
+                >
+                  <Camera className="h-5 w-5" />
+                </button>
+              </LangLink>
               
               {/* Filter button */}
               <button 

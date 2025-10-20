@@ -6,6 +6,7 @@ import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWith
 import Home from '@/pages/home';
 import ProductDetails from '@/pages/product-details';
 import ProductSearch from '@/pages/product-search';
+import ScanPage from '@/pages/scan';
 import NotFound from '@/pages/not-found';
 import Debug from '@/pages/debug';
 
@@ -85,6 +86,9 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
       <LanguageAwareRoute path="/search" component={ProductSearch} />
       <LanguageAwareRoute path="/product-search" component={ProductSearch} />
       
+      {/* Scan route with language prefix */}
+      <LanguageAwareRoute path="/scan" component={ScanPage} />
+      
       {/* Debug route with language prefix */}
       <LanguageAwareRoute path="/debug" component={Debug} />
       
@@ -116,12 +120,16 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         <Redirect to={`/${DEFAULT_LANGUAGE}/search`} replace />
       </Route>
       
+      <Route path="/scan">
+        <Redirect to={`/${DEFAULT_LANGUAGE}/scan`} replace />
+      </Route>
+      
       <Route path="/debug">
         <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />
       </Route>
       
       {/* Legacy routes catch-all for specific patterns only */}
-      <Route path="/(category|product|search|product-search|debug)/:rest*">
+      <Route path="/(category|product|search|product-search|scan|debug)/:rest*">
         {(params) => {
           const pathWithoutLang = getPathWithoutLanguage(location);
           const targetPath = pathWithoutLang === '/' ? '' : pathWithoutLang;

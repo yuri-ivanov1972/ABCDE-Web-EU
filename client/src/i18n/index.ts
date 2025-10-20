@@ -19,7 +19,8 @@ export const NAMESPACES = [
   'filters',
   'categories',
   'pagination',
-  'errors'
+  'errors',
+  'scan'
 ] as const;
 
 // Language detection configuration

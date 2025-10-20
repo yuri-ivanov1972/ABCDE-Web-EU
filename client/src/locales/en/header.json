@@ -11,6 +11,10 @@
     "button": "Search",
     "clear": "Clear search"
   },
+  "scan": {
+    "button": "Scan",
+    "tooltip": "Scan product price tag"
+  },
   "menu": {
     "toggle": "Menu"
   },
