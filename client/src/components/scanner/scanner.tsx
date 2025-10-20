@@ -152,34 +152,12 @@ export function Scanner({ onCapture }: ScannerProps) {
     }
   };
 
-  const handleRetake = () => {
+  const handleRetake = async () => {
     setCapturedImage('');
-    setIsLoading(true);
+    setCameraReady(false);
     
-    // Restart camera
-    if (isMobile) {
-      navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      })
-        .then(stream => {
-          streamRef.current = stream;
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.play();
-          }
-          setIsLoading(false);
-        })
-        .catch(err => {
-          console.error('Camera restart error:', err);
-          setError(t('errors.restartFailed'));
-          setIsLoading(false);
-        });
-    }
+    // Restart camera using the same logic as startCamera
+    await startCamera();
   };
 
   // Show loading while translations are loading
