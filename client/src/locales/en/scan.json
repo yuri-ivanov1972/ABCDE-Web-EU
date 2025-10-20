@@ -8,13 +8,20 @@
     "capture": "Take Photo",
     "retake": "Retake Photo"
   },
+  "detect": {
+    "button": "Detect Product",
+    "processing": "Processing image...",
+    "success": "Product successfully detected!",
+    "failure": "Failed to detect product. Please try again with a clearer image."
+  },
   "errors": {
     "mobileOnly": "This feature is designed for mobile devices only.",
     "notSupported": "Camera access is not supported in your browser.",
     "permissionDenied": "Camera permission denied. Please enable camera access in your browser settings.",
     "notFound": "No camera found on this device.",
     "generic": "Unable to access camera. Please try again.",
-    "restartFailed": "Unable to restart camera. Please refresh the page."
+    "restartFailed": "Unable to restart camera. Please refresh the page.",
+    "uploadFailed": "Failed to upload image. Please check your connection and try again."
   },
   "backToHome": "Back to Home"
 }
