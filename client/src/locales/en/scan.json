@@ -2,6 +2,7 @@
   "title": "Scan Price Tag",
   "description": "Use your camera to take a photo of the product price tag",
   "camera": {
+    "start": "Start Camera",
     "loading": "Loading camera...",
     "frameGuide": "Align the price tag within the frame",
     "capture": "Take Photo",

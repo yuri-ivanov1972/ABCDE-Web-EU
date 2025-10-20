@@ -2,6 +2,7 @@
   "title": "Skenēt cenu zīmi",
   "description": "Izmantojiet savu kameru, lai nofotografētu produkta cenu zīmi",
   "camera": {
+    "start": "Startēt kameru",
     "loading": "Ielādē kameru...",
     "frameGuide": "Izlīdziniet cenu zīmi rāmja iekšpusē",
     "capture": "Fotografēt",

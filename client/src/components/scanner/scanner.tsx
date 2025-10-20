@@ -18,6 +18,7 @@ export function Scanner({ onCapture }: ScannerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [capturedImage, setCapturedImage] = useState<string>('');
   const [isMobile, setIsMobile] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
 
   // Check if device is mobile
   useEffect(() => {
@@ -39,68 +40,68 @@ export function Scanner({ onCapture }: ScannerProps) {
   }, [t, ready]);
 
   // Initialize camera
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const initCamera = async () => {
-      try {
-        // Check if getUserMedia is supported
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setError(t('errors.notSupported'));
-          setIsLoading(false);
-          return;
-        }
-
-        // Request camera access with rear-facing preference
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment', // Prefer rear camera
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-          audio: false,
-        });
-
-        streamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          // Wait for video metadata to load before playing
-          await videoRef.current.play();
-        }
-
+  const startCamera = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError(t('errors.notSupported'));
         setIsLoading(false);
-        setError('');
-      } catch (err) {
-        console.error('Camera error:', err);
-        
-        if (err instanceof Error) {
-          console.error('Camera error name:', err.name);
-          console.error('Camera error message:', err.message);
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            setError(t('errors.permissionDenied'));
-          } else if (err.name === 'NotFoundError') {
-            setError(t('errors.notFound'));
-          } else {
-            setError(t('errors.generic'));
-          }
+        return;
+      }
+
+      // Request camera access with rear-facing preference
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // Prefer rear camera
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        // Wait for video metadata to load before playing
+        await videoRef.current.play();
+      }
+
+      setIsLoading(false);
+      setCameraReady(true);
+      setError('');
+    } catch (err) {
+      console.error('Camera error:', err);
+      
+      if (err instanceof Error) {
+        console.error('Camera error name:', err.name);
+        console.error('Camera error message:', err.message);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError(t('errors.permissionDenied'));
+        } else if (err.name === 'NotFoundError') {
+          setError(t('errors.notFound'));
         } else {
           setError(t('errors.generic'));
         }
-        
-        setIsLoading(false);
+      } else {
+        setError(t('errors.generic'));
       }
-    };
+      
+      setIsLoading(false);
+    }
+  };
 
-    initCamera();
-
-    // Cleanup: stop camera when component unmounts
+  // Cleanup: stop camera when component unmounts
+  useEffect(() => {
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isMobile, t]);
+  }, []);
 
   const handleCapture = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -180,6 +181,33 @@ export function Scanner({ onCapture }: ScannerProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+        {isMobile && (
+          <Button
+            onClick={startCamera}
+            size="lg"
+            className="mt-4"
+            data-testid="button-retry-camera"
+          >
+            <Camera className="mr-2 h-5 w-5" />
+            {t('camera.start')}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Show "Start Camera" button if camera not ready
+  if (!cameraReady && isMobile && !isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+        <Button
+          onClick={startCamera}
+          size="lg"
+          data-testid="button-start-camera"
+        >
+          <Camera className="mr-2 h-5 w-5" />
+          {t('camera.start')}
+        </Button>
       </div>
     );
   }
