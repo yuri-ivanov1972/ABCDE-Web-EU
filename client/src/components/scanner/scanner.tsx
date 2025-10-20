@@ -116,19 +116,26 @@ export function Scanner({ onCapture }: ScannerProps) {
 
     if (!context) return;
 
-    // Calculate the frame area (inset-8 = 32px on each side based on the visual overlay)
-    // The frame has 32px margin from each edge
-    const frameMargin = 32; // corresponds to "inset-8" in Tailwind (8 * 4px = 32px)
-    
-    // Get video dimensions
+    // Get actual video stream dimensions
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
     
-    // Calculate crop dimensions (the area inside the green frame)
-    const cropX = frameMargin;
-    const cropY = frameMargin;
-    const cropWidth = videoWidth - (frameMargin * 2);
-    const cropHeight = videoHeight - (frameMargin * 2);
+    // Get displayed video element dimensions
+    const displayWidth = video.clientWidth;
+    const displayHeight = video.clientHeight;
+    
+    // Calculate scale factors
+    const scaleX = videoWidth / displayWidth;
+    const scaleY = videoHeight / displayHeight;
+    
+    // Frame margin in CSS pixels (inset-8 = 32px)
+    const frameMarginCSS = 32;
+    
+    // Calculate actual margin in video stream pixels
+    const cropX = frameMarginCSS * scaleX;
+    const cropY = frameMarginCSS * scaleY;
+    const cropWidth = videoWidth - (cropX * 2);
+    const cropHeight = videoHeight - (cropY * 2);
 
     // Set canvas to cropped dimensions
     canvas.width = cropWidth;
@@ -283,21 +290,10 @@ export function Scanner({ onCapture }: ScannerProps) {
           </Alert>
         )}
         
-        <div className="flex gap-4 mt-6 w-full max-w-md">
-          <Button
-            onClick={handleRetake}
-            variant="outline"
-            className="flex-1"
-            size="lg"
-            disabled={isProcessing}
-            data-testid="button-retake"
-          >
-            <RotateCcw className="mr-2 h-5 w-5" />
-            {t('camera.retake')}
-          </Button>
+        <div className="flex flex-col gap-3 mt-6 w-full">
           <Button
             onClick={handleDetect}
-            className="flex-1"
+            className="w-full"
             size="lg"
             disabled={isProcessing}
             data-testid="button-detect"
@@ -313,6 +309,17 @@ export function Scanner({ onCapture }: ScannerProps) {
                 {t('detect.button')}
               </>
             )}
+          </Button>
+          <Button
+            onClick={handleRetake}
+            variant="outline"
+            className="w-full"
+            size="lg"
+            disabled={isProcessing}
+            data-testid="button-retake"
+          >
+            <RotateCcw className="mr-2 h-5 w-5" />
+            {t('camera.retake')}
           </Button>
         </div>
       </div>
