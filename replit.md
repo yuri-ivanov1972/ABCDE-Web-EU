@@ -131,3 +131,17 @@ Preferred communication style: Simple, everyday language.
 - **PageSpeed Compliance**: Resolved PageSpeed.web.dev error about invalid robots.txt returning HTML
 - **Content Type**: Properly serves as text/plain instead of text/html
 - **Static Assets**: Both robots.txt and favicon.ico now correctly placed in client/public/ for production deployment
+
+### Mobile Camera Scanner Feature (October 2025) ✅ COMPLETED
+- **Camera Scanning Implementation**: Added complete camera scanning feature for photographing product price tags in-store
+- **Mobile-Only Access**: Enforces mobile device detection; desktop users see informative message
+- **Rear Camera Preference**: Uses environment-facing camera (rear camera) with high-resolution settings (1920x1080)
+- **Manual Camera Control**: Implements "Start Camera" button for better user permission handling
+- **Visual Frame Guide**: Green border overlay helps users align price tags for optimal capture
+- **Capture & Retake**: Full capture/retake workflow with image preview after capture
+- **Bilingual Support**: Complete translations in both Latvian and English for all scanner UI elements
+- **Error Handling**: Comprehensive error messages for permission denied, camera not found, and browser support issues
+- **Clean Camera Management**: Proper stream cleanup on component unmount and camera restart
+- **Camera Initialization Fix**: Resolved video stream display issue with proper initialization sequence (set cameraReady first, wait 100ms for DOM render, then attach stream)
+- **Retake Functionality**: Fixed retake button to properly restart camera using same initialization logic as initial start
+- **Scanner Route**: Accessible via header scan button (camera icon) at /lv/scan and /en/scan routes

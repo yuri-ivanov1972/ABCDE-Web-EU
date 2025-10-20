@@ -41,7 +41,6 @@ export function Scanner({ onCapture }: ScannerProps) {
 
   // Initialize camera
   const startCamera = async () => {
-    console.log('Starting camera...');
     setIsLoading(true);
     setError('');
     
@@ -53,7 +52,6 @@ export function Scanner({ onCapture }: ScannerProps) {
         return;
       }
 
-      console.log('Requesting camera access...');
       // Request camera access with rear-facing preference
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -64,8 +62,6 @@ export function Scanner({ onCapture }: ScannerProps) {
         audio: false,
       });
 
-      console.log('Camera stream obtained:', stream);
-      console.log('Video tracks:', stream.getVideoTracks());
       streamRef.current = stream;
 
       // Show camera UI immediately after getting stream
@@ -76,26 +72,13 @@ export function Scanner({ onCapture }: ScannerProps) {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       if (videoRef.current) {
-        console.log('Setting stream to video element...');
         videoRef.current.srcObject = stream;
-        console.log('Stream set, attempting to play...');
-        try {
-          await videoRef.current.play();
-          console.log('Video playing successfully!');
-        } catch (playErr) {
-          console.error('Play error:', playErr);
-        }
-      } else {
-        console.error('Video element ref is null!');
+        await videoRef.current.play();
       }
 
       setError('');
     } catch (err) {
-      console.error('Camera error:', err);
-      
       if (err instanceof Error) {
-        console.error('Camera error name:', err.name);
-        console.error('Camera error message:', err.message);
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setError(t('errors.permissionDenied'));
         } else if (err.name === 'NotFoundError') {
