@@ -15,7 +15,7 @@ export function Scanner({ onCapture }: ScannerProps) {
   const streamRef = useRef<MediaStream | null>(null);
 
   const [error, setError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>('');
   const [isMobile, setIsMobile] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
