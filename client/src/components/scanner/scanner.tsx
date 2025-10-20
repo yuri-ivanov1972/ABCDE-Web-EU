@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, RotateCcw, AlertCircle } from 'lucide-react';
+import { Camera, RotateCcw, AlertCircle, Scan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
+import { apiRequest } from '@/lib/queryClient';
 
 interface ScannerProps {
   onCapture?: (imageData: string) => void;
@@ -19,6 +20,8 @@ export function Scanner({ onCapture }: ScannerProps) {
   const [capturedImage, setCapturedImage] = useState<string>('');
   const [isMobile, setIsMobile] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Check if device is mobile
   useEffect(() => {
@@ -113,12 +116,30 @@ export function Scanner({ onCapture }: ScannerProps) {
 
     if (!context) return;
 
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Calculate the frame area (inset-8 = 32px on each side based on the visual overlay)
+    // The frame has 32px margin from each edge
+    const frameMargin = 32; // corresponds to "inset-8" in Tailwind (8 * 4px = 32px)
+    
+    // Get video dimensions
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    
+    // Calculate crop dimensions (the area inside the green frame)
+    const cropX = frameMargin;
+    const cropY = frameMargin;
+    const cropWidth = videoWidth - (frameMargin * 2);
+    const cropHeight = videoHeight - (frameMargin * 2);
 
-    // Draw current video frame to canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Set canvas to cropped dimensions
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+
+    // Draw only the cropped portion of the video frame
+    context.drawImage(
+      video,
+      cropX, cropY, cropWidth, cropHeight,  // source rectangle (from video)
+      0, 0, cropWidth, cropHeight            // destination rectangle (on canvas)
+    );
 
     // Convert canvas to data URL
     const imageData = canvas.toDataURL('image/jpeg', 0.9);
@@ -138,9 +159,40 @@ export function Scanner({ onCapture }: ScannerProps) {
   const handleRetake = async () => {
     setCapturedImage('');
     setCameraReady(false);
+    setScanResult(null);
     
     // Restart camera using the same logic as startCamera
     await startCamera();
+  };
+
+  const handleDetect = async () => {
+    if (!capturedImage) return;
+
+    setIsProcessing(true);
+    setScanResult(null);
+    setError('');
+
+    try {
+      // Remove the data:image/jpeg;base64, prefix to send just the base64 data
+      const base64Data = capturedImage.replace(/^data:image\/jpeg;base64,/, '');
+
+      const response = await apiRequest('POST', '/api/scan', { image: base64Data });
+      const data = await response.json() as { success: boolean; message: string };
+
+      setScanResult({
+        success: data.success,
+        message: data.success ? t('detect.success') : t('detect.failure')
+      });
+    } catch (err) {
+      console.error('Error detecting product:', err);
+      setError(t('errors.uploadFailed'));
+      setScanResult({
+        success: false,
+        message: t('detect.failure')
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Show loading while translations are loading
@@ -212,17 +264,55 @@ export function Scanner({ onCapture }: ScannerProps) {
             className="w-full h-auto"
           />
         </div>
+
+        {/* Show result message if available */}
+        {scanResult && (
+          <Alert 
+            variant={scanResult.success ? "default" : "destructive"} 
+            className="mt-4 max-w-md"
+          >
+            <AlertDescription>{scanResult.message}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Show error message if upload failed */}
+        {error && !scanResult && (
+          <Alert variant="destructive" className="mt-4 max-w-md">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         
-        <div className="flex gap-4 mt-6 w-full max-w-sm">
+        <div className="flex gap-4 mt-6 w-full max-w-md">
           <Button
             onClick={handleRetake}
             variant="outline"
             className="flex-1"
             size="lg"
+            disabled={isProcessing}
             data-testid="button-retake"
           >
             <RotateCcw className="mr-2 h-5 w-5" />
             {t('camera.retake')}
+          </Button>
+          <Button
+            onClick={handleDetect}
+            className="flex-1"
+            size="lg"
+            disabled={isProcessing}
+            data-testid="button-detect"
+          >
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                {t('detect.processing')}
+              </>
+            ) : (
+              <>
+                <Scan className="mr-2 h-5 w-5" />
+                {t('detect.button')}
+              </>
+            )}
           </Button>
         </div>
       </div>
