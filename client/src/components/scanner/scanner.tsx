@@ -128,16 +128,36 @@ export function Scanner({ onCapture }: ScannerProps) {
     const scaleX = videoWidth / displayWidth;
     const scaleY = videoHeight / displayHeight;
     
-    // Frame margin in CSS pixels (inset-8 = 32px)
-    const frameMarginCSS = 32;
+    // Calculate 16:9 frame dimensions in CSS pixels
+    const margin = 32; // 32px margin from edges
+    const maxFrameWidth = displayWidth - (margin * 2);
+    const maxFrameHeight = displayHeight - (margin * 2);
     
-    // Calculate actual margin in video stream pixels
-    const cropX = frameMarginCSS * scaleX;
-    const cropY = frameMarginCSS * scaleY;
-    const cropWidth = videoWidth - (cropX * 2);
-    const cropHeight = videoHeight - (cropY * 2);
+    // Calculate 16:9 aspect ratio frame that fits within available space
+    let frameWidth, frameHeight;
+    const targetAspect = 16 / 9;
+    
+    if (maxFrameWidth / maxFrameHeight > targetAspect) {
+      // Height is limiting factor
+      frameHeight = maxFrameHeight;
+      frameWidth = frameHeight * targetAspect;
+    } else {
+      // Width is limiting factor
+      frameWidth = maxFrameWidth;
+      frameHeight = frameWidth / targetAspect;
+    }
+    
+    // Calculate frame position (centered)
+    const frameX = (displayWidth - frameWidth) / 2;
+    const frameY = (displayHeight - frameHeight) / 2;
+    
+    // Convert to video stream pixels
+    const cropX = frameX * scaleX;
+    const cropY = frameY * scaleY;
+    const cropWidth = frameWidth * scaleX;
+    const cropHeight = frameHeight * scaleY;
 
-    // Set canvas to cropped dimensions
+    // Set canvas to cropped dimensions (16:9)
     canvas.width = cropWidth;
     canvas.height = cropHeight;
 
@@ -343,19 +363,19 @@ export function Scanner({ onCapture }: ScannerProps) {
           onPlaying={() => console.log('Video is playing')}
         />
         
-        {/* Visual overlay to help frame the price tag */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-8 border-4 border-white/50 rounded-lg">
+        {/* Visual overlay to help frame the price tag - 16:9 horizontal rectangle */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
+          <div className="relative border-4 border-white/50 rounded-lg" style={{ aspectRatio: '16/9', width: '100%', maxWidth: 'calc(100% - 64px)', maxHeight: 'calc(100% - 64px)' }}>
             <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary -translate-x-1 -translate-y-1"></div>
             <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary translate-x-1 -translate-y-1"></div>
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary -translate-x-1 translate-y-1"></div>
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary translate-x-1 translate-y-1"></div>
           </div>
-          <div className="absolute bottom-4 left-0 right-0 text-center">
-            <p className="text-white text-sm bg-black/50 inline-block px-3 py-1 rounded">
-              {t('camera.frameGuide')}
-            </p>
-          </div>
+        </div>
+        <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+          <p className="text-white text-sm bg-black/50 inline-block px-3 py-1 rounded">
+            {t('camera.frameGuide')}
+          </p>
         </div>
         
         {/* Hidden canvas for capturing */}
