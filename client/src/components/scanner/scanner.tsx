@@ -313,12 +313,11 @@ export function Scanner({ onCapture }: ScannerProps) {
         {/* Show result message if available */}
         {scanResult && (
           <div className="mt-4 w-full space-y-3">
-            <Alert 
-              variant={scanResult.success ? "default" : "destructive"} 
-              className="max-w-full"
-            >
-              <AlertDescription>{scanResult.message}</AlertDescription>
-            </Alert>
+            {!scanResult.success && (
+              <Alert variant="destructive" className="max-w-full">
+                <AlertDescription>{scanResult.message}</AlertDescription>
+              </Alert>
+            )}
             {scanResult.product && (
               <div className="bg-card border rounded-lg p-4 space-y-2">
                 <h3 className="font-semibold text-sm text-primary">Matched Product:</h3>
