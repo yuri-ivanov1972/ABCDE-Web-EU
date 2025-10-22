@@ -56,6 +56,16 @@ export function Scanner({ onCapture }: ScannerProps) {
     checkMobile();
   }, [t, ready]);
 
+  // Auto-start camera for mobile users (if permission already granted)
+  useEffect(() => {
+    if (!ready || !isMobile || cameraReady) return;
+    
+    // Automatically try to start camera
+    // If permission is already granted, camera starts immediately
+    // If not, user will see "Start Camera" button
+    startCamera();
+  }, [ready, isMobile]);
+
   // Initialize camera
   const startCamera = async () => {
     setIsLoading(true);
