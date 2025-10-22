@@ -335,42 +335,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to validate EAN-13 barcode checksum
-  const validateEAN13 = (ean: string): boolean => {
-    if (ean.length !== 13 || !/^\d{13}$/.test(ean)) return false;
-    
-    const digits = ean.split('').map(Number);
-    const checkDigit = digits[12];
-    
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-      sum += digits[i] * (i % 2 === 0 ? 1 : 3);
-    }
-    
-    const calculatedCheck = (10 - (sum % 10)) % 10;
-    return calculatedCheck === checkDigit;
+  // Helper function to normalize and filter text segments
+  const normalizeTextSegments = (segments: string[]): string[] => {
+    return segments
+      .map(segment => normalizeLvText(segment))
+      .filter(segment => segment.length > 3); // Filter out segments shorter than 4 characters
   };
 
-  // Helper function to parse OCR text and extract product information
-  const parseOcrText = (text: string) => {
-    // Extract potential SKU (13-digit barcode - EAN-13) and validate it
-    const skuMatches = text.match(/\b\d{13}\b/g) || [];
-    const validSku = skuMatches.find(sku => validateEAN13(sku)) || null;
+  // Helper function to find matching product using two-pass token matching
+  const findMatchingProduct = async (textSegments: string[]): Promise<any | null> => {
+    if (!textSegments || textSegments.length === 0) {
+      console.log('No text segments provided for matching');
+      return null;
+    }
+
+    const normalizedSegments = normalizeTextSegments(textSegments);
     
-    // Extract potential price (look for € symbol nearby)
-    const priceMatch = text.match(/€\s*(\d+[.,]\d{2})|(\d+[.,]\d{2})\s*€/);
-    const price = priceMatch ? (priceMatch[1] || priceMatch[2]).replace(',', '.') : null;
+    if (normalizedSegments.length === 0) {
+      console.log('No segments long enough for matching after filtering');
+      return null;
+    }
+
+    console.log(`Normalized segments for matching: ${normalizedSegments.join(', ')}`);
+
+    // PASS 1: Find potential matches using SQL - products containing any of the segments
+    const potentialMatches: any[] = [];
     
-    // Extract first meaningful line for search (typically product name)
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
-    const searchText = lines.slice(0, 2).join(' ').trim();
-    
-    return {
-      sku: validSku,
-      price,
-      searchText,
-      rawText: text
-    };
+    for (const segment of normalizedSegments) {
+      try {
+        const searchResults = await storage.searchProducts(segment, {
+          page: 1,
+          pageSize: 50 // Get more results for better matching
+        });
+        
+        for (const product of searchResults.products) {
+          // Avoid duplicates
+          if (!potentialMatches.find(m => m.productId === product.productId)) {
+            potentialMatches.push(product);
+          }
+        }
+      } catch (err) {
+        console.error(`Error searching for segment "${segment}":`, err);
+      }
+    }
+
+    if (potentialMatches.length === 0) {
+      console.log('No potential matches found in Pass 1');
+      return null;
+    }
+
+    console.log(`Pass 1 found ${potentialMatches.length} potential matches`);
+
+    // PASS 2: Token-based verification with confidence scoring
+    const confirmedMatches: Array<{
+      product: any;
+      matchConfidence: number;
+      tokenCount: number;
+    }> = [];
+
+    for (const product of potentialMatches) {
+      const normalizedProductName = normalizeLvText(product.name);
+      const tokens = normalizedProductName.split(/\s+/);
+      
+      // Filter to significant tokens (longer than 3 characters)
+      const significantTokens = tokens.filter(token => token.length > 3);
+      const tokensToMatch = significantTokens.length > 0 ? significantTokens : tokens;
+
+      // Calculate how many tokens are found in the text segments
+      let matchingTokenCount = 0;
+      
+      for (const token of tokensToMatch) {
+        const tokenFound = normalizedSegments.some(segment => segment.includes(token));
+        if (tokenFound) {
+          matchingTokenCount++;
+        }
+      }
+
+      // Calculate match confidence
+      const matchConfidence = tokensToMatch.length > 0 
+        ? matchingTokenCount / tokensToMatch.length 
+        : 0;
+
+      // Add to confirmed matches if confidence >= 60%
+      if (matchConfidence >= 0.6) {
+        confirmedMatches.push({
+          product,
+          matchConfidence,
+          tokenCount: tokens.length
+        });
+      }
+    }
+
+    if (confirmedMatches.length === 0) {
+      console.log('No confirmed matches found in Pass 2');
+      return null;
+    }
+
+    // Sort by confidence (descending), then by token count (descending) for specificity
+    confirmedMatches.sort((a, b) => {
+      if (b.matchConfidence !== a.matchConfidence) {
+        return b.matchConfidence - a.matchConfidence;
+      }
+      return b.tokenCount - a.tokenCount;
+    });
+
+    const bestMatch = confirmedMatches[0];
+    console.log(`Best match: ${bestMatch.product.name} with confidence ${bestMatch.matchConfidence.toFixed(2)}`);
+
+    return bestMatch.product;
   };
 
   // Scan product endpoint - accepts base64 image
@@ -462,55 +534,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // First annotation contains all detected text
-      const detectedText = textAnnotations[0].description || '';
+      // Extract individual text segments (skip first element which is the full text)
+      const textSegments: string[] = textAnnotations.slice(1).map((annotation: any) => annotation.description || '');
       
-      console.log(`OCR detected text: ${detectedText}`);
+      console.log(`OCR detected ${textSegments.length} text segments:`, textSegments);
 
-      // Parse the detected text to extract product information
-      const parsed = parseOcrText(detectedText);
-      console.log(`Parsed OCR data:`, parsed);
-      
-      // Try to find matching product by validated SKU
-      let matchedProduct = null;
-      let matchConfidence: 'high' | 'low' | null = null;
-      
-      if (parsed.sku) {
-        try {
-          matchedProduct = await storage.getProductBySku(parsed.sku);
-          if (matchedProduct) {
-            matchConfidence = 'high'; // SKU match is high confidence
-            console.log(`Product match by validated SKU ${parsed.sku}: FOUND (high confidence)`);
-          }
-        } catch (err) {
-          console.error(`Error searching for product by SKU:`, err);
-        }
-      }
-      
-      // If no match by SKU, try searching by extracted search text (first 2 lines only)
-      if (!matchedProduct && parsed.searchText && parsed.searchText.length > 3) {
-        try {
-          const searchResults = await storage.searchProducts(parsed.searchText, { 
-            page: 1, 
-            pageSize: 3 
-          });
-          if (searchResults.products.length > 0) {
-            matchedProduct = searchResults.products[0];
-            matchConfidence = 'low'; // Text search is lower confidence
-            console.log(`Product match by text search "${parsed.searchText}": FOUND (low confidence)`);
-          }
-        } catch (err) {
-          console.error(`Error searching for product by text:`, err);
-        }
-      }
+      // Find matching product using two-pass token matching
+      const matchedProduct = await findMatchingProduct(textSegments);
+
+      // Get the full text for display purposes
+      const fullText = textAnnotations[0]?.description || textSegments.join(' ');
 
       res.json({
         success: true,
-        text: detectedText,
+        text: fullText,
         message: matchedProduct 
-          ? matchConfidence === 'high'
-            ? `Product found: ${matchedProduct.name}`
-            : `Possible match: ${matchedProduct.name} (${matchConfidence} confidence)`
+          ? `Product found: ${matchedProduct.name}`
           : "Text extracted successfully. No matching product found.",
         product: matchedProduct ? {
           productId: matchedProduct.productId,
@@ -518,12 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sku: matchedProduct.sku,
           rimiUrl: matchedProduct.rimiUrl,
           nutriScoreGrade: matchedProduct.nutrition?.nutriScoreGrade || null
-        } : null,
-        confidence: matchConfidence,
-        parsed: {
-          sku: parsed.sku,
-          price: parsed.price
-        }
+        } : null
       });
     } catch (error) {
       console.error("Error processing scan:", error);
