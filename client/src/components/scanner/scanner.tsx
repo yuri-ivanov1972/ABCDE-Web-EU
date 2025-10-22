@@ -32,11 +32,6 @@ export function Scanner({ onCapture }: ScannerProps) {
       rimiUrl: string | null;
       nutriScoreGrade: string | null;
     } | null;
-    confidence?: 'high' | 'low' | null;
-    parsed?: {
-      sku: string | null;
-      price: string | null;
-    };
   } | null>(null);
 
   // Check if device is mobile
@@ -222,17 +217,13 @@ export function Scanner({ onCapture }: ScannerProps) {
         message: string; 
         text?: string;
         product?: any;
-        confidence?: 'high' | 'low' | null;
-        parsed?: any;
       };
 
       setScanResult({
         success: data.success,
-        message: data.message, // Use actual message from backend
+        message: data.message,
         text: data.text,
-        product: data.product,
-        confidence: data.confidence,
-        parsed: data.parsed
+        product: data.product
       });
     } catch (err) {
       console.error('Error detecting product:', err);
@@ -326,20 +317,9 @@ export function Scanner({ onCapture }: ScannerProps) {
               <AlertDescription>{scanResult.message}</AlertDescription>
             </Alert>
             {scanResult.product && (
-              <div className={`bg-card border rounded-lg p-4 space-y-2 ${scanResult.confidence === 'low' ? 'border-yellow-500/50' : ''}`}>
-                <h3 className="font-semibold text-sm text-primary">
-                  {scanResult.confidence === 'high' ? 'Matched Product:' : 'Possible Match:'}
-                  {scanResult.confidence === 'low' && (
-                    <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-500 font-normal">(Low Confidence)</span>
-                  )}
-                </h3>
+              <div className="bg-card border rounded-lg p-4 space-y-2">
+                <h3 className="font-semibold text-sm text-primary">Matched Product:</h3>
                 <p className="font-medium">{scanResult.product.name}</p>
-                {scanResult.parsed?.sku && (
-                  <p className="text-sm text-muted-foreground">SKU: {scanResult.parsed.sku}</p>
-                )}
-                {scanResult.parsed?.price && (
-                  <p className="text-sm text-muted-foreground">Price: €{scanResult.parsed.price}</p>
-                )}
                 {scanResult.product.nutriScoreGrade && (
                   <p className="text-sm text-muted-foreground">
                     Nutri-Score: {scanResult.product.nutriScoreGrade}

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
 import { categoriesDb, productsDb } from "./db";
+import { normalizeLvText } from "./utils/textNormalization";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -405,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let matchingTokenCount = 0;
       
       for (const token of tokensToMatch) {
-        const tokenFound = normalizedSegments.some(segment => segment.includes(token));
+        const tokenFound = normalizedSegments.some((segment: string) => segment.includes(token));
         if (tokenFound) {
           matchingTokenCount++;
         }
