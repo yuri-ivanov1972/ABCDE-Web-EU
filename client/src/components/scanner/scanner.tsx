@@ -334,7 +334,7 @@ export function Scanner({ onCapture }: ScannerProps) {
                 </a>
               </div>
             )}
-            {scanResult.text && (
+            {scanResult.text && import.meta.env.VITE_DEBUG_MODE === 'true' && (
               <div className="bg-muted p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-sm">Detected Text:</h3>
                 <p className="text-sm whitespace-pre-wrap font-mono">{scanResult.text}</p>
@@ -389,51 +389,53 @@ export function Scanner({ onCapture }: ScannerProps) {
 
   // Show camera view
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto p-4">
-      <div className="relative w-full bg-black rounded-lg overflow-hidden">
-        {/* Video element */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-auto"
-          data-testid="video-camera"
-          onLoadedMetadata={() => console.log('Video metadata loaded')}
-          onCanPlay={() => console.log('Video can play')}
-          onPlaying={() => console.log('Video is playing')}
-        />
-        
-        {/* Visual overlay to help frame the price tag - 16:9 horizontal rectangle */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
-          <div className="relative border-4 border-white/50 rounded-lg" style={{ aspectRatio: '16/9', width: '100%', maxWidth: 'calc(100% - 64px)', maxHeight: 'calc(100% - 64px)' }}>
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary -translate-x-1 -translate-y-1"></div>
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary translate-x-1 -translate-y-1"></div>
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary -translate-x-1 translate-y-1"></div>
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary translate-x-1 translate-y-1"></div>
+    <div className="flex flex-col items-center w-full h-full">
+      <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center justify-center px-4 py-2" style={{ minHeight: '60vh' }}>
+        <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+          {/* Video element */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+            data-testid="video-camera"
+            onLoadedMetadata={() => console.log('Video metadata loaded')}
+            onCanPlay={() => console.log('Video can play')}
+            onPlaying={() => console.log('Video is playing')}
+          />
+          
+          {/* Visual overlay to help frame the price tag - 16:9 horizontal rectangle */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
+            <div className="relative border-4 border-white/50 rounded-lg" style={{ aspectRatio: '16/9', width: '100%', maxWidth: 'calc(100% - 64px)', maxHeight: 'calc(100% - 64px)' }}>
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary -translate-x-1 -translate-y-1"></div>
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary translate-x-1 -translate-y-1"></div>
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary -translate-x-1 translate-y-1"></div>
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary translate-x-1 translate-y-1"></div>
+            </div>
           </div>
-        </div>
-        <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-          <p className="text-white text-sm bg-black/50 inline-block px-3 py-1 rounded">
-            {t('camera.frameGuide')}
-          </p>
+          <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+            <p className="text-white text-sm bg-black/50 inline-block px-3 py-1 rounded">
+              {t('camera.frameGuide')}
+            </p>
+          </div>
+          
+          {/* Hidden canvas for capturing */}
+          <canvas ref={canvasRef} className="hidden" />
         </div>
         
-        {/* Hidden canvas for capturing */}
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
-      
-      {/* Capture button */}
-      <div className="mt-6 w-full max-w-sm">
-        <Button
-          onClick={handleCapture}
-          size="lg"
-          className="w-full"
-          data-testid="button-capture"
-        >
-          <Camera className="mr-2 h-5 w-5" />
-          {t('camera.capture')}
-        </Button>
+        {/* Capture button */}
+        <div className="mt-6 w-full max-w-sm">
+          <Button
+            onClick={handleCapture}
+            size="lg"
+            className="w-full"
+            data-testid="button-capture"
+          >
+            <Camera className="mr-2 h-5 w-5" />
+            {t('camera.capture')}
+          </Button>
+        </div>
       </div>
     </div>
   );
