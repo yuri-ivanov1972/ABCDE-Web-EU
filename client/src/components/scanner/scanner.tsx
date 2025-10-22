@@ -14,6 +14,9 @@ export function Scanner({ onCapture }: ScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // Debug mode: only show detected text when explicitly enabled
+  const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -219,8 +222,6 @@ export function Scanner({ onCapture }: ScannerProps) {
         product?: any;
       };
 
-      console.log('DEBUG MODE:', import.meta.env.VITE_DEBUG_MODE);
-
       setScanResult({
         success: data.success,
         message: data.message,
@@ -336,7 +337,7 @@ export function Scanner({ onCapture }: ScannerProps) {
                 </a>
               </div>
             )}
-            {scanResult.text && import.meta.env.VITE_DEBUG_MODE === 'true' && (
+            {scanResult.text && isDebugMode && (
               <div className="bg-muted p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-sm">Detected Text:</h3>
                 <p className="text-sm whitespace-pre-wrap font-mono">{scanResult.text}</p>
