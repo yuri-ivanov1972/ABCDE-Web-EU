@@ -147,6 +147,8 @@ Preferred communication style: Simple, everyday language.
 - **Scanner Route**: Accessible via header scan button (camera icon) at /lv/scan and /en/scan routes
 - **16:9 Horizontal Frame**: Optimized capture frame for price tag scanning with perfect 16:9 landscape aspect ratio
 - **Cropping Logic**: Captures only the framed area for clean, focused product images
+- **Optimized Camera Layout**: 16:9 aspect ratio camera view with 60vh minimum height ensures frame and capture button are visible without scrolling
+- **Debug Mode**: VITE_DEBUG_MODE environment variable controls visibility of "Detected text" box for debugging without republishing
 
 ### OCR and Product Recognition (October 2025) ✅ COMPLETED
 - **Google Cloud Vision API Integration**: Full OCR text extraction from captured price tag images using Vision API TEXT_DETECTION
