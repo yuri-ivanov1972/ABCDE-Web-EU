@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, RotateCcw, AlertCircle, Scan } from 'lucide-react';
+import { Camera, RotateCcw, AlertCircle, Scan, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ interface ScannerProps {
 }
 
 export function Scanner({ onCapture }: ScannerProps) {
-  const { t, ready } = useTranslation('scan');
+  const { t, ready, i18n } = useTranslation('scan');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -21,7 +21,23 @@ export function Scanner({ onCapture }: ScannerProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; text?: string } | null>(null);
+  const [scanResult, setScanResult] = useState<{ 
+    success: boolean; 
+    message: string; 
+    text?: string;
+    product?: {
+      productId: number;
+      name: string;
+      sku: string;
+      rimiUrl: string | null;
+      nutriScoreGrade: string | null;
+    } | null;
+    confidence?: 'high' | 'low' | null;
+    parsed?: {
+      sku: string | null;
+      price: string | null;
+    };
+  } | null>(null);
 
   // Check if device is mobile
   useEffect(() => {
@@ -201,12 +217,22 @@ export function Scanner({ onCapture }: ScannerProps) {
 
     try {
       const response = await apiRequest('POST', '/api/scan', { image: capturedImage });
-      const data = await response.json() as { success: boolean; message: string; text?: string };
+      const data = await response.json() as { 
+        success: boolean; 
+        message: string; 
+        text?: string;
+        product?: any;
+        confidence?: 'high' | 'low' | null;
+        parsed?: any;
+      };
 
       setScanResult({
         success: data.success,
         message: data.message, // Use actual message from backend
-        text: data.text
+        text: data.text,
+        product: data.product,
+        confidence: data.confidence,
+        parsed: data.parsed
       });
     } catch (err) {
       console.error('Error detecting product:', err);
@@ -299,6 +325,35 @@ export function Scanner({ onCapture }: ScannerProps) {
             >
               <AlertDescription>{scanResult.message}</AlertDescription>
             </Alert>
+            {scanResult.product && (
+              <div className={`bg-card border rounded-lg p-4 space-y-2 ${scanResult.confidence === 'low' ? 'border-yellow-500/50' : ''}`}>
+                <h3 className="font-semibold text-sm text-primary">
+                  {scanResult.confidence === 'high' ? 'Matched Product:' : 'Possible Match:'}
+                  {scanResult.confidence === 'low' && (
+                    <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-500 font-normal">(Low Confidence)</span>
+                  )}
+                </h3>
+                <p className="font-medium">{scanResult.product.name}</p>
+                {scanResult.parsed?.sku && (
+                  <p className="text-sm text-muted-foreground">SKU: {scanResult.parsed.sku}</p>
+                )}
+                {scanResult.parsed?.price && (
+                  <p className="text-sm text-muted-foreground">Price: €{scanResult.parsed.price}</p>
+                )}
+                {scanResult.product.nutriScoreGrade && (
+                  <p className="text-sm text-muted-foreground">
+                    Nutri-Score: {scanResult.product.nutriScoreGrade}
+                  </p>
+                )}
+                <a
+                  href={`/${i18n.language}/product/${scanResult.product.productId}`}
+                  className="inline-flex items-center text-sm text-primary hover:underline mt-2"
+                  data-testid="link-view-product"
+                >
+                  View Product Details <ExternalLink className="ml-1 h-4 w-4" />
+                </a>
+              </div>
+            )}
             {scanResult.text && (
               <div className="bg-muted p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-sm">Detected Text:</h3>

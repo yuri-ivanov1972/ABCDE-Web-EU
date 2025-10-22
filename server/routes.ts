@@ -335,6 +335,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to validate EAN-13 barcode checksum
+  const validateEAN13 = (ean: string): boolean => {
+    if (ean.length !== 13 || !/^\d{13}$/.test(ean)) return false;
+    
+    const digits = ean.split('').map(Number);
+    const checkDigit = digits[12];
+    
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      sum += digits[i] * (i % 2 === 0 ? 1 : 3);
+    }
+    
+    const calculatedCheck = (10 - (sum % 10)) % 10;
+    return calculatedCheck === checkDigit;
+  };
+
+  // Helper function to parse OCR text and extract product information
+  const parseOcrText = (text: string) => {
+    // Extract potential SKU (13-digit barcode - EAN-13) and validate it
+    const skuMatches = text.match(/\b\d{13}\b/g) || [];
+    const validSku = skuMatches.find(sku => validateEAN13(sku)) || null;
+    
+    // Extract potential price (look for € symbol nearby)
+    const priceMatch = text.match(/€\s*(\d+[.,]\d{2})|(\d+[.,]\d{2})\s*€/);
+    const price = priceMatch ? (priceMatch[1] || priceMatch[2]).replace(',', '.') : null;
+    
+    // Extract first meaningful line for search (typically product name)
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
+    const searchText = lines.slice(0, 2).join(' ').trim();
+    
+    return {
+      sku: validSku,
+      price,
+      searchText,
+      rawText: text
+    };
+  };
+
   // Scan product endpoint - accepts base64 image
   const scanRequestSchema = z.object({
     image: z.string().min(1, "Image data is required")
@@ -429,10 +467,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`OCR detected text: ${detectedText}`);
 
+      // Parse the detected text to extract product information
+      const parsed = parseOcrText(detectedText);
+      console.log(`Parsed OCR data:`, parsed);
+      
+      // Try to find matching product by validated SKU
+      let matchedProduct = null;
+      let matchConfidence: 'high' | 'low' | null = null;
+      
+      if (parsed.sku) {
+        try {
+          matchedProduct = await storage.getProductBySku(parsed.sku);
+          if (matchedProduct) {
+            matchConfidence = 'high'; // SKU match is high confidence
+            console.log(`Product match by validated SKU ${parsed.sku}: FOUND (high confidence)`);
+          }
+        } catch (err) {
+          console.error(`Error searching for product by SKU:`, err);
+        }
+      }
+      
+      // If no match by SKU, try searching by extracted search text (first 2 lines only)
+      if (!matchedProduct && parsed.searchText && parsed.searchText.length > 3) {
+        try {
+          const searchResults = await storage.searchProducts(parsed.searchText, { 
+            page: 1, 
+            pageSize: 3 
+          });
+          if (searchResults.products.length > 0) {
+            matchedProduct = searchResults.products[0];
+            matchConfidence = 'low'; // Text search is lower confidence
+            console.log(`Product match by text search "${parsed.searchText}": FOUND (low confidence)`);
+          }
+        } catch (err) {
+          console.error(`Error searching for product by text:`, err);
+        }
+      }
+
       res.json({
         success: true,
         text: detectedText,
-        message: "Text extracted successfully"
+        message: matchedProduct 
+          ? matchConfidence === 'high'
+            ? `Product found: ${matchedProduct.name}`
+            : `Possible match: ${matchedProduct.name} (${matchConfidence} confidence)`
+          : "Text extracted successfully. No matching product found.",
+        product: matchedProduct ? {
+          productId: matchedProduct.productId,
+          name: matchedProduct.name,
+          sku: matchedProduct.sku,
+          rimiUrl: matchedProduct.rimiUrl,
+          nutriScoreGrade: matchedProduct.nutrition?.nutriScoreGrade || null
+        } : null,
+        confidence: matchConfidence,
+        parsed: {
+          sku: parsed.sku,
+          price: parsed.price
+        }
       });
     } catch (error) {
       console.error("Error processing scan:", error);
