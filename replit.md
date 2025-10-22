@@ -149,15 +149,21 @@ Preferred communication style: Simple, everyday language.
 - **Cropping Logic**: Captures only the framed area for clean, focused product images
 
 ### OCR and Product Recognition (October 2025) ✅ COMPLETED
-- **Google Cloud Vision API Integration**: Full OCR text extraction from captured price tag images using Vision API
-- **EAN-13 Barcode Validation**: Implements checksum validation for 13-digit barcodes to filter out false matches
-- **Smart Product Matching**: Two-tier matching system:
-  - High confidence: Direct SKU lookup using validated EAN-13 barcodes
-  - Low confidence: Text-based search using first 2 lines of OCR output
-- **Parsed Data Extraction**: Automatically extracts SKU, price (€ symbol required), and product names
-- **Confidence Indicators**: API returns confidence level (high/low) to distinguish certain vs. uncertain matches
-- **Visual Confidence Display**: Frontend shows yellow border and "Low Confidence" label for text-based matches
-- **False Positive Prevention**: Limited text search to first 2 lines prevents spurious matches from full OCR blob
-- **Product Information Display**: Shows matched product name, SKU, price, Nutri-Score, and link to product details
+- **Google Cloud Vision API Integration**: Full OCR text extraction from captured price tag images using Vision API TEXT_DETECTION
+- **Individual Text Segment Extraction**: Uses textAnnotations[1:] to extract individual text segments (not full text blob)
+- **Latvian Text Normalization**: Applies normalizeLvText() to all segments, replacing diacritics with Latin equivalents
+- **Segment Filtering**: Filters out segments shorter than 4 characters to reduce noise
+- **Two-Pass Token Matching Algorithm** (proven approach from reference implementation):
+  - **Pass 1 (SQL Search)**: Finds potential product matches by searching database for products containing any normalized segment
+  - **Pass 2 (Token Verification)**: For each potential match:
+    - Splits product name into tokens using whitespace
+    - Filters to significant tokens (> 3 characters)
+    - Counts how many tokens appear in OCR segments
+    - Calculates match confidence (matching tokens / total tokens)
+    - Requires >= 60% confidence threshold
+  - **Ranking**: Sorts matches by confidence (descending), then token count (descending)
+  - **Returns**: Only the best match with highest confidence
+- **Performance Optimized**: Uses SQL-level search with name_norm indexed field for fast segment matching
+- **Product Information Display**: Shows matched product name, Nutri-Score, and link to product details
 - **Error Handling**: Comprehensive error checking for Vision API failures and empty results
 - **Secret Management**: Uses GOOGLE_CLOUD_API_KEY environment variable for secure API authentication
