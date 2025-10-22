@@ -145,3 +145,19 @@ Preferred communication style: Simple, everyday language.
 - **Camera Initialization Fix**: Resolved video stream display issue with proper initialization sequence (set cameraReady first, wait 100ms for DOM render, then attach stream)
 - **Retake Functionality**: Fixed retake button to properly restart camera using same initialization logic as initial start
 - **Scanner Route**: Accessible via header scan button (camera icon) at /lv/scan and /en/scan routes
+- **16:9 Horizontal Frame**: Optimized capture frame for price tag scanning with perfect 16:9 landscape aspect ratio
+- **Cropping Logic**: Captures only the framed area for clean, focused product images
+
+### OCR and Product Recognition (October 2025) ✅ COMPLETED
+- **Google Cloud Vision API Integration**: Full OCR text extraction from captured price tag images using Vision API
+- **EAN-13 Barcode Validation**: Implements checksum validation for 13-digit barcodes to filter out false matches
+- **Smart Product Matching**: Two-tier matching system:
+  - High confidence: Direct SKU lookup using validated EAN-13 barcodes
+  - Low confidence: Text-based search using first 2 lines of OCR output
+- **Parsed Data Extraction**: Automatically extracts SKU, price (€ symbol required), and product names
+- **Confidence Indicators**: API returns confidence level (high/low) to distinguish certain vs. uncertain matches
+- **Visual Confidence Display**: Frontend shows yellow border and "Low Confidence" label for text-based matches
+- **False Positive Prevention**: Limited text search to first 2 lines prevents spurious matches from full OCR blob
+- **Product Information Display**: Shows matched product name, SKU, price, Nutri-Score, and link to product details
+- **Error Handling**: Comprehensive error checking for Vision API failures and empty results
+- **Secret Management**: Uses GOOGLE_CLOUD_API_KEY environment variable for secure API authentication
