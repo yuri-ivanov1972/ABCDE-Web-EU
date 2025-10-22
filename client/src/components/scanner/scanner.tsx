@@ -18,6 +18,18 @@ export function Scanner({ onCapture }: ScannerProps) {
   // Debug mode: only show detected text when explicitly enabled
   const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
+  // Helper function to get Nutri-Score color
+  const getNutriScoreColor = (grade: string) => {
+    const colors: Record<string, string> = {
+      'A': 'text-green-600',
+      'B': 'text-lime-500',
+      'C': 'text-yellow-500',
+      'D': 'text-orange-500',
+      'E': 'text-red-600'
+    };
+    return colors[grade.toUpperCase()] || 'text-muted-foreground';
+  };
+
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>('');
@@ -329,21 +341,17 @@ export function Scanner({ onCapture }: ScannerProps) {
               </Alert>
             )}
             {scanResult.product && (
-              <div className="bg-card border rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold text-sm text-primary">Matched Product:</h3>
-                <p className="font-medium">{scanResult.product.name}</p>
+              <div className="bg-card border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm text-primary">{t('result.matchedProduct')}</h3>
+                <p className="font-medium text-base">{scanResult.product.name}</p>
                 {scanResult.product.nutriScoreGrade && (
-                  <p className="text-sm text-muted-foreground">
-                    Nutri-Score: {scanResult.product.nutriScoreGrade}
-                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm text-muted-foreground">Nutri-Score:</span>
+                    <span className={`text-3xl font-bold ${getNutriScoreColor(scanResult.product.nutriScoreGrade)}`}>
+                      {scanResult.product.nutriScoreGrade}
+                    </span>
+                  </div>
                 )}
-                <a
-                  href={`/${i18n.language}/product/${scanResult.product.productId}`}
-                  className="inline-flex items-center text-sm text-primary hover:underline mt-2"
-                  data-testid="link-view-product"
-                >
-                  View Product Details <ExternalLink className="ml-1 h-4 w-4" />
-                </a>
               </div>
             )}
             {scanResult.text && isDebugMode && (
@@ -364,25 +372,39 @@ export function Scanner({ onCapture }: ScannerProps) {
         )}
         
         <div className="flex flex-col gap-3 mt-6 w-full">
-          <Button
-            onClick={handleDetect}
-            className="w-full"
-            size="lg"
-            disabled={isProcessing}
-            data-testid="button-detect"
-          >
-            {isProcessing ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                {t('detect.processing')}
-              </>
-            ) : (
-              <>
-                <Scan className="mr-2 h-5 w-5" />
-                {t('detect.button')}
-              </>
-            )}
-          </Button>
+          {scanResult?.product ? (
+            <Button
+              asChild
+              className="w-full"
+              size="lg"
+              data-testid="button-view-product"
+            >
+              <a href={`/${i18n.language}/product/${scanResult.product.productId}`}>
+                <ExternalLink className="mr-2 h-5 w-5" />
+                {t('result.viewDetails')}
+              </a>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleDetect}
+              className="w-full"
+              size="lg"
+              disabled={isProcessing}
+              data-testid="button-detect"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {t('detect.processing')}
+                </>
+              ) : (
+                <>
+                  <Scan className="mr-2 h-5 w-5" />
+                  {t('detect.button')}
+                </>
+              )}
+            </Button>
+          )}
           <Button
             onClick={handleRetake}
             variant="outline"

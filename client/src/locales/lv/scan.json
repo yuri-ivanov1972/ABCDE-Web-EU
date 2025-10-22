@@ -14,6 +14,10 @@
     "success": "Produkts veiksmīgi atpazīts!",
     "failure": "Neizdevās atpazīt produktu. Lūdzu, mēģiniet vēlreiz ar skaidrāku attēlu."
   },
+  "result": {
+    "matchedProduct": "Atrastais produkts:",
+    "viewDetails": "Skatīt detaļas"
+  },
   "errors": {
     "mobileOnly": "Šī funkcija ir pieejama tikai mobilajām ierīcēm.",
     "notSupported": "Jūsu pārlūkprogramma neatbalsta kameras piekļuvi.",

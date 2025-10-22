@@ -14,6 +14,10 @@
     "success": "Product successfully detected!",
     "failure": "Failed to detect product. Please try again with a clearer image."
   },
+  "result": {
+    "matchedProduct": "Matched Product:",
+    "viewDetails": "View Details"
+  },
   "errors": {
     "mobileOnly": "This feature is designed for mobile devices only.",
     "notSupported": "Camera access is not supported in your browser.",
