@@ -219,6 +219,8 @@ export function Scanner({ onCapture }: ScannerProps) {
         product?: any;
       };
 
+      console.log('DEBUG MODE:', import.meta.env.VITE_DEBUG_MODE);
+
       setScanResult({
         success: data.success,
         message: data.message,
