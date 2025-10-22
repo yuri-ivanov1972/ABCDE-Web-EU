@@ -353,14 +353,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { image } = result.data;
-
-      // TODO: Integrate with Google Vision API
-      // For now, return a mock success response
       console.log(`Received image for scanning, size: ${image.length} bytes`);
+
+      // Get API key from environment
+      const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+      if (!apiKey) {
+        console.error("GOOGLE_CLOUD_API_KEY not configured");
+        return res.status(500).json({
+          success: false,
+          message: "OCR service not configured"
+        });
+      }
+
+      // Strip data URL prefix if present (data:image/jpeg;base64,)
+      const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, '');
+
+      // Call Google Cloud Vision API
+      const visionApiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+      
+      const visionResponse = await fetch(visionApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requests: [
+            {
+              image: {
+                content: base64Image
+              },
+              features: [
+                {
+                  type: 'TEXT_DETECTION'
+                }
+              ]
+            }
+          ]
+        })
+      });
+
+      if (!visionResponse.ok) {
+        const errorText = await visionResponse.text();
+        console.error(`Vision API error: ${visionResponse.status} - ${errorText}`);
+        return res.status(500).json({
+          success: false,
+          message: "OCR processing failed"
+        });
+      }
+
+      const visionData = await visionResponse.json();
+      
+      // Check for Vision API errors in the response
+      const response = visionData.responses?.[0];
+      if (response?.error) {
+        console.error(`Vision API error in response: ${JSON.stringify(response.error)}`);
+        return res.status(400).json({
+          success: false,
+          message: `OCR failed: ${response.error.message || 'Unknown error'}`
+        });
+      }
+      
+      // Extract text from response
+      const textAnnotations = response?.textAnnotations;
+      
+      if (!textAnnotations || textAnnotations.length === 0) {
+        return res.json({
+          success: false,
+          text: '',
+          message: "No text detected in image. Please try again with a clearer photo."
+        });
+      }
+
+      // First annotation contains all detected text
+      const detectedText = textAnnotations[0].description || '';
+      
+      console.log(`OCR detected text: ${detectedText}`);
 
       res.json({
         success: true,
-        message: "Image received successfully"
+        text: detectedText,
+        message: "Text extracted successfully"
       });
     } catch (error) {
       console.error("Error processing scan:", error);

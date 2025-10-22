@@ -21,7 +21,7 @@ export function Scanner({ onCapture }: ScannerProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; text?: string } | null>(null);
 
   // Check if device is mobile
   useEffect(() => {
@@ -200,15 +200,13 @@ export function Scanner({ onCapture }: ScannerProps) {
     setError('');
 
     try {
-      // Remove the data:image/jpeg;base64, prefix to send just the base64 data
-      const base64Data = capturedImage.replace(/^data:image\/jpeg;base64,/, '');
-
-      const response = await apiRequest('POST', '/api/scan', { image: base64Data });
-      const data = await response.json() as { success: boolean; message: string };
+      const response = await apiRequest('POST', '/api/scan', { image: capturedImage });
+      const data = await response.json() as { success: boolean; message: string; text?: string };
 
       setScanResult({
         success: data.success,
-        message: data.success ? t('detect.success') : t('detect.failure')
+        message: data.message, // Use actual message from backend
+        text: data.text
       });
     } catch (err) {
       console.error('Error detecting product:', err);
@@ -294,12 +292,20 @@ export function Scanner({ onCapture }: ScannerProps) {
 
         {/* Show result message if available */}
         {scanResult && (
-          <Alert 
-            variant={scanResult.success ? "default" : "destructive"} 
-            className="mt-4 max-w-md"
-          >
-            <AlertDescription>{scanResult.message}</AlertDescription>
-          </Alert>
+          <div className="mt-4 w-full space-y-3">
+            <Alert 
+              variant={scanResult.success ? "default" : "destructive"} 
+              className="max-w-full"
+            >
+              <AlertDescription>{scanResult.message}</AlertDescription>
+            </Alert>
+            {scanResult.text && (
+              <div className="bg-muted p-4 rounded-lg">
+                <h3 className="font-semibold mb-2 text-sm">Detected Text:</h3>
+                <p className="text-sm whitespace-pre-wrap font-mono">{scanResult.text}</p>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Show error message if upload failed */}
