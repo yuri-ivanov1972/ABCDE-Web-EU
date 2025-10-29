@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '@/lib/queryClient';
+import { trackProductScanned, trackProductViewAfterScan, trackCameraPermission, trackScanFailure } from '@/lib/analytics';
 
 interface ScannerProps {
   onCapture?: (imageData: string) => void;
@@ -116,17 +117,24 @@ export function Scanner({ onCapture }: ScannerProps) {
       }
 
       setError('');
+      
+      // Track successful camera permission grant
+      trackCameraPermission({ permission: 'granted' });
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setError(t('errors.permissionDenied'));
+          trackCameraPermission({ permission: 'denied', error: 'User denied camera access' });
         } else if (err.name === 'NotFoundError') {
           setError(t('errors.notFound'));
+          trackCameraPermission({ permission: 'denied', error: 'Camera not found' });
         } else {
           setError(t('errors.generic'));
+          trackCameraPermission({ permission: 'denied', error: err.message });
         }
       } else {
         setError(t('errors.generic'));
+        trackCameraPermission({ permission: 'denied', error: 'Unknown error' });
       }
       
       setIsLoading(false);
@@ -250,12 +258,34 @@ export function Scanner({ onCapture }: ScannerProps) {
         text: data.text,
         product: data.product
       });
+
+      // Track product scan event
+      if (data.success && data.product) {
+        trackProductScanned({
+          productId: data.product.productId,
+          productName: data.product.name,
+          nutriScore: data.product.nutriScoreGrade || undefined,
+          confidence: data.product.confidence || undefined,
+        });
+      } else {
+        // Track scan failure
+        trackScanFailure({
+          reason: data.message || 'Unknown failure',
+          hasText: !!data.text,
+        });
+      }
     } catch (err) {
       console.error('Error detecting product:', err);
       setError(t('errors.uploadFailed'));
       setScanResult({
         success: false,
         message: t('detect.failure')
+      });
+      
+      // Track scan failure
+      trackScanFailure({
+        reason: 'Upload failed or network error',
+        hasText: false,
       });
     } finally {
       setIsProcessing(false);
@@ -379,7 +409,17 @@ export function Scanner({ onCapture }: ScannerProps) {
               size="lg"
               data-testid="button-view-product"
             >
-              <a href={`/${i18n.language}/product/${scanResult.product.productId}`}>
+              <a 
+                href={`/${i18n.language}/product/${scanResult.product.productId}`}
+                onClick={() => {
+                  // Track when user clicks to view product details after scanning
+                  trackProductViewAfterScan({
+                    productId: scanResult.product!.productId,
+                    productName: scanResult.product!.name,
+                    nutriScore: scanResult.product!.nutriScoreGrade || undefined,
+                  });
+                }}
+              >
                 <ExternalLink className="mr-2 h-5 w-5" />
                 {t('result.viewDetails')}
               </a>
