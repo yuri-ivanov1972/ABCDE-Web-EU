@@ -5,6 +5,7 @@ import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import abcdeLogo from '@assets/abcde_logo.svg';
+import { trackPetitionClick } from '@/lib/analytics';
 
 interface HeaderProps {
   isMobileFiltersOpen: boolean;
@@ -15,7 +16,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilters, onSearch, categoryId, hasActiveFilters = false }) => {
-  const { t, ready } = useTranslation(['header', 'common']);
+  const { t, ready, i18n } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Return loading state while translations are loading
@@ -78,6 +79,14 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
               rel="noopener noreferrer"
               className="text-xs md:text-sm text-primary hover:text-primary/80 mt-1 flex items-center gap-1 transition-colors"
               data-testid="petition-link"
+              onClick={() => {
+                // Track petition link clicks
+                trackPetitionClick({
+                  linkUrl: t('header:petition.url'),
+                  linkText: t('header:petition.text'),
+                  language: i18n.language || 'unknown',
+                });
+              }}
             >
               {t('header:petition.text')}
               <ExternalLink className="h-3 w-3 hidden md:inline" />
