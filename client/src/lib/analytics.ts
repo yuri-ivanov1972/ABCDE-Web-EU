@@ -12,9 +12,12 @@ declare const window: GTMWindow;
 
 /**
  * Send a custom event to Google Tag Manager
+ * Initializes dataLayer if it doesn't exist to ensure events are queued before GTM loads
  */
 function pushToDataLayer(data: Record<string, any>) {
-  if (typeof window !== 'undefined' && window.dataLayer) {
+  if (typeof window !== 'undefined') {
+    // Initialize dataLayer if it doesn't exist (ensures events are queued before GTM loads)
+    window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(data);
   }
 }
@@ -27,6 +30,7 @@ export function trackProductScanned(params: {
   productName: string;
   nutriScore?: string;
   confidence?: number;
+  language?: string;
 }) {
   pushToDataLayer({
     event: 'product_scanned',
@@ -34,6 +38,7 @@ export function trackProductScanned(params: {
     product_name: params.productName,
     nutri_score: params.nutriScore || 'unknown',
     scan_confidence: params.confidence || 0,
+    language: params.language || 'unknown',
   });
 }
 
@@ -44,12 +49,14 @@ export function trackProductViewAfterScan(params: {
   productId: number;
   productName: string;
   nutriScore?: string;
+  language?: string;
 }) {
   pushToDataLayer({
     event: 'product_view_after_scan',
     product_id: params.productId,
     product_name: params.productName,
     nutri_score: params.nutriScore || 'unknown',
+    language: params.language || 'unknown',
   });
 }
 
@@ -75,11 +82,13 @@ export function trackPetitionClick(params: {
 export function trackCameraPermission(params: {
   permission: 'granted' | 'denied';
   error?: string;
+  language?: string;
 }) {
   pushToDataLayer({
     event: 'camera_permission',
     permission_status: params.permission,
     error_message: params.error || null,
+    language: params.language || 'unknown',
   });
 }
 
@@ -89,10 +98,12 @@ export function trackCameraPermission(params: {
 export function trackScanFailure(params: {
   reason: string;
   hasText: boolean;
+  language?: string;
 }) {
   pushToDataLayer({
     event: 'scan_failure',
     failure_reason: params.reason,
     text_detected: params.hasText,
+    language: params.language || 'unknown',
   });
 }

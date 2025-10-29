@@ -70,8 +70,14 @@ Preferred communication style: Simple, everyday language.
 - **Drizzle Kit**: Database migration and schema management tools
 
 ### Analytics and Tracking
-- **Google Analytics**: User behavior tracking and site analytics
-- **Google Tag Manager**: Tag and conversion tracking management
+- **Google Analytics (GA4)**: User behavior tracking and site analytics (G-TLGL1PJYTC)
+- **Google Tag Manager**: Tag and conversion tracking management (GTM-P46NQX5H)
+- **Custom Event Tracking**: Centralized analytics utility for tracking user interactions
+  - Product scan events (successful scans, OCR confidence)
+  - Product view after scan (user engagement)
+  - Petition link clicks (manabalss.lv initiative tracking)
+  - Camera permission status (granted/denied)
+  - Scan failure events (OCR errors, debugging data)
 
 ### Asset Management
 - **SVG to ICO Conversion**: Favicon generation from vector graphics
@@ -169,3 +175,15 @@ Preferred communication style: Simple, everyday language.
 - **Product Information Display**: Shows matched product name, Nutri-Score, and link to product details
 - **Error Handling**: Comprehensive error checking for Vision API failures and empty results
 - **Secret Management**: Uses GOOGLE_CLOUD_API_KEY environment variable for secure API authentication
+
+### Google Tag Manager Analytics Enhancement (October 2025) ✅ COMPLETED
+- **Analytics Utility Creation**: Created centralized `client/src/lib/analytics.ts` helper for GTM event tracking
+- **Product Scan Tracking**: Captures successful product scans with product ID, name, Nutri-Score, and OCR confidence
+- **View Details Tracking**: Tracks when users click "View Details" button after scanning a product
+- **Petition Link Tracking**: Monitors clicks on manabalss.lv petition link with language context
+- **Camera Permission Tracking**: Records camera permission grants/denials for UX insights
+- **Scan Failure Tracking**: Logs failed scans with failure reasons and detected text status for debugging
+- **GTM Integration**: All events sent to window.dataLayer for processing in Google Tag Manager (GTM-P46NQX5H)
+- **Event Structure**: Standardized event format with descriptive names and relevant metadata
+- **Language Context**: All relevant events include language information (lv/en) for localized analytics
+- **Non-Blocking Implementation**: Analytics calls don't interfere with app performance or user experience

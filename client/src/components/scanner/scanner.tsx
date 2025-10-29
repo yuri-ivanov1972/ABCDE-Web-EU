@@ -119,22 +119,22 @@ export function Scanner({ onCapture }: ScannerProps) {
       setError('');
       
       // Track successful camera permission grant
-      trackCameraPermission({ permission: 'granted' });
+      trackCameraPermission({ permission: 'granted', language: i18n.language });
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setError(t('errors.permissionDenied'));
-          trackCameraPermission({ permission: 'denied', error: 'User denied camera access' });
+          trackCameraPermission({ permission: 'denied', error: 'User denied camera access', language: i18n.language });
         } else if (err.name === 'NotFoundError') {
           setError(t('errors.notFound'));
-          trackCameraPermission({ permission: 'denied', error: 'Camera not found' });
+          trackCameraPermission({ permission: 'denied', error: 'Camera not found', language: i18n.language });
         } else {
           setError(t('errors.generic'));
-          trackCameraPermission({ permission: 'denied', error: err.message });
+          trackCameraPermission({ permission: 'denied', error: err.message, language: i18n.language });
         }
       } else {
         setError(t('errors.generic'));
-        trackCameraPermission({ permission: 'denied', error: 'Unknown error' });
+        trackCameraPermission({ permission: 'denied', error: 'Unknown error', language: i18n.language });
       }
       
       setIsLoading(false);
@@ -266,12 +266,14 @@ export function Scanner({ onCapture }: ScannerProps) {
           productName: data.product.name,
           nutriScore: data.product.nutriScoreGrade || undefined,
           confidence: data.product.confidence || undefined,
+          language: i18n.language,
         });
       } else {
         // Track scan failure
         trackScanFailure({
           reason: data.message || 'Unknown failure',
           hasText: !!data.text,
+          language: i18n.language,
         });
       }
     } catch (err) {
@@ -286,6 +288,7 @@ export function Scanner({ onCapture }: ScannerProps) {
       trackScanFailure({
         reason: 'Upload failed or network error',
         hasText: false,
+        language: i18n.language,
       });
     } finally {
       setIsProcessing(false);
@@ -417,6 +420,7 @@ export function Scanner({ onCapture }: ScannerProps) {
                     productId: scanResult.product!.productId,
                     productName: scanResult.product!.name,
                     nutriScore: scanResult.product!.nutriScoreGrade || undefined,
+                    language: i18n.language,
                   });
                 }}
               >
