@@ -469,24 +469,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { image } = result.data;
       console.log(`Received image for scanning, size: ${image.length} bytes`);
       
-      // Save photo to object storage before processing
-      const objectStorageService = new ObjectStorageService();
-      try {
-        photoUrl = await objectStorageService.saveImageFromBase64(image);
-        console.log(`Photo saved to storage: ${photoUrl}`);
-      } catch (storageError) {
-        console.error("Failed to save photo to storage:", storageError);
-        // Continue with OCR even if storage fails
+      // Save photo to object storage before processing (only if configured)
+      if (process.env.PRIVATE_OBJECT_DIR) {
+        const objectStorageService = new ObjectStorageService();
+        try {
+          photoUrl = await objectStorageService.saveImageFromBase64(image);
+          console.log(`Photo saved to storage: ${photoUrl}`);
+        } catch (storageError) {
+          console.error("Failed to save photo to storage:", storageError);
+          // Continue with OCR even if storage fails
+        }
+      } else {
+        console.log("Object storage not configured, skipping photo save");
       }
       
       // Cleanup old scans (30+ days) asynchronously
-      storage.cleanupOldScans(30).then(async (deletedCount) => {
-        if (deletedCount > 0) {
-          console.log(`Cleaned up ${deletedCount} old scans`);
-          // Also delete the photos from storage
-          // We'll get the URLs from the deleted scans later if needed
-        }
-      }).catch(err => {
+      storage.cleanupOldScans(30).catch(err => {
         console.error("Error cleaning up old scans:", err);
       });
 

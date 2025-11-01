@@ -898,17 +898,36 @@ export class DatabaseStorage implements IStorage {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
     
-    // Get old scans for photo URLs
+    // Get old scans with photo URLs
     const oldScans = await productsDb
       .select({ photoUrl: scans.photoUrl })
       .from(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
+    
+    // Delete photos from object storage
+    if (oldScans.length > 0) {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      for (const scan of oldScans) {
+        if (scan.photoUrl) {
+          try {
+            await objectStorageService.deleteImage(scan.photoUrl);
+            console.log(`Deleted photo from storage: ${scan.photoUrl}`);
+          } catch (err) {
+            console.error(`Failed to delete photo ${scan.photoUrl}:`, err);
+            // Continue with cleanup even if photo deletion fails
+          }
+        }
+      }
+    }
     
     // Delete from database
     await productsDb
       .delete(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
     
+    console.log(`Cleaned up ${oldScans.length} old scans from database and storage`);
     return oldScans.length;
   }
 }
