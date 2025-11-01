@@ -72,7 +72,7 @@ export const productPhotos = pgTable("productphotos", {
 // Scans table schema - stores scan photos and metadata for debugging
 export const scans = pgTable("scans", {
   scanId: serial("scan_id").primaryKey(),
-  photoUrl: text("photo_url").notNull(),
+  photoUrl: text("photo_url"), // Nullable - only saved if object storage is configured
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   // OCR data
   ocrText: text("ocr_text"), // Detected text segments

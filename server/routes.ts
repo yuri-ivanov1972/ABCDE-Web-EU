@@ -568,21 +568,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the full text for display purposes
       const fullText = textAnnotations[0]?.description || textSegments.join(' ');
       
-      // Save scan metadata to database
-      if (photoUrl) {
-        try {
-          await storage.createScan({
-            photoUrl,
-            ocrText: fullText,
-            productId: matchedProduct?.productId || null,
-            matchConfidence: matchedProduct ? "85.00" : null, // Default confidence
-            success: !!matchedProduct,
-            language: req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'unknown'
-          });
-        } catch (dbError) {
-          console.error("Failed to save scan metadata:", dbError);
-          // Continue even if DB save fails
-        }
+      // Save scan metadata to database (always save, even if photo wasn't stored)
+      try {
+        await storage.createScan({
+          photoUrl: photoUrl, // Can be null if storage not configured
+          ocrText: fullText,
+          productId: matchedProduct?.productId || null,
+          matchConfidence: matchedProduct ? "85.00" : null, // Default confidence
+          success: !!matchedProduct,
+          language: req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'unknown'
+        });
+        console.log(`Scan metadata saved to database. Product: ${matchedProduct ? matchedProduct.name : 'none'}, Photo: ${photoUrl ? 'saved' : 'not saved'}`);
+      } catch (dbError) {
+        console.error("Failed to save scan metadata:", dbError);
+        // Continue even if DB save fails
       }
 
       res.json({
