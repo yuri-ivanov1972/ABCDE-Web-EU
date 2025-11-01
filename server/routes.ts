@@ -607,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get signed URL for a scan photo
+  // Stream scan photo directly from storage
   app.get("/api/scan/photo/:scanId", async (req: Request, res: Response) => {
     try {
       const scanId = parseInt(req.params.scanId);
@@ -636,20 +636,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate signed URL
+      // Parse gs:// path and stream the photo
       const objectStorageService = new ObjectStorageService();
-      const signedUrl = await objectStorageService.getSignedUrl(scan.photoUrl);
+      const file = await objectStorageService.getFileFromStoragePath(scan.photoUrl);
+      
+      if (!file) {
+        return res.status(404).json({
+          success: false,
+          message: "Photo file not found in storage"
+        });
+      }
 
-      res.json({
-        success: true,
-        signedUrl
-      });
+      // Stream the photo directly to the client
+      await objectStorageService.downloadObject(file, res);
     } catch (error) {
-      console.error("Error generating signed URL:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to generate signed URL"
-      });
+      console.error("Error serving scan photo:", error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: "Failed to serve photo"
+        });
+      }
     }
   });
 

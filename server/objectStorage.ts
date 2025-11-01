@@ -177,6 +177,66 @@ export class ObjectStorageService {
       return null;
     }
   }
+
+  // Get a file reference from a storage path (gs:// format)
+  async getFileFromStoragePath(storagePath: string): Promise<File | null> {
+    try {
+      if (!storagePath.startsWith('gs://')) {
+        return null;
+      }
+
+      const pathWithoutProtocol = storagePath.substring(5); // Remove 'gs://'
+      const slashIndex = pathWithoutProtocol.indexOf('/');
+      
+      if (slashIndex === -1) {
+        return null;
+      }
+      
+      const bucketName = pathWithoutProtocol.substring(0, slashIndex);
+      const objectName = pathWithoutProtocol.substring(slashIndex + 1);
+
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      const [exists] = await file.exists();
+      return exists ? file : null;
+    } catch (error) {
+      console.error('Error getting file from storage path:', error);
+      return null;
+    }
+  }
+
+  // Download/stream an object to the response
+  async downloadObject(file: File, res: any): Promise<void> {
+    try {
+      // Get file metadata
+      const [metadata] = await file.getMetadata();
+      
+      // Set appropriate headers
+      res.set({
+        'Content-Type': metadata.contentType || 'application/octet-stream',
+        'Content-Length': metadata.size,
+        'Cache-Control': 'private, max-age=2592000', // 30 days cache
+      });
+
+      // Stream the file to the response
+      const stream = file.createReadStream();
+
+      stream.on('error', (err) => {
+        console.error('Stream error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Error streaming file' });
+        }
+      });
+
+      stream.pipe(res);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error downloading file' });
+      }
+    }
+  }
 }
 
 function parseObjectPath(path: string): {
