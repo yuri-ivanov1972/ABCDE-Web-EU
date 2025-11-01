@@ -5,6 +5,7 @@ import { z } from "zod";
 import { sql } from "drizzle-orm";
 import { categoriesDb, productsDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
+import { ObjectStorageService } from "./objectStorage";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -452,6 +453,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/scan", async (req: Request, res: Response) => {
+    let photoUrl: string | null = null;
+    
     try {
       const result = scanRequestSchema.safeParse(req.body);
       
@@ -465,6 +468,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { image } = result.data;
       console.log(`Received image for scanning, size: ${image.length} bytes`);
+      
+      // Save photo to object storage before processing
+      const objectStorageService = new ObjectStorageService();
+      try {
+        photoUrl = await objectStorageService.saveImageFromBase64(image);
+        console.log(`Photo saved to storage: ${photoUrl}`);
+      } catch (storageError) {
+        console.error("Failed to save photo to storage:", storageError);
+        // Continue with OCR even if storage fails
+      }
+      
+      // Cleanup old scans (30+ days) asynchronously
+      storage.cleanupOldScans(30).then(async (deletedCount) => {
+        if (deletedCount > 0) {
+          console.log(`Cleaned up ${deletedCount} old scans`);
+          // Also delete the photos from storage
+          // We'll get the URLs from the deleted scans later if needed
+        }
+      }).catch(err => {
+        console.error("Error cleaning up old scans:", err);
+      });
 
       // Get API key from environment
       const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
@@ -545,6 +569,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get the full text for display purposes
       const fullText = textAnnotations[0]?.description || textSegments.join(' ');
+      
+      // Save scan metadata to database
+      if (photoUrl) {
+        try {
+          await storage.createScan({
+            photoUrl,
+            ocrText: fullText,
+            productId: matchedProduct?.productId || null,
+            matchConfidence: matchedProduct ? "85.00" : null, // Default confidence
+            success: !!matchedProduct,
+            language: req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'unknown'
+          });
+        } catch (dbError) {
+          console.error("Failed to save scan metadata:", dbError);
+          // Continue even if DB save fails
+        }
+      }
 
       res.json({
         success: true,

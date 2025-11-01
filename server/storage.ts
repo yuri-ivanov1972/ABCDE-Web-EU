@@ -1,7 +1,7 @@
 import { 
   users, type User, type InsertUser,
-  categories, products, nutritionFacts, productPhotos,
-  type Category, type Product, type NutritionFacts, type ProductPhoto
+  categories, products, nutritionFacts, productPhotos, scans,
+  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan
 } from "@shared/schema";
 import { categoriesDb, productsDb, categoriesPool, productsPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
@@ -57,6 +57,10 @@ export interface IStorage {
   getProductBySku(sku: string): Promise<ProductWithDetails | undefined>;
   getProductByRimiUrl(rimiUrl: string): Promise<ProductWithDetails | undefined>;
   searchProducts(query: string, options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }>;
+  
+  // Scan methods
+  createScan(scan: InsertScan): Promise<Scan>;
+  cleanupOldScans(daysOld: number): Promise<number>; // Returns count of deleted scans
 }
 
 // Types for the storage methods
@@ -879,6 +883,34 @@ export class DatabaseStorage implements IStorage {
       return { products: [], totalCount: 0 };
     }
   }
+  
+  // Scan methods
+  async createScan(scan: InsertScan): Promise<Scan> {
+    const [createdScan] = await productsDb
+      .insert(scans)
+      .values(scan)
+      .returning();
+    return createdScan;
+  }
+  
+  async cleanupOldScans(daysOld: number): Promise<number> {
+    // Calculate the cutoff date
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+    
+    // Get old scans for photo URLs
+    const oldScans = await productsDb
+      .select({ photoUrl: scans.photoUrl })
+      .from(scans)
+      .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
+    
+    // Delete from database
+    await productsDb
+      .delete(scans)
+      .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
+    
+    return oldScans.length;
+  }
 }
 
 // Create memory storage for fallback if needed
@@ -947,6 +979,14 @@ export class MemStorage implements IStorage {
   
   async searchProducts(): Promise<{ products: ProductWithDetails[], totalCount: number }> {
     return { products: [], totalCount: 0 };
+  }
+  
+  async createScan(): Promise<Scan> {
+    throw new Error("Not implemented");
+  }
+  
+  async cleanupOldScans(): Promise<number> {
+    return 0;
   }
 }
 

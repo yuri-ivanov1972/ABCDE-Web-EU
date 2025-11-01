@@ -69,6 +69,22 @@ export const productPhotos = pgTable("productphotos", {
   isPrimary: boolean("is_primary").default(false),
 });
 
+// Scans table schema - stores scan photos and metadata for debugging
+export const scans = pgTable("scans", {
+  scanId: serial("scan_id").primaryKey(),
+  photoUrl: text("photo_url").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // OCR data
+  ocrText: text("ocr_text"), // Detected text segments
+  // Matched product info (if successful)
+  productId: integer("product_id"), // Reference to matched product
+  matchConfidence: decimal("match_confidence", { precision: 5, scale: 2 }), // 0-100
+  // Scan result
+  success: boolean("success").notNull(), // Whether product was matched
+  // Language context
+  language: varchar("language", { length: 10 }), // lv or en
+});
+
 // Define relations between tables
 export const productRelations = {
   category: {
@@ -111,6 +127,10 @@ export const insertCategorySchema = createInsertSchema(categories);
 export const insertProductSchema = createInsertSchema(products);
 export const insertNutritionFactsSchema = createInsertSchema(nutritionFacts);
 export const insertProductPhotoSchema = createInsertSchema(productPhotos);
+export const insertScanSchema = createInsertSchema(scans).omit({
+  scanId: true,
+  createdAt: true,
+});
 
 // Export types
 export type Category = typeof categories.$inferSelect;
@@ -124,6 +144,9 @@ export type InsertNutritionFacts = z.infer<typeof insertNutritionFactsSchema>;
 
 export type ProductPhoto = typeof productPhotos.$inferSelect;
 export type InsertProductPhoto = z.infer<typeof insertProductPhotoSchema>;
+
+export type Scan = typeof scans.$inferSelect;
+export type InsertScan = z.infer<typeof insertScanSchema>;
 
 // Combined Product type with relations for frontend use
 export type ProductWithDetails = Product & {
