@@ -60,6 +60,7 @@ export interface IStorage {
   
   // Scan methods
   createScan(scan: InsertScan): Promise<Scan>;
+  getScanById(scanId: number): Promise<Scan | null>;
   cleanupOldScans(daysOld: number): Promise<number>; // Returns count of deleted scans
 }
 
@@ -893,6 +894,14 @@ export class DatabaseStorage implements IStorage {
     return createdScan;
   }
   
+  async getScanById(scanId: number): Promise<Scan | null> {
+    const [scan] = await productsDb
+      .select()
+      .from(scans)
+      .where(eq(scans.scanId, scanId));
+    return scan || null;
+  }
+  
   async cleanupOldScans(daysOld: number): Promise<number> {
     // Calculate the cutoff date
     const cutoffDate = new Date();
@@ -912,7 +921,7 @@ export class DatabaseStorage implements IStorage {
       for (const scan of oldScans) {
         if (scan.photoUrl) {
           try {
-            await objectStorageService.deleteImage(scan.photoUrl);
+            await objectStorageService.deleteImageByUrl(scan.photoUrl);
             console.log(`Deleted photo from storage: ${scan.photoUrl}`);
           } catch (err) {
             console.error(`Failed to delete photo ${scan.photoUrl}:`, err);
@@ -1002,6 +1011,10 @@ export class MemStorage implements IStorage {
   
   async createScan(): Promise<Scan> {
     throw new Error("Not implemented");
+  }
+  
+  async getScanById(): Promise<Scan | null> {
+    return null;
   }
   
   async cleanupOldScans(): Promise<number> {

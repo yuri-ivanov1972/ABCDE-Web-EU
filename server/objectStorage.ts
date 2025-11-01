@@ -48,7 +48,7 @@ export class ObjectStorageService {
     return dir;
   }
 
-  // Save a base64 image to object storage and return the public URL
+  // Save a base64 image to object storage and return the storage path (not a URL)
   async saveImageFromBase64(base64Image: string, filename?: string): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     
@@ -76,24 +76,73 @@ export class ObjectStorageService {
       },
     });
 
-    // Return the GCS public URL
-    return `https://storage.googleapis.com/${bucketName}/${objectName}`;
+    // Return the storage path (gs:// format) for later signed URL generation
+    return `gs://${bucketName}/${objectName}`;
   }
 
-  // Delete a file from object storage by URL
+  // Generate a signed URL for a stored image (30-day expiration)
+  async getSignedUrl(storagePath: string): Promise<string> {
+    try {
+      // Parse gs:// path
+      if (!storagePath.startsWith('gs://')) {
+        throw new Error('Invalid storage path - must start with gs://');
+      }
+      
+      const pathWithoutProtocol = storagePath.substring(5); // Remove 'gs://'
+      const slashIndex = pathWithoutProtocol.indexOf('/');
+      
+      if (slashIndex === -1) {
+        throw new Error('Invalid storage path - no object name found');
+      }
+      
+      const bucketName = pathWithoutProtocol.substring(0, slashIndex);
+      const objectName = pathWithoutProtocol.substring(slashIndex + 1);
+
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      // Generate signed URL with 30-day expiration
+      const [signedUrl] = await file.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+      });
+
+      return signedUrl;
+    } catch (error) {
+      console.error('Error generating signed URL:', error);
+      throw error;
+    }
+  }
+
+  // Delete a file from object storage by URL or storage path
   async deleteImageByUrl(imageUrl: string): Promise<void> {
     try {
-      // Extract bucket and object name from URL
-      // Format: https://storage.googleapis.com/bucket-name/path/to/file.jpg
-      const url = new URL(imageUrl);
-      const pathParts = url.pathname.split('/').filter(p => p);
-      
-      if (pathParts.length < 2) {
-        throw new Error('Invalid image URL');
-      }
+      let bucketName: string;
+      let objectName: string;
 
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join('/');
+      // Handle gs:// storage paths
+      if (imageUrl.startsWith('gs://')) {
+        const pathWithoutProtocol = imageUrl.substring(5);
+        const slashIndex = pathWithoutProtocol.indexOf('/');
+        
+        if (slashIndex === -1) {
+          throw new Error('Invalid storage path');
+        }
+        
+        bucketName = pathWithoutProtocol.substring(0, slashIndex);
+        objectName = pathWithoutProtocol.substring(slashIndex + 1);
+      } else {
+        // Handle https:// URLs (for backwards compatibility)
+        const url = new URL(imageUrl);
+        const pathParts = url.pathname.split('/').filter(p => p);
+        
+        if (pathParts.length < 2) {
+          throw new Error('Invalid image URL');
+        }
+
+        bucketName = pathParts[0];
+        objectName = pathParts.slice(1).join('/');
+      }
 
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);

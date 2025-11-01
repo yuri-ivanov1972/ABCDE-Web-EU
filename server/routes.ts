@@ -607,6 +607,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get signed URL for a scan photo
+  app.get("/api/scan/photo/:scanId", async (req: Request, res: Response) => {
+    try {
+      const scanId = parseInt(req.params.scanId);
+      
+      if (isNaN(scanId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid scan ID"
+        });
+      }
+
+      // Get the scan from database
+      const scan = await storage.getScanById(scanId);
+      
+      if (!scan) {
+        return res.status(404).json({
+          success: false,
+          message: "Scan not found"
+        });
+      }
+
+      if (!scan.photoUrl) {
+        return res.status(404).json({
+          success: false,
+          message: "No photo associated with this scan"
+        });
+      }
+
+      // Generate signed URL
+      const objectStorageService = new ObjectStorageService();
+      const signedUrl = await objectStorageService.getSignedUrl(scan.photoUrl);
+
+      res.json({
+        success: true,
+        signedUrl
+      });
+    } catch (error) {
+      console.error("Error generating signed URL:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate signed URL"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
