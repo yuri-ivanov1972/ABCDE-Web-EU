@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Service Worker Cache</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clear Service Worker & Cache</h1>
+    <p>This will unregister all service workers and clear all caches for this site.</p>
+    
+    <button onclick="clearAll()">Clear Everything</button>
+    <div id="result" class="result" style="display:none"></div>
+    
+    <script>
+        async function clearAll() {
+            const resultDiv = document.getElementById('result');
+            let messages = [];
+            
+            try {
+                // Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    messages.push(`Found ${registrations.length} service worker(s)`);
+                    
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        messages.push(`✓ Unregistered service worker: ${registration.scope}`);
+                    }
+                } else {
+                    messages.push('No service worker support');
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    messages.push(`\nFound ${cacheNames.length} cache(s)`);
+                    
+                    for (let cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        messages.push(`✓ Deleted cache: ${cacheName}`);
+                    }
+                } else {
+                    messages.push('\nNo cache API support');
+                }
+                
+                // Clear localStorage
+                localStorage.clear();
+                messages.push('\n✓ Cleared localStorage');
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                messages.push('✓ Cleared sessionStorage');
+                
+                messages.push('\n✅ ALL DONE! Now refresh the page or go to /lv/scan');
+                
+            } catch (error) {
+                messages.push(`\n❌ Error: ${error.message}`);
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = messages.join('\n');
+        }
+    </script>
+</body>
+</html>
