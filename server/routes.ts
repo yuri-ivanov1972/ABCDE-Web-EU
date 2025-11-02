@@ -469,6 +469,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { image } = result.data;
       console.log(`Received image for scanning, size: ${image.length} bytes`);
       
+      // Decode and log image dimensions for debugging
+      try {
+        const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Read basic JPEG dimensions (very simple parser for width/height)
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8) { // JPEG magic number
+          let offset = 2;
+          while (offset < buffer.length) {
+            if (buffer[offset] === 0xFF && (buffer[offset + 1] === 0xC0 || buffer[offset + 1] === 0xC2)) {
+              const height = (buffer[offset + 5] << 8) | buffer[offset + 6];
+              const width = (buffer[offset + 7] << 8) | buffer[offset + 8];
+              console.log(`📷 Image dimensions: ${width}x${height} (aspect ratio: ${(width/height).toFixed(2)})`);
+              break;
+            }
+            offset++;
+          }
+        }
+      } catch (e) {
+        console.log('Could not parse image dimensions');
+      }
+      
       // Save photo to object storage before processing (only if configured)
       if (process.env.PRIVATE_OBJECT_DIR) {
         const objectStorageService = new ObjectStorageService();
