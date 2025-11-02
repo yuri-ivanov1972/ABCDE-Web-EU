@@ -152,17 +152,29 @@ export function Scanner({ onCapture }: ScannerProps) {
   }, []);
 
   const handleCapture = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    console.log('🎬 handleCapture called');
+    
+    if (!videoRef.current || !canvasRef.current) {
+      console.error('❌ Missing refs:', { video: !!videoRef.current, canvas: !!canvasRef.current });
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    if (!context) return;
+    if (!context) {
+      console.error('❌ Canvas context is null');
+      return;
+    }
+
+    console.log('✅ Refs and context OK');
 
     // Get actual video stream dimensions
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
+    
+    console.log('📹 Video stream dimensions:', { videoWidth, videoHeight });
     
     // Get displayed video element dimensions
     const displayWidth = video.clientWidth;
@@ -218,14 +230,17 @@ export function Scanner({ onCapture }: ScannerProps) {
     });
 
     // Draw only the cropped portion of the video frame
+    console.log('🖼️ About to call drawImage with crop region');
     context.drawImage(
       video,
       cropX, cropY, cropWidth, cropHeight,  // source rectangle (from video)
       0, 0, cropWidth, cropHeight            // destination rectangle (on canvas)
     );
+    console.log('✅ drawImage completed');
 
     // Convert canvas to data URL
     const imageData = canvas.toDataURL('image/jpeg', 0.9);
+    console.log('📦 Image data created, length:', imageData.length);
     setCapturedImage(imageData);
 
     // Stop camera stream
