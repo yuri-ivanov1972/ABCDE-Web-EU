@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import LanguageRouter from "@/components/routing/LanguageRouter";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 
 function App() {
@@ -38,6 +39,9 @@ function App() {
     setHasActiveFilters(hasFilters);
   };
 
+  // Check if current page is the scan page
+  const isScanPage = pathWithoutLang === '/scan';
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -60,6 +64,8 @@ function App() {
           <Footer />
         </div>
         <Toaster />
+        {/* Show FAB on all pages except scan page (mobile only) */}
+        {!isScanPage && <FloatingActionButton />}
       </Router>
     </QueryClientProvider>
   );
