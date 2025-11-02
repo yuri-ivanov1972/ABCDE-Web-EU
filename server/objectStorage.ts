@@ -178,22 +178,38 @@ export class ObjectStorageService {
     }
   }
 
-  // Get a file reference from a storage path (gs:// format)
+  // Get a file reference from a storage path (gs:// or https://storage.googleapis.com/ format)
   async getFileFromStoragePath(storagePath: string): Promise<File | null> {
     try {
-      if (!storagePath.startsWith('gs://')) {
-        return null;
-      }
+      let bucketName: string;
+      let objectName: string;
 
-      const pathWithoutProtocol = storagePath.substring(5); // Remove 'gs://'
-      const slashIndex = pathWithoutProtocol.indexOf('/');
-      
-      if (slashIndex === -1) {
+      if (storagePath.startsWith('gs://')) {
+        // Handle gs:// format
+        const pathWithoutProtocol = storagePath.substring(5); // Remove 'gs://'
+        const slashIndex = pathWithoutProtocol.indexOf('/');
+        
+        if (slashIndex === -1) {
+          return null;
+        }
+        
+        bucketName = pathWithoutProtocol.substring(0, slashIndex);
+        objectName = pathWithoutProtocol.substring(slashIndex + 1);
+      } else if (storagePath.startsWith('https://storage.googleapis.com/')) {
+        // Handle https://storage.googleapis.com/ format
+        const url = new URL(storagePath);
+        const pathParts = url.pathname.split('/').filter(p => p);
+        
+        if (pathParts.length < 2) {
+          return null;
+        }
+
+        bucketName = pathParts[0];
+        objectName = pathParts.slice(1).join('/');
+      } else {
+        console.error('Invalid storage path format:', storagePath);
         return null;
       }
-      
-      const bucketName = pathWithoutProtocol.substring(0, slashIndex);
-      const objectName = pathWithoutProtocol.substring(slashIndex + 1);
 
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);
