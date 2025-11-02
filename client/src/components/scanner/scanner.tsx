@@ -205,6 +205,18 @@ export function Scanner({ onCapture }: ScannerProps) {
     canvas.width = cropWidth;
     canvas.height = cropHeight;
 
+    // Log cropping info for debugging
+    console.log('Cropping info:', {
+      videoSize: { width: videoWidth, height: videoHeight },
+      displaySize: { width: displayWidth, height: displayHeight },
+      cropRegion: { x: Math.round(cropX), y: Math.round(cropY), width: Math.round(cropWidth), height: Math.round(cropHeight) },
+      canvasSize: { width: Math.round(cropWidth), height: Math.round(cropHeight) },
+      cropPercentage: { 
+        width: Math.round((cropWidth / videoWidth) * 100), 
+        height: Math.round((cropHeight / videoHeight) * 100) 
+      }
+    });
+
     // Draw only the cropped portion of the video frame
     context.drawImage(
       video,
