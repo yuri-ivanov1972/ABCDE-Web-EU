@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { Scanner } from '@/components/scanner/scanner';
 import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getCanonicalUrl } from '@/lib/canonical';
 
 export default function ScanPage() {
   const { t } = useTranslation('scan');
@@ -14,7 +16,11 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <link rel="canonical" href={getCanonicalUrl('/scan')} />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b">
         <div className="container mx-auto px-4 py-4">
@@ -39,6 +45,7 @@ export default function ScanPage() {
       <div className="container mx-auto px-4 py-8">
         <Scanner onCapture={handleCapture} />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

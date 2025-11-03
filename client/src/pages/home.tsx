@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { getPathWithoutLanguage } from '@/i18n';
+import { getCanonicalUrl } from '@/lib/canonical';
 import { SlidersHorizontal } from 'lucide-react';
 
 import { getProducts, getCategoryById } from '@/api';
@@ -247,19 +249,25 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     );
   }
 
+  const canonicalPath = categoryId ? `/category/${categoryId}` : '/';
+
   return (
-    <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
-      {/* Mobile Menu - shown/hidden based on state */}
-      <MobileMenu 
-        isOpen={isMobileFiltersOpen} 
-        categoryId={categoryId}
-        onApplyFilters={handleMobileFiltersApply}
-      />
-      
-      {/* Sidebar - desktop only */}
-      <Sidebar 
-        categoryId={categoryId}
-        filters={filters} 
+    <>
+      <Helmet>
+        <link rel="canonical" href={getCanonicalUrl(canonicalPath)} />
+      </Helmet>
+      <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
+        {/* Mobile Menu - shown/hidden based on state */}
+        <MobileMenu 
+          isOpen={isMobileFiltersOpen} 
+          categoryId={categoryId}
+          onApplyFilters={handleMobileFiltersApply}
+        />
+        
+        {/* Sidebar - desktop only */}
+        <Sidebar 
+          categoryId={categoryId}
+          filters={filters} 
         onUpdateFilters={handleUpdateFilters}
         onApplyFilters={handleApplyFilters}
       />
@@ -334,7 +342,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
           />
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import { Helmet } from 'react-helmet-async';
 import { Search, ExternalLink } from 'lucide-react';
 import { getProductByRimiUrl } from '@/api';
 import { addLanguageToPath, getLanguageFromPath } from '@/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
+import { getCanonicalUrl } from '@/lib/canonical';
 
 const ProductSearch: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -37,9 +39,13 @@ const ProductSearch: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Meklēt produktu pēc Rimi URL</h1>
+    <>
+      <Helmet>
+        <link rel="canonical" href={getCanonicalUrl('/product-search')} />
+      </Helmet>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-2xl font-bold mb-6">Meklēt produktu pēc Rimi URL</h1>
         
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="flex flex-col sm:flex-row gap-2">
@@ -141,8 +147,9 @@ const ProductSearch: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
+import { getCanonicalUrl } from '@/lib/canonical';
 import NotFound from '@/pages/not-found';
 
 interface ProductDetailsProps {
@@ -81,17 +83,21 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back link */}
-      <div className="mb-6">
-        <Link 
-          href={product.categoryId ? `/${lang}/category/${product.categoryId}` : `/${lang}`} 
-          className="text-primary hover:text-primary/90 font-medium flex items-center"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('product:backToProducts')}
-        </Link>
-      </div>
+    <>
+      <Helmet>
+        <link rel="canonical" href={getCanonicalUrl(`/product/${productId}`)} />
+      </Helmet>
+      <div className="container mx-auto px-4 py-8">
+        {/* Back link */}
+        <div className="mb-6">
+          <Link 
+            href={product.categoryId ? `/${lang}/category/${product.categoryId}` : `/${lang}`} 
+            className="text-primary hover:text-primary/90 font-medium flex items-center"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('product:backToProducts')}
+          </Link>
+        </div>
 
       {/* Breadcrumbs */}
       {categoryPath && categoryPath.length > 0 && (
@@ -244,7 +250,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

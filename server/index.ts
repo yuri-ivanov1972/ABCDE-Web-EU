@@ -6,6 +6,19 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// 301 Redirect www to non-www for SEO canonicalization
+app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  if (host.startsWith('www.')) {
+    // Only allow https or http protocols to prevent open redirect vulnerability
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    const protocol = (forwardedProto === 'https' || forwardedProto === 'http') ? forwardedProto : 'https';
+    const newHost = host.replace(/^www\./, '');
+    return res.redirect(301, `${protocol}://${newHost}${req.originalUrl}`);
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
