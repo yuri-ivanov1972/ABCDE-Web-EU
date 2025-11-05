@@ -1,0 +1,108 @@
+
+import os
+import psycopg2
+
+def create_schema():
+    # Read the schema file and split into individual statements
+    with open('schema.sql', 'r') as f:
+        schema_sql = f.read()
+    
+    # Get database URL from environment
+    database_url = os.environ['DATABASE_URL']
+    
+    # Connect to the database
+    conn = psycopg2.connect(database_url)
+    conn.autocommit = True
+    
+    try:
+        with conn.cursor() as cur:
+            # Enable pg_trgm extension for text search if not exists
+            cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
+            
+            # Drop existing name_norm column if it exists and recreate with updated logic
+            cur.execute("ALTER TABLE products DROP COLUMN IF EXISTS name_norm;")
+            
+            # Add name_norm column with updated normalization logic including space handling
+            cur.execute("""
+                ALTER TABLE products ADD COLUMN name_norm TEXT GENERATED ALWAYS AS (
+                    trim(
+                        regexp_replace(
+                            regexp_replace(
+                                regexp_replace(
+                                    regexp_replace(
+                                        regexp_replace(
+                                            regexp_replace(
+                                                regexp_replace(
+                                                    regexp_replace(
+                                                        regexp_replace(
+                                                            regexp_replace(
+                                                                regexp_replace(
+                                                                    regexp_replace(
+                                                                        regexp_replace(
+                                                                            regexp_replace(
+                                                                                regexp_replace(lower(name),
+                                                                                'ā', 'a', 'g'),
+                                                                            'č', 'c', 'g'),
+                                                                        'ē', 'e', 'g'),
+                                                                    'ģ', 'g', 'g'),
+                                                                'ī', 'i', 'g'),
+                                                            'ķ', 'k', 'g'),
+                                                        'ļ', 'l', 'g'),
+                                                    'ņ', 'n', 'g'),
+                                                'š', 's', 'g'),
+                                            'ū', 'u', 'g'),
+                                        'ž', 'z', 'g'),
+                                    'Ā|Č|Ē|Ģ|Ī|Ķ|Ļ|Ņ|Š|Ū|Ž', '', 'g'),
+                                '\.', ' ', 'g'),
+                            ',', ' ', 'g'),
+                        '\s+', ' ', 'g')
+                    )
+                ) STORED;
+            """)
+            
+            # Create tables only if they don't exist
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS ingredient_analysis (
+                    id SERIAL PRIMARY KEY,
+                    ingredient TEXT NOT NULL UNIQUE,
+                    frequency INTEGER NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_ingredient_analysis_freq 
+                ON ingredient_analysis USING btree (frequency DESC);
+                
+                CREATE TABLE IF NOT EXISTS ingredient_product_mapping (
+                    ingredient_id INTEGER NOT NULL REFERENCES ingredient_analysis(id),
+                    product_sku TEXT NOT NULL REFERENCES products(sku),
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (ingredient_id, product_sku)
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_ingredient_product_mapping_ingredient 
+                ON ingredient_product_mapping USING btree (ingredient_id);
+                
+                CREATE TABLE IF NOT EXISTS scans (
+                    scan_id SERIAL PRIMARY KEY,
+                    photo_url TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                    ocr_text TEXT,
+                    product_id INTEGER REFERENCES products(product_id),
+                    match_confidence DECIMAL(5, 2),
+                    success BOOLEAN NOT NULL,
+                    language VARCHAR(10)
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_scans_product_id ON scans(product_id);
+                CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at);
+                CREATE INDEX IF NOT EXISTS idx_scans_success ON scans(success);
+            """)
+            
+        print("Schema created/verified successfully!")
+    except Exception as e:
+        print(f"Error creating schema: {e}")
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    create_schema()
