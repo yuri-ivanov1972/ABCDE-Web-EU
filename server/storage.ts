@@ -61,6 +61,7 @@ export interface IStorage {
   // Scan methods
   createScan(scan: InsertScan): Promise<Scan>;
   getScanById(scanId: number): Promise<Scan | null>;
+  getScanByToken(token: string): Promise<Scan | null>;
   cleanupOldScans(daysOld: number): Promise<number>; // Returns count of deleted scans
 }
 
@@ -902,6 +903,14 @@ export class DatabaseStorage implements IStorage {
     return scan || null;
   }
   
+  async getScanByToken(token: string): Promise<Scan | null> {
+    const [scan] = await productsDb
+      .select()
+      .from(scans)
+      .where(eq(scans.photoAccessToken, token));
+    return scan || null;
+  }
+  
   async cleanupOldScans(daysOld: number): Promise<number> {
     // Calculate the cutoff date
     const cutoffDate = new Date();
@@ -1014,6 +1023,10 @@ export class MemStorage implements IStorage {
   }
   
   async getScanById(): Promise<Scan | null> {
+    return null;
+  }
+  
+  async getScanByToken(token: string): Promise<Scan | null> {
     return null;
   }
   

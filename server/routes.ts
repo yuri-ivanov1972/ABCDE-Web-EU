@@ -591,8 +591,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fullText = textAnnotations[0]?.description || textSegments.join(' ');
       
       // Save scan metadata to database (always save, even if photo wasn't stored)
+      let createdScan;
       try {
-        await storage.createScan({
+        createdScan = await storage.createScan({
           photoUrl: photoUrl, // Can be null if storage not configured
           ocrText: fullText,
           productId: matchedProduct?.productId || null,
@@ -600,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: !!matchedProduct,
           language: req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'unknown'
         });
-        console.log(`Scan metadata saved to database. Product: ${matchedProduct ? matchedProduct.name : 'none'}, Photo: ${photoUrl ? 'saved' : 'not saved'}`);
+        console.log(`Scan metadata saved to database. Product: ${matchedProduct ? matchedProduct.name : 'none'}, Photo: ${photoUrl ? 'saved' : 'not saved'}, Token: ${createdScan.photoAccessToken}`);
       } catch (dbError) {
         console.error("Failed to save scan metadata:", dbError);
         // Continue even if DB save fails
@@ -612,6 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: matchedProduct 
           ? `Product found: ${matchedProduct.name}`
           : "Text extracted successfully. No matching product found.",
+        photoAccessToken: createdScan?.photoAccessToken || null,
         product: matchedProduct ? {
           productId: matchedProduct.productId,
           name: matchedProduct.name,
@@ -629,20 +631,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stream scan photo directly from storage
-  app.get("/api/scan/photo/:scanId", async (req: Request, res: Response) => {
+  // Stream scan photo directly from storage using secure token
+  app.get("/api/scan/photo/:token", async (req: Request, res: Response) => {
     try {
-      const scanId = parseInt(req.params.scanId);
+      const token = req.params.token;
       
-      if (isNaN(scanId)) {
+      if (!token || token.length !== 36) {
         return res.status(400).json({
           success: false,
-          message: "Invalid scan ID"
+          message: "Invalid photo access token"
         });
       }
 
-      // Get the scan from database
-      const scan = await storage.getScanById(scanId);
+      // Get the scan from database by token
+      const scan = await storage.getScanByToken(token);
       
       if (!scan) {
         return res.status(404).json({

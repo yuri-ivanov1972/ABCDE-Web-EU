@@ -72,6 +72,7 @@ export const productPhotos = pgTable("productphotos", {
 // Scans table schema - stores scan photos and metadata for debugging
 export const scans = pgTable("scans", {
   scanId: serial("scan_id").primaryKey(),
+  photoAccessToken: varchar("photo_access_token", { length: 36 }).notNull().unique().$defaultFn(() => crypto.randomUUID()),
   photoUrl: text("photo_url"), // Nullable - only saved if object storage is configured
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   // OCR data
@@ -129,6 +130,7 @@ export const insertNutritionFactsSchema = createInsertSchema(nutritionFacts);
 export const insertProductPhotoSchema = createInsertSchema(productPhotos);
 export const insertScanSchema = createInsertSchema(scans).omit({
   scanId: true,
+  photoAccessToken: true,
   createdAt: true,
 });
 

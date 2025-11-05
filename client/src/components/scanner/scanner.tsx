@@ -276,6 +276,7 @@ export function Scanner({ onCapture }: ScannerProps) {
         success: boolean; 
         message: string; 
         text?: string;
+        photoAccessToken?: string | null;
         product?: any;
       };
 
