@@ -3,7 +3,7 @@ import {
   categories, products, nutritionFacts, productPhotos, scans,
   type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan
 } from "@shared/schema";
-import { categoriesDb, productsDb, categoriesPool, productsPool } from "./db";
+import { categoriesDb, productsDb, scansDb, categoriesPool, productsPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
@@ -888,7 +888,7 @@ export class DatabaseStorage implements IStorage {
   
   // Scan methods
   async createScan(scan: InsertScan): Promise<Scan> {
-    const [createdScan] = await productsDb
+    const [createdScan] = await scansDb
       .insert(scans)
       .values(scan)
       .returning();
@@ -896,7 +896,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getScanById(scanId: number): Promise<Scan | null> {
-    const [scan] = await productsDb
+    const [scan] = await scansDb
       .select()
       .from(scans)
       .where(eq(scans.scanId, scanId));
@@ -904,7 +904,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getScanByToken(token: string): Promise<Scan | null> {
-    const [scan] = await productsDb
+    const [scan] = await scansDb
       .select()
       .from(scans)
       .where(eq(scans.photoAccessToken, token));
@@ -917,7 +917,7 @@ export class DatabaseStorage implements IStorage {
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
     
     // Get old scans with photo URLs
-    const oldScans = await productsDb
+    const oldScans = await scansDb
       .select({ photoUrl: scans.photoUrl })
       .from(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
@@ -941,7 +941,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Delete from database
-    await productsDb
+    await scansDb
       .delete(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
     

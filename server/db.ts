@@ -14,13 +14,18 @@ const categoriesUrlStart = process.env.CATEGORIES_DB_URL
 const productsUrlStart = process.env.PRODUCTS_DB_URL
   ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..."
   : "undefined";
+const localUrlStart = process.env.DATABASE_URL
+  ? process.env.DATABASE_URL.substring(0, 20) + "..."
+  : "undefined";
 
 console.log("CATEGORIES_DB_URL starts with:", categoriesUrlStart);
 console.log("PRODUCTS_DB_URL starts with:", productsUrlStart);
+console.log("DATABASE_URL (local) starts with:", localUrlStart);
 
 // Get database connection strings
 const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
 const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
+const LOCAL_DB_URL = process.env.DATABASE_URL;
 
 if (!CATEGORIES_DB_URL) {
   throw new Error("CATEGORIES_DB_URL is not set. Please provide this environment variable.");
@@ -28,6 +33,10 @@ if (!CATEGORIES_DB_URL) {
 
 if (!PRODUCTS_DB_URL) {
   throw new Error("PRODUCTS_DB_URL is not set. Please provide this environment variable.");
+}
+
+if (!LOCAL_DB_URL) {
+  throw new Error("DATABASE_URL is not set. Please provision the local database.");
 }
 
 // Improved connection pool settings for better stability
@@ -50,6 +59,11 @@ export const productsPool = new Pool({
   ...poolConfig
 });
 
+export const scansPool = new Pool({
+  connectionString: LOCAL_DB_URL,
+  ...poolConfig
+});
+
 // Add connection error handling
 categoriesPool.on('error', (err) => {
   console.error('Categories pool error:', err);
@@ -59,8 +73,13 @@ productsPool.on('error', (err) => {
   console.error('Products pool error:', err);
 });
 
+scansPool.on('error', (err) => {
+  console.error('Scans pool error:', err);
+});
+
 // Create drizzle clients
 export const categoriesDb = drizzle({ client: categoriesPool, schema });
 export const productsDb = drizzle({ client: productsPool, schema });
+export const scansDb = drizzle({ client: scansPool, schema });
 
-console.log("Database connections established with external Neon databases");
+console.log("Database connections established: categories (remote), products (remote), scans (local)");
