@@ -10,7 +10,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
 // Default language
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'lv';
 
-// Namespaces
+// All available namespaces
 export const NAMESPACES = [
   'common',
   'header', 
@@ -22,6 +22,10 @@ export const NAMESPACES = [
   'errors',
   'scan'
 ] as const;
+
+// Load namespaces needed for home page initially (most commonly visited)
+// Other namespaces (product, errors, scan) will be lazy-loaded
+const INITIAL_NAMESPACES = ['common', 'header', 'home', 'filters', 'categories', 'pagination'] as const;
 
 // Language detection configuration
 const detectionOptions = {
@@ -49,9 +53,12 @@ if (!i18n.isInitialized) {
       // Language detection
       detection: detectionOptions,
       
-      // Namespace configuration
-      ns: NAMESPACES,
+      // Namespace configuration - only load essential ones initially
+      ns: INITIAL_NAMESPACES,
       defaultNS: 'common',
+      
+      // Lazy load other namespaces
+      partialBundledLanguages: true,
       
       // Interpolation
       interpolation: {
@@ -64,7 +71,7 @@ if (!i18n.isInitialized) {
       
       // React configuration
       react: {
-        useSuspense: false, // We'll handle loading states manually
+        useSuspense: true, // Use Suspense to wait for translations before rendering
       }
     });
 }
