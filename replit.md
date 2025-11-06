@@ -25,9 +25,12 @@ Preferred communication style: Simple, everyday language.
 - **Scan Photo Storage**: Backend-only storage of scanned price tag photos and associated metadata using Replit App Storage, with a 30-day retention policy and automatic cleanup.
 
 ### Data Storage
-- **Databases**: PostgreSQL, utilizing two separate instances for categories and products, hosted on Neon Database (serverless PostgreSQL).
+- **Databases**: PostgreSQL with three separate database connections:
+  - **Categories Database** (CATEGORIES_DB_URL): Remote Neon Database for category hierarchy
+  - **Products Database** (PRODUCTS_DB_URL): Remote Neon Database for products, nutrition facts, and product photos
+  - **Scans Database** (DATABASE_URL): Local Replit PostgreSQL for scan data (user scans, OCR results, photos)
 - **ORM**: Drizzle ORM for database interactions and migrations.
-- **Schema Design**: Normalized hierarchical category structure, detailed product information including SKU, names, URLs, quantities, and comprehensive nutrition facts with Nutri-Score calculations.
+- **Schema Design**: Normalized hierarchical category structure, detailed product information including SKU, names, URLs, quantities, comprehensive nutrition facts with Nutri-Score calculations, and scan metadata with UUID-based photo access tokens.
 
 ### UI/UX
 - **Component Libraries**: Radix UI for accessible components, Lucide React for icons.
