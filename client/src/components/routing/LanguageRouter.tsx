@@ -1,14 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Route, Switch, Redirect, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, type SupportedLanguage } from '@/i18n';
 
-import Home from '@/pages/home';
-import ProductDetails from '@/pages/product-details';
-import ProductSearch from '@/pages/product-search';
-import ScanPage from '@/pages/scan';
-import NotFound from '@/pages/not-found';
-import Debug from '@/pages/debug';
+const Home = lazy(() => import('@/pages/home'));
+const ProductDetails = lazy(() => import('@/pages/product-details'));
+const ProductSearch = lazy(() => import('@/pages/product-search'));
+const ScanPage = lazy(() => import('@/pages/scan'));
+const NotFound = lazy(() => import('@/pages/not-found'));
+const Debug = lazy(() => import('@/pages/debug'));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">Ielādē...</p>
+    </div>
+  </div>
+);
 
 interface LanguageRouterProps {
   searchQuery?: string;
@@ -67,7 +76,11 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}/category/${params?.id}`} replace />;
           }
-          return <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />;
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />
+            </Suspense>
+          );
         }}
       </Route>
       
@@ -78,13 +91,41 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}/product/${params?.id}`} replace />;
           }
-          return <ProductDetails {...params} />;
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <ProductDetails {...params} />
+            </Suspense>
+          );
         }}
       </Route>
       
       {/* Product search route with language prefix (handles both /search and /product-search) */}
-      <LanguageAwareRoute path="/search" component={ProductSearch} />
-      <LanguageAwareRoute path="/product-search" component={ProductSearch} />
+      <Route path="/:lang/search">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/search`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <ProductSearch />
+            </Suspense>
+          );
+        }}
+      </Route>
+      <Route path="/:lang/product-search">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/product-search`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <ProductSearch />
+            </Suspense>
+          );
+        }}
+      </Route>
       
       {/* Scan route with language prefix */}
       <Route path="/:lang/scan">
@@ -93,12 +134,28 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}/scan`} replace />;
           }
-          return <ScanPage />;
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <ScanPage />
+            </Suspense>
+          );
         }}
       </Route>
       
       {/* Debug route with language prefix */}
-      <LanguageAwareRoute path="/debug" component={Debug} />
+      <Route path="/:lang/debug">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <Debug />
+            </Suspense>
+          );
+        }}
+      </Route>
       
       {/* Home route with language prefix */}
       <Route path="/:lang">
@@ -107,7 +164,11 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}`} replace />;
           }
-          return <Home initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />;
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <Home initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />
+            </Suspense>
+          );
         }}
       </Route>
       
@@ -147,7 +208,9 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
       
       {/* 404 Not Found */}
       <Route>
-        <NotFound />
+        <Suspense fallback={<PageLoader />}>
+          <NotFound />
+        </Suspense>
       </Route>
     </Switch>
   );
