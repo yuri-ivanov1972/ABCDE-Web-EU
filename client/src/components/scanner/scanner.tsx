@@ -5,6 +5,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '@/lib/queryClient';
 import { trackProductScanned, trackProductViewAfterScan, trackCameraPermission, trackScanFailure } from '@/lib/analytics';
+import mediumA from '@assets/medium_A_1762616394620.png';
+import mediumB from '@assets/medium_B_1762616394619.png';
+import mediumC from '@assets/medium_C_1762616394619.png';
+import mediumD from '@assets/medium_D_1762616394618.png';
+import mediumE from '@assets/medium_E_1762616394618.png';
 
 interface ScannerProps {
   onCapture?: (imageData: string) => void;
@@ -19,16 +24,13 @@ export function Scanner({ onCapture }: ScannerProps) {
   // Debug mode: only show detected text when explicitly enabled
   const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
-  // Helper function to get Nutri-Score color
-  const getNutriScoreColor = (grade: string) => {
-    const colors: Record<string, string> = {
-      'A': 'text-green-600',
-      'B': 'text-lime-500',
-      'C': 'text-yellow-500',
-      'D': 'text-orange-500',
-      'E': 'text-red-600'
-    };
-    return colors[grade.toUpperCase()] || 'text-muted-foreground';
+  // Nutri-Score medium images
+  const nutriScoreImages = {
+    'A': mediumA,
+    'B': mediumB,
+    'C': mediumC,
+    'D': mediumD,
+    'E': mediumE
   };
 
   const [error, setError] = useState<string>('');
@@ -406,11 +408,13 @@ export function Scanner({ onCapture }: ScannerProps) {
                 <h3 className="font-semibold text-sm text-primary">{t('result.matchedProduct')}</h3>
                 <p className="font-medium text-base">{scanResult.product.name}</p>
                 {scanResult.product.nutriScoreGrade && (
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Nutri-Score:</span>
-                    <span className={`text-3xl font-bold ${getNutriScoreColor(scanResult.product.nutriScoreGrade)}`}>
-                      {scanResult.product.nutriScoreGrade}
-                    </span>
+                    <img 
+                      src={nutriScoreImages[scanResult.product.nutriScoreGrade.toUpperCase() as keyof typeof nutriScoreImages]} 
+                      alt={`Nutri-Score ${scanResult.product.nutriScoreGrade}`}
+                      className="h-16 w-auto"
+                    />
                   </div>
                 )}
               </div>

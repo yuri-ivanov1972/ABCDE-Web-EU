@@ -42,7 +42,7 @@ export default function ScanPage() {
       </div>
 
       {/* Scanner */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-2">
         <Scanner onCapture={handleCapture} />
       </div>
       </div>
