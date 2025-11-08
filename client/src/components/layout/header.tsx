@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt="ABCDE.lv" className="h-12 md:h-14" />
+              <img src={nutriScoreLogo} alt="ABCDE.lv" className="h-16 md:h-20" />
             </LangLink>
           </div>
           <div className="hidden md:block flex-grow max-w-2xl">
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
           {/* Logo */}
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt={t('header:logo.alt')} className="h-12 md:h-14" />
+              <img src={nutriScoreLogo} alt={t('header:logo.alt')} className="h-16 md:h-20" />
             </LangLink>
           </div>
 
@@ -113,18 +113,18 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
               href={t('header:petition.url')}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs md:text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
               data-testid="petition-link"
               onClick={() => {
                 trackPetitionClick({
                   linkUrl: t('header:petition.url'),
-                  linkText: t('header:petition.text'),
+                  linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
                   language: i18n.language || 'unknown',
                 });
               }}
             >
-              {t('header:petition.text')}
-              <ExternalLink className="h-3 w-3 hidden md:inline" />
+              <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
+              <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
             </a>
 
             {/* Language Switcher and Filter Actions */}
