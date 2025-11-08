@@ -500,7 +500,7 @@ export function Scanner({ onCapture }: ScannerProps) {
   // Show camera view
   return (
     <div className="flex flex-col items-center w-full h-full">
-      <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center justify-center px-4 py-2" style={{ minHeight: '60vh' }}>
+      <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center px-4">
         <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
           {/* Video element */}
           <video
