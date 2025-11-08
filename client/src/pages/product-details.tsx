@@ -151,7 +151,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                 <img 
                   src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                   alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
-                  className="h-12 md:h-16 w-auto"
+                  className="h-16 md:h-20 w-auto"
                 />
               </div>
             )}
