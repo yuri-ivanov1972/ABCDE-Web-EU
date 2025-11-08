@@ -387,14 +387,6 @@ export function Scanner({ onCapture }: ScannerProps) {
   if (capturedImage) {
     return (
       <div className="flex flex-col items-center w-full max-w-2xl mx-auto p-4">
-        <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-          <img 
-            src={capturedImage} 
-            alt="Captured product" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-
         {/* Show result message if available */}
         {scanResult && (
           <div className="mt-4 w-full space-y-3">
@@ -409,7 +401,6 @@ export function Scanner({ onCapture }: ScannerProps) {
                 <p className="font-medium text-base">{scanResult.product.name}</p>
                 {scanResult.product.nutriScoreGrade && (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Nutri-Score:</span>
                     <img 
                       src={nutriScoreImages[scanResult.product.nutriScoreGrade.toUpperCase() as keyof typeof nutriScoreImages]} 
                       alt={`Nutri-Score ${scanResult.product.nutriScoreGrade}`}
