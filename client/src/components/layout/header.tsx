@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt="ABCDE.lv" className="h-16 md:h-20" />
+              <img src={nutriScoreLogo} alt="ABCDE.lv" className="h-[5.2rem] md:h-[6.5rem]" />
             </LangLink>
           </div>
           <div className="hidden md:block flex-grow max-w-2xl">
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
           {/* Logo */}
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt={t('header:logo.alt')} className="h-16 md:h-20" />
+              <img src={nutriScoreLogo} alt={t('header:logo.alt')} className="h-[5.2rem] md:h-[6.5rem]" />
             </LangLink>
           </div>
 
