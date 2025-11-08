@@ -2,9 +2,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import { ProductWithDetails } from '@/types';
-import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import { Skeleton } from '@/components/ui/skeleton';
+import smallA from '@assets/small_A_1762616394620.png';
+import smallB from '@assets/small_B_1762616394620.png';
+import smallC from '@assets/small_C_1762616394620.png';
+import smallD from '@assets/small_D_1762616394619.png';
+import smallE from '@assets/small_E_1762616394619.png';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -22,6 +26,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? `${quantityValue}${quantityUnit}`
     : '';
   
+  // Get Nutri-Score image
+  const nutriScoreImages = {
+    'A': smallA,
+    'B': smallB,
+    'C': smallC,
+    'D': smallD,
+    'E': smallE
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <LangLink href={`/product/${productId}`} className="block">
@@ -32,8 +45,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="w-full h-40 object-cover"
           />
           {nutrition?.nutriScoreGrade && (
-            <div className="absolute top-2 left-2 z-10">
-              <NutriScoreBadge score={nutrition.nutriScoreGrade as any} />
+            <div className="absolute bottom-2 left-2 z-10">
+              <img 
+                src={nutriScoreImages[nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
+                alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
+                className="h-6 md:h-8 w-auto"
+              />
             </div>
           )}
         </div>

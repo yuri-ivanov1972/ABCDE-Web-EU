@@ -3,7 +3,7 @@ import { Search, X, SlidersHorizontal, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-import abcdeLogo from '@assets/abcde_logo.svg';
+import nutriScoreLogo from '@assets/medium_A_1762616394620.png';
 import { trackPetitionClick } from '@/lib/analytics';
 
 interface HeaderProps {
@@ -22,15 +22,13 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
   if (!ready) {
     return (
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex flex-col items-start">
-            <div className="flex items-center">
-              <LangLink href="/" className="flex items-center">
-                <img src={abcdeLogo} alt="ABCDE.lv" className="h-10" />
-              </LangLink>
-            </div>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center shrink-0">
+            <LangLink href="/" className="flex items-center">
+              <img src={nutriScoreLogo} alt="ABCDE.lv" className="h-12 md:h-14" />
+            </LangLink>
           </div>
-          <div className="hidden md:block flex-grow max-w-2xl mx-4">
+          <div className="hidden md:block flex-grow max-w-2xl">
             <div className="relative">
               <input
                 type="text"
@@ -64,38 +62,18 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
   return (
     <>
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo and Petition Link */}
-          <div className="flex flex-col items-start">
-            <div className="flex items-center">
-              <LangLink href="/" className="flex items-center">
-                <img src={abcdeLogo} alt={t('header:logo.alt')} className="h-10" />
-              </LangLink>
-            </div>
-            <a 
-              href={t('header:petition.url')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs md:text-sm text-primary hover:text-primary/80 mt-1 flex items-center gap-1 transition-colors"
-              data-testid="petition-link"
-              onClick={() => {
-                // Track petition link clicks
-                trackPetitionClick({
-                  linkUrl: t('header:petition.url'),
-                  linkText: t('header:petition.text'),
-                  language: i18n.language || 'unknown',
-                });
-              }}
-            >
-              {t('header:petition.text')}
-              <ExternalLink className="h-3 w-3 hidden md:inline" />
-            </a>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          {/* Logo */}
+          <div className="flex items-center shrink-0">
+            <LangLink href="/" className="flex items-center">
+              <img src={nutriScoreLogo} alt={t('header:logo.alt')} className="h-12 md:h-14" />
+            </LangLink>
           </div>
 
           {/* Search Bar - Desktop */}
           <form 
             onSubmit={handleSearchSubmit}
-            className="hidden md:block flex-grow max-w-2xl mx-4"
+            className="hidden md:block flex-grow max-w-2xl"
           >
             <div className="relative">
               <input
@@ -128,30 +106,50 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
             </div>
           </form>
 
-          {/* Desktop Language Switcher and Mobile Actions */}
-          <div className="flex items-center gap-3">
-            {/* Language Switcher - Desktop */}
-            <div className="hidden md:block">
-              <LanguageSwitcher />
-            </div>
-            
-            {/* Mobile Actions - Language + Filter */}
-            <div className="md:hidden flex items-center gap-2">
-              {/* Compact Language Switcher */}
-              <LanguageSwitcher compact={true} />
+          {/* Right side: Petition Link and Actions */}
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            {/* Petition Link */}
+            <a 
+              href={t('header:petition.url')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs md:text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+              data-testid="petition-link"
+              onClick={() => {
+                trackPetitionClick({
+                  linkUrl: t('header:petition.url'),
+                  linkText: t('header:petition.text'),
+                  language: i18n.language || 'unknown',
+                });
+              }}
+            >
+              {t('header:petition.text')}
+              <ExternalLink className="h-3 w-3 hidden md:inline" />
+            </a>
+
+            {/* Language Switcher and Filter Actions */}
+            <div className="flex items-center gap-2">
+              {/* Language Switcher - Desktop */}
+              <div className="hidden md:block">
+                <LanguageSwitcher />
+              </div>
               
-              {/* Filter button */}
-              <button 
-                className="relative text-gray-600 hover:text-primary focus:outline-none transition-colors p-2"
-                onClick={toggleMobileFilters}
-                aria-label={t('header:filters.toggle')}
-                data-testid="mobile-filter-button"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-                {hasActiveFilters && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
-                )}
-              </button>
+              {/* Mobile Actions - Language + Filter */}
+              <div className="md:hidden flex items-center gap-2">
+                <LanguageSwitcher compact={true} />
+                
+                <button 
+                  className="relative text-gray-600 hover:text-primary focus:outline-none transition-colors p-2"
+                  onClick={toggleMobileFilters}
+                  aria-label={t('header:filters.toggle')}
+                  data-testid="mobile-filter-button"
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                  {hasActiveFilters && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -5,12 +5,16 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
-import NutriScoreBadge from '@/components/ui/nutri-score-badge';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
 import { getCanonicalUrl } from '@/lib/canonical';
 import NotFound from '@/pages/not-found';
+import mediumA from '@assets/medium_A_1762616394620.png';
+import mediumB from '@assets/medium_B_1762616394619.png';
+import mediumC from '@assets/medium_C_1762616394619.png';
+import mediumD from '@assets/medium_D_1762616394618.png';
+import mediumE from '@assets/medium_E_1762616394618.png';
 
 interface ProductDetailsProps {
   lang?: string;
@@ -82,6 +86,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     return `${kcal} kcal / ${kj} kJ`;
   };
 
+  // Get Nutri-Score image
+  const nutriScoreImages = {
+    'A': mediumA,
+    'B': mediumB,
+    'C': mediumC,
+    'D': mediumD,
+    'E': mediumE
+  };
+
   return (
     <>
       <Helmet>
@@ -127,22 +140,26 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="md:flex">
           {/* Product Image */}
-          <div className="md:w-1/2 bg-gray-100">
+          <div className="md:w-1/2 bg-gray-100 relative">
             <img 
               src={mainPhoto?.photoUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
               alt={mainPhoto?.altText || product.name}
               className="w-full h-full object-contain md:max-h-[500px]"
             />
+            {product.nutrition?.nutriScoreGrade && (
+              <div className="absolute bottom-4 left-4">
+                <img 
+                  src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
+                  alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
+                  className="h-12 md:h-16 w-auto"
+                />
+              </div>
+            )}
           </div>
 
           {/* Product Details */}
           <div className="md:w-1/2 p-6 md:p-8">
-            <div className="flex justify-between items-start">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              {product.nutrition?.nutriScoreGrade && (
-                <NutriScoreBadge score={product.nutrition.nutriScoreGrade as any} size="large" />
-              )}
-            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
 
             {quantityFormatted && (
               <p className="text-gray-600 mb-6">{quantityFormatted}</p>
