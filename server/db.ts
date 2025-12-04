@@ -8,31 +8,22 @@ neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 
 // Log database URLs (just the beginning for security)
-const categoriesUrlStart = process.env.CATEGORIES_DB_URL 
-  ? process.env.CATEGORIES_DB_URL.substring(0, 20) + "..." 
-  : "undefined";
-const productsUrlStart = process.env.PRODUCTS_DB_URL
-  ? process.env.PRODUCTS_DB_URL.substring(0, 20) + "..."
+const rimiUrlStart = process.env.RIMI_DATABASE_URL 
+  ? process.env.RIMI_DATABASE_URL.substring(0, 20) + "..." 
   : "undefined";
 const localUrlStart = process.env.DATABASE_URL
   ? process.env.DATABASE_URL.substring(0, 20) + "..."
   : "undefined";
 
-console.log("CATEGORIES_DB_URL starts with:", categoriesUrlStart);
-console.log("PRODUCTS_DB_URL starts with:", productsUrlStart);
+console.log("RIMI_DATABASE_URL starts with:", rimiUrlStart);
 console.log("DATABASE_URL (local) starts with:", localUrlStart);
 
 // Get database connection strings
-const CATEGORIES_DB_URL = process.env.CATEGORIES_DB_URL;
-const PRODUCTS_DB_URL = process.env.PRODUCTS_DB_URL;
+const RIMI_DB_URL = process.env.RIMI_DATABASE_URL;
 const LOCAL_DB_URL = process.env.DATABASE_URL;
 
-if (!CATEGORIES_DB_URL) {
-  throw new Error("CATEGORIES_DB_URL is not set. Please provide this environment variable.");
-}
-
-if (!PRODUCTS_DB_URL) {
-  throw new Error("PRODUCTS_DB_URL is not set. Please provide this environment variable.");
+if (!RIMI_DB_URL) {
+  throw new Error("RIMI_DATABASE_URL is not set. Please provide this environment variable.");
 }
 
 if (!LOCAL_DB_URL) {
@@ -49,13 +40,8 @@ const poolConfig = {
 };
 
 // Create connection pools with improved error handling
-export const categoriesPool = new Pool({ 
-  connectionString: CATEGORIES_DB_URL,
-  ...poolConfig
-});
-
-export const productsPool = new Pool({ 
-  connectionString: PRODUCTS_DB_URL,
+export const rimiPool = new Pool({ 
+  connectionString: RIMI_DB_URL,
   ...poolConfig
 });
 
@@ -65,12 +51,8 @@ export const scansPool = new Pool({
 });
 
 // Add connection error handling
-categoriesPool.on('error', (err) => {
-  console.error('Categories pool error:', err);
-});
-
-productsPool.on('error', (err) => {
-  console.error('Products pool error:', err);
+rimiPool.on('error', (err) => {
+  console.error('Rimi database pool error:', err);
 });
 
 scansPool.on('error', (err) => {
@@ -78,8 +60,15 @@ scansPool.on('error', (err) => {
 });
 
 // Create drizzle clients
-export const categoriesDb = drizzle({ client: categoriesPool, schema });
-export const productsDb = drizzle({ client: productsPool, schema });
+// rimiDb is used for categories, products, nutrition facts, and product photos
+export const rimiDb = drizzle({ client: rimiPool, schema });
+// scansDb is used for local scan data
 export const scansDb = drizzle({ client: scansPool, schema });
 
-console.log("Database connections established: categories (remote), products (remote), scans (local)");
+// Legacy exports for backward compatibility during migration
+export const categoriesDb = rimiDb;
+export const productsDb = rimiDb;
+export const categoriesPool = rimiPool;
+export const productsPool = rimiPool;
+
+console.log("Database connections established: rimi (remote), scans (local)");
