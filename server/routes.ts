@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
-import { categoriesDb, productsDb } from "./db";
+import { rimiDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
 import { ObjectStorageService } from "./objectStorage";
 
@@ -47,11 +47,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Check categories database
-        const categoriesResult = await categoriesDb.execute(sql`SELECT 1 as check`);
+        const categoriesResult = await rimiDb.execute(sql`SELECT 1 as check`);
         categoriesConnected = !!categoriesResult;
         
         // Get categories count if connected
-        const categoriesCountResult = await categoriesDb.execute(sql`SELECT COUNT(*) as count FROM normalized_categories`);
+        const categoriesCountResult = await rimiDb.execute(sql`SELECT COUNT(*) as count FROM normalized_categories`);
         categoriesCount = categoriesCountResult && 
           typeof categoriesCountResult === 'object' && 
           Array.isArray(categoriesCountResult) && 
@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
         // Get first category for testing
         if (categoriesCount > 0) {
-          const firstCategoryResult = await categoriesDb.execute(sql`
+          const firstCategoryResult = await rimiDb.execute(sql`
             SELECT * FROM normalized_categories 
             ORDER BY category_id ASC 
             LIMIT 1
@@ -78,11 +78,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Check products database
-        const productsResult = await productsDb.execute(sql`SELECT 1 as check`);
+        const productsResult = await rimiDb.execute(sql`SELECT 1 as check`);
         productsConnected = !!productsResult;
         
         // Get products count if connected
-        const productsCountResult = await productsDb.execute(sql`SELECT COUNT(*) as count FROM products`);
+        const productsCountResult = await rimiDb.execute(sql`SELECT COUNT(*) as count FROM products`);
         productsCount = productsCountResult && 
           typeof productsCountResult === 'object' && 
           Array.isArray(productsCountResult) && 
@@ -91,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
         // Get first product for testing
         if (productsCount > 0) {
-          const firstProductResult = await productsDb.execute(sql`
+          const firstProductResult = await rimiDb.execute(sql`
             SELECT * FROM products 
             ORDER BY product_id ASC 
             LIMIT 1

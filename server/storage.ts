@@ -3,7 +3,7 @@ import {
   categories, products, nutritionFacts, productPhotos, scans,
   type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan
 } from "@shared/schema";
-import { categoriesDb, productsDb, scansDb, categoriesPool, productsPool, scansPool } from "./db";
+import { rimiDb, scansDb, rimiPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
@@ -95,17 +95,17 @@ export type ProductWithDetails = Product & {
 export class DatabaseStorage implements IStorage {
   // Original template methods
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await categoriesDb.select().from(users).where(eq(users.id, id));
+    const [user] = await rimiDb.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await categoriesDb.select().from(users).where(eq(users.username, username));
+    const [user] = await rimiDb.select().from(users).where(eq(users.username, username));
     return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await categoriesDb
+    const [user] = await rimiDb
       .insert(users)
       .values(insertUser)
       .returning();
@@ -118,7 +118,7 @@ export class DatabaseStorage implements IStorage {
     console.log("Getting categories...");
     
     // Prepare the query based on level
-    let query = categoriesDb
+    let query = rimiDb
       .select()
       .from(categories);
     
@@ -135,7 +135,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getCategoryById(id: number): Promise<Category | undefined> {
-    const [category] = await categoriesDb
+    const [category] = await rimiDb
       .select()
       .from(categories)
       .where(eq(categories.categoryId, id));
@@ -143,7 +143,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getCategoryByCode(code: string): Promise<Category | undefined> {
-    const [category] = await categoriesDb
+    const [category] = await rimiDb
       .select()
       .from(categories)
       .where(eq(categories.rimiCategoryCode, code));
@@ -152,7 +152,7 @@ export class DatabaseStorage implements IStorage {
   
   async getSubcategories(parentId: number): Promise<Category[]> {
     // Return all subcategories
-    return await categoriesDb
+    return await rimiDb
       .select()
       .from(categories)
       .where(eq(categories.parentCategoryId, parentId))
@@ -165,7 +165,7 @@ export class DatabaseStorage implements IStorage {
       const categoryPath: Category[] = [];
       
       // Get the current category
-      const [currentCategory] = await categoriesDb
+      const [currentCategory] = await rimiDb
         .select()
         .from(categories)
         .where(eq(categories.categoryId, categoryId));
@@ -182,7 +182,7 @@ export class DatabaseStorage implements IStorage {
       
       // Recursively get parent categories
       while (parentId !== null) {
-        const [parentCategory] = await categoriesDb
+        const [parentCategory] = await rimiDb
           .select()
           .from(categories)
           .where(eq(categories.categoryId, parentId));
@@ -230,7 +230,7 @@ export class DatabaseStorage implements IStorage {
       
       if (categoryId) {
         // Get the current category to determine its level
-        const [currentCategory] = await categoriesDb
+        const [currentCategory] = await rimiDb
           .select()
           .from(categories)
           .where(eq(categories.categoryId, categoryId));
@@ -242,7 +242,7 @@ export class DatabaseStorage implements IStorage {
           
           // If this is level 1 or 2, include subcategories
           if (currentCategory.level < 3) {
-            const subcategories = await categoriesDb
+            const subcategories = await rimiDb
               .select()
               .from(categories)
               .where(eq(categories.parentCategoryId, categoryId));
@@ -252,7 +252,7 @@ export class DatabaseStorage implements IStorage {
             // If level 1, go one level deeper
             if (currentCategory.level === 1) {
               for (const subcat of subcategories) {
-                const subsubcategories = await categoriesDb
+                const subsubcategories = await rimiDb
                   .select()
                   .from(categories)
                   .where(eq(categories.parentCategoryId, subcat.categoryId));
@@ -343,7 +343,7 @@ export class DatabaseStorage implements IStorage {
       const mainQuery = await withRetry(async () => {
         console.log(`Executing main query with ${whereConditions.length} WHERE conditions`);
         
-        let query = productsDb
+        let query = rimiDb
           .select({
             // Product fields
             productId: products.productId,
@@ -391,7 +391,7 @@ export class DatabaseStorage implements IStorage {
       const totalCountQuery = await withRetry(async () => {
         console.log(`Executing count query with ${whereConditions.length} WHERE conditions`);
         
-        let countQuery = productsDb
+        let countQuery = rimiDb
           .select({ count: sql<number>`count(*)` })
           .from(products)
           .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
@@ -415,12 +415,12 @@ export class DatabaseStorage implements IStorage {
       if (productIds.length > 0) {
         // Fetch photos and categories in parallel
         const [allPhotos, allCategories] = await Promise.all([
-          productsDb
+          rimiDb
             .select()
             .from(productPhotos)
             .where(inArray(productPhotos.productId, productIds)),
             
-          categoriesDb
+          rimiDb
             .select()
             .from(categories)
             .where(inArray(categories.categoryId, mainQuery.map(p => p.categoryId)))
@@ -500,7 +500,7 @@ export class DatabaseStorage implements IStorage {
   
   async getProductById(id: number): Promise<ProductWithDetails | undefined> {
     // First get the product
-    const [product] = await productsDb
+    const [product] = await rimiDb
       .select()
       .from(products)
       .where(eq(products.productId, id));
@@ -510,20 +510,20 @@ export class DatabaseStorage implements IStorage {
     // Get all related data in parallel
     const [nutrition, photos, category] = await Promise.all([
       // Get nutrition facts
-      productsDb
+      rimiDb
         .select()
         .from(nutritionFacts)
         .where(eq(nutritionFacts.productId, product.productId))
         .then(results => results[0] || null),
         
       // Get product photos
-      productsDb
+      rimiDb
         .select()
         .from(productPhotos)
         .where(eq(productPhotos.productId, product.productId)),
         
       // Get category
-      categoriesDb
+      rimiDb
         .select()
         .from(categories)
         .where(eq(categories.categoryId, product.categoryId))
@@ -540,7 +540,7 @@ export class DatabaseStorage implements IStorage {
   
   async getProductBySku(sku: string): Promise<ProductWithDetails | undefined> {
     // First get the product
-    const [product] = await productsDb
+    const [product] = await rimiDb
       .select()
       .from(products)
       .where(eq(products.sku, sku));
@@ -550,20 +550,20 @@ export class DatabaseStorage implements IStorage {
     // Get all related data in parallel
     const [nutrition, photos, category] = await Promise.all([
       // Get nutrition facts
-      productsDb
+      rimiDb
         .select()
         .from(nutritionFacts)
         .where(eq(nutritionFacts.productId, product.productId))
         .then(results => results[0] || null),
         
       // Get product photos
-      productsDb
+      rimiDb
         .select()
         .from(productPhotos)
         .where(eq(productPhotos.productId, product.productId)),
         
       // Get category
-      categoriesDb
+      rimiDb
         .select()
         .from(categories)
         .where(eq(categories.categoryId, product.categoryId))
@@ -580,7 +580,7 @@ export class DatabaseStorage implements IStorage {
 
   async getProductByRimiUrl(rimiUrl: string): Promise<ProductWithDetails | undefined> {
     // First get the product
-    const [product] = await productsDb
+    const [product] = await rimiDb
       .select()
       .from(products)
       .where(eq(products.rimiUrl, rimiUrl));
@@ -590,20 +590,20 @@ export class DatabaseStorage implements IStorage {
     // Get all related data in parallel
     const [nutrition, photos, category] = await Promise.all([
       // Get nutrition facts
-      productsDb
+      rimiDb
         .select()
         .from(nutritionFacts)
         .where(eq(nutritionFacts.productId, product.productId))
         .then(results => results[0] || null),
         
       // Get product photos
-      productsDb
+      rimiDb
         .select()
         .from(productPhotos)
         .where(eq(productPhotos.productId, product.productId)),
         
       // Get category
-      categoriesDb
+      rimiDb
         .select()
         .from(categories)
         .where(eq(categories.categoryId, product.categoryId))
@@ -731,7 +731,7 @@ export class DatabaseStorage implements IStorage {
       const searchQuery = await withRetry(async () => {
         console.log(`Executing main search query with ${whereConditions.length} conditions`);
         
-        let query = productsDb
+        let query = rimiDb
           .select({
             // Product fields
             productId: products.productId,
@@ -779,7 +779,7 @@ export class DatabaseStorage implements IStorage {
       const totalCountQuery = await withRetry(async () => {
         console.log(`Executing search count query with ${whereConditions.length} conditions`);
         
-        let countQuery = productsDb
+        let countQuery = rimiDb
           .select({ count: sql<number>`count(*)` })
           .from(products)
           .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
@@ -803,12 +803,12 @@ export class DatabaseStorage implements IStorage {
       if (productIds.length > 0) {
         // Fetch photos and categories in parallel
         const [allPhotos, allCategories] = await Promise.all([
-          productsDb
+          rimiDb
             .select()
             .from(productPhotos)
             .where(inArray(productPhotos.productId, productIds)),
             
-          categoriesDb
+          rimiDb
             .select()
             .from(categories)
             .where(inArray(categories.categoryId, searchQuery.map(p => p.categoryId)))

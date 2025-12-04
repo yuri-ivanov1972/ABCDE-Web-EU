@@ -65,10 +65,4 @@ export const rimiDb = drizzle({ client: rimiPool, schema });
 // scansDb is used for local scan data
 export const scansDb = drizzle({ client: scansPool, schema });
 
-// Legacy exports for backward compatibility during migration
-export const categoriesDb = rimiDb;
-export const productsDb = rimiDb;
-export const categoriesPool = rimiPool;
-export const productsPool = rimiPool;
-
 console.log("Database connections established: rimi (remote), scans (local)");
