@@ -518,8 +518,13 @@ export class DatabaseStorage implements IStorage {
       // Step 4: Execute main query with JOIN, WHERE, ORDER BY, and pagination
       const offset = (page - 1) * pageSize;
       
+      // For combined store view, fetch more products to enable proper merged pagination
+      const isCombinedMode = store === undefined && maximaDb !== null;
+      const queryLimit = isCombinedMode ? offset + pageSize : pageSize;
+      const queryOffset = isCombinedMode ? 0 : offset;
+      
       const mainQuery = await withRetry(async () => {
-        console.log(`Executing main query with ${whereConditions.length} WHERE conditions`);
+        console.log(`Executing main query with ${whereConditions.length} WHERE conditions, limit=${queryLimit}, offset=${queryOffset}`);
         
         let query = rimiDb
           .select({
@@ -559,8 +564,8 @@ export class DatabaseStorage implements IStorage {
         
         return query
           .orderBy(orderByClause)
-          .limit(pageSize)
-          .offset(offset);
+          .limit(queryLimit)
+          .offset(queryOffset);
       });
       
       console.log(`Main query returned ${mainQuery.length} products`);
@@ -683,9 +688,12 @@ export class DatabaseStorage implements IStorage {
           allProducts = maximaResult.products;
           finalTotalCount = maximaResult.count;
         } else {
-          // Merge both stores - for combined view, fetch Maxima products too
+          // Combined view: fetch enough products from Maxima to cover the current page
+          // We need offset + pageSize products from each store to properly paginate
+          const combinedLimit = offset + pageSize;
+          
           const maximaResult = await this.getMaximaProducts(
-            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, pageSize, offset
+            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, combinedLimit, 0
           );
           
           // Merge and sort the combined results
@@ -721,8 +729,8 @@ export class DatabaseStorage implements IStorage {
             return sortOrder === 'desc' ? -comparison : comparison;
           });
           
-          // Slice to pageSize (we fetched pageSize from each store)
-          allProducts = allProducts.slice(0, pageSize);
+          // Slice from offset to offset + pageSize for proper pagination
+          allProducts = allProducts.slice(offset, offset + pageSize);
         }
       }
       
