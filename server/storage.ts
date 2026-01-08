@@ -1,10 +1,10 @@
 import { 
   users, type User, type InsertUser,
-  categories, products, nutritionFacts, productPhotos, scans,
-  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan
+  categories, products, maximaProducts, nutritionFacts, productPhotos, scans,
+  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store
 } from "@shared/schema";
-import { rimiDb, scansDb, rimiPool, scansPool } from "./db";
-import { eq, like, and, or, gte, lte, inArray, desc, asc, sql } from "drizzle-orm";
+import { rimiDb, maximaDb, scansDb, rimiPool, scansPool } from "./db";
+import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
 /**
@@ -83,6 +83,7 @@ export type GetProductsOptions = {
   saltMax?: number;
   sortBy?: 'name' | 'nutriScore' | 'sugar' | 'fat' | 'protein' | 'salt';
   sortOrder?: 'asc' | 'desc';
+  store?: Store;  // Filter by store: 'rimi', 'maxima', or undefined for both
 };
 
 // Combined product type with related data
@@ -90,9 +91,20 @@ export type ProductWithDetails = Product & {
   nutrition?: NutritionFacts;
   photos?: ProductPhoto[];
   category?: Category;
+  store?: Store;
+  externalUrl?: string | null;
 };
 
 export class DatabaseStorage implements IStorage {
+  // Helper method to get category ID from Rimi category code (for Maxima products)
+  private async getCategoryIdByRimiCode(rimiCategoryCode: number): Promise<number | null> {
+    const [category] = await rimiDb
+      .select({ categoryId: categories.categoryId })
+      .from(categories)
+      .where(eq(categories.categoryId, rimiCategoryCode));
+    return category?.categoryId || null;
+  }
+
   // Original template methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await rimiDb.select().from(users).where(eq(users.id, id));
@@ -203,6 +215,136 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // Helper to query Maxima products and convert to unified format
+  private async getMaximaProducts(
+    allCategoriesToInclude: number[],
+    nutriScores: NutriScoreGrade[] | undefined,
+    hasNutrientFilters: boolean,
+    sortBy: string,
+    sortOrder: string,
+    limit: number,
+    offset: number
+  ): Promise<{ products: ProductWithDetails[], count: number }> {
+    if (!maximaDb) {
+      return { products: [], count: 0 };
+    }
+
+    // Skip Maxima products if nutrient filters are applied (Maxima may not have nutrition data)
+    if (hasNutrientFilters) {
+      console.log("Skipping Maxima - nutrient filters applied");
+      return { products: [], count: 0 };
+    }
+
+    try {
+      // Build WHERE conditions for Maxima
+      let whereConditions: any[] = [
+        isNotNull(maximaProducts.rimiCategoryCode)  // Only products with rimi_category_code
+      ];
+
+      if (allCategoriesToInclude.length > 0) {
+        whereConditions.push(inArray(maximaProducts.rimiCategoryCode, allCategoriesToInclude));
+      }
+
+      // Build ORDER BY clause for Maxima
+      let orderByClause: any;
+      if (sortBy === 'name') {
+        orderByClause = sortOrder === 'asc' ? asc(maximaProducts.name) : desc(maximaProducts.name);
+      } else if (sortBy === 'nutriScore') {
+        // Maxima products don't have nutrition data, sort by name
+        orderByClause = asc(maximaProducts.name);
+      } else {
+        orderByClause = asc(maximaProducts.name);
+      }
+
+      // Query Maxima products
+      const maximaQuery = await maximaDb
+        .select({
+          productId: maximaProducts.productId,
+          sku: maximaProducts.sku,
+          name: maximaProducts.name,
+          nameNorm: maximaProducts.name_norm,
+          categoryId: maximaProducts.rimiCategoryCode,  // Use rimi_category_code as categoryId
+          barboraUrl: maximaProducts.barboraUrl,
+          quantityValue: maximaProducts.quantityValue,
+          quantityUnit: maximaProducts.quantityUnit,
+          createdAt: maximaProducts.createdAt,
+          updatedAt: maximaProducts.updatedAt,
+        })
+        .from(maximaProducts)
+        .where(and(...whereConditions))
+        .orderBy(orderByClause)
+        .limit(limit)
+        .offset(offset);
+
+      // Get count
+      const countQuery = await maximaDb
+        .select({ count: sql<number>`count(*)` })
+        .from(maximaProducts)
+        .where(and(...whereConditions));
+
+      const count = Number(countQuery[0]?.count) || 0;
+
+      // Get photos for Maxima products
+      const productIds = maximaQuery.map(p => p.productId);
+      let photosMap: Record<number, ProductPhoto[]> = {};
+      
+      if (productIds.length > 0) {
+        const allPhotos = await maximaDb
+          .select()
+          .from(productPhotos)
+          .where(inArray(productPhotos.productId, productIds));
+        
+        photosMap = allPhotos.reduce((map, photo) => {
+          if (!map[photo.productId]) {
+            map[photo.productId] = [];
+          }
+          map[photo.productId].push(photo);
+          return map;
+        }, {} as Record<number, ProductPhoto[]>);
+      }
+
+      // Get categories from Rimi DB (they're shared)
+      const categoryIds = maximaQuery.map(p => p.categoryId).filter(id => id !== null) as number[];
+      let categoryMap: Record<number, Category> = {};
+      
+      if (categoryIds.length > 0) {
+        const allCategories = await rimiDb
+          .select()
+          .from(categories)
+          .where(inArray(categories.categoryId, categoryIds));
+        
+        categoryMap = allCategories.reduce((map, cat) => {
+          map[cat.categoryId] = cat;
+          return map;
+        }, {} as Record<number, Category>);
+      }
+
+      // Convert to ProductWithDetails format
+      const productsWithDetails: ProductWithDetails[] = maximaQuery.map(row => ({
+        productId: row.productId,
+        sku: row.sku,
+        name: row.name,
+        name_norm: row.nameNorm,
+        categoryId: row.categoryId || 0,
+        rimiUrl: null,  // Maxima doesn't have rimiUrl
+        quantityValue: row.quantityValue,
+        quantityUnit: row.quantityUnit,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        nutrition: undefined,  // Maxima products don't have nutrition data in this implementation
+        photos: photosMap[row.productId] || [],
+        category: row.categoryId ? categoryMap[row.categoryId] : undefined,
+        store: 'maxima' as Store,
+        externalUrl: row.barboraUrl
+      }));
+
+      return { products: productsWithDetails, count };
+    } catch (error) {
+      console.error('Error fetching Maxima products:', error);
+      return { products: [], count: 0 };
+    }
+  }
+
   // Product methods
   async getProducts(options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }> {
     const {
@@ -219,7 +361,8 @@ export class DatabaseStorage implements IStorage {
       saltMin,
       saltMax,
       sortBy = 'name',
-      sortOrder = 'asc'
+      sortOrder = 'asc',
+      store
     } = options;
     
     console.log(`GET products with options`, JSON.stringify(options));
@@ -403,7 +546,7 @@ export class DatabaseStorage implements IStorage {
         return countQuery;
       });
       
-      const totalCount = totalCountQuery[0]?.count || 0;
+      const totalCount = Number(totalCountQuery[0]?.count) || 0;
       console.log(`Total filtered results count: ${totalCount}`);
       
       // Step 6: Fetch additional details (photos and categories) in batch
@@ -442,8 +585,8 @@ export class DatabaseStorage implements IStorage {
         }, {} as Record<number, Category>);
       }
       
-      // Step 7: Construct final products with details
-      const productsWithDetails: ProductWithDetails[] = mainQuery.map(row => {
+      // Step 7: Construct final Rimi products with details
+      const rimiProductsWithDetails: ProductWithDetails[] = mainQuery.map(row => {
         // Extract product data
         const product: Product = {
           productId: row.productId,
@@ -481,15 +624,78 @@ export class DatabaseStorage implements IStorage {
           ...product,
           nutrition,
           photos: photosMap[product.productId] || [],
-          category: categoryMap[product.categoryId]
+          category: categoryMap[product.categoryId],
+          store: 'rimi' as Store,
+          externalUrl: row.rimiUrl
         };
       });
       
-      console.log(`GET products with options ${JSON.stringify(options)} returned ${productsWithDetails.length} products, total: ${totalCount}`);
+      // Step 8: If store filter is not 'rimi', also fetch Maxima products
+      let allProducts = rimiProductsWithDetails;
+      let finalTotalCount = totalCount;
+      
+      if (store !== 'rimi' && maximaDb) {
+        // Check if nutrient filters are applied
+        const hasNutrientFilters = !!(nutriScores?.length || sugarMin !== undefined || sugarMax !== undefined || 
+          fatMin !== undefined || fatMax !== undefined || proteinMin !== undefined || 
+          proteinMax !== undefined || saltMin !== undefined || saltMax !== undefined);
+        
+        // If store is 'maxima', we should not include Rimi products
+        if (store === 'maxima') {
+          const maximaResult = await this.getMaximaProducts(
+            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, pageSize, offset
+          );
+          allProducts = maximaResult.products;
+          finalTotalCount = maximaResult.count;
+        } else {
+          // Merge both stores - for combined view, fetch Maxima products too
+          const maximaResult = await this.getMaximaProducts(
+            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, pageSize, offset
+          );
+          
+          // Merge and sort the combined results
+          allProducts = [...rimiProductsWithDetails, ...maximaResult.products];
+          finalTotalCount = Number(totalCount) + Number(maximaResult.count);
+          
+          // Sort the merged results according to sortBy/sortOrder
+          allProducts.sort((a, b) => {
+            let comparison = 0;
+            if (sortBy === 'name') {
+              comparison = a.name.localeCompare(b.name, 'lv');
+            } else if (sortBy === 'nutriScore') {
+              const gradeA = a.nutrition?.nutriScoreGrade || 'Z';
+              const gradeB = b.nutrition?.nutriScoreGrade || 'Z';
+              comparison = gradeA.localeCompare(gradeB);
+            } else if (sortBy === 'sugar') {
+              const valA = parseFloat(String(a.nutrition?.carbsSugars || 9999));
+              const valB = parseFloat(String(b.nutrition?.carbsSugars || 9999));
+              comparison = valA - valB;
+            } else if (sortBy === 'fat') {
+              const valA = parseFloat(String(a.nutrition?.fatTotal || 9999));
+              const valB = parseFloat(String(b.nutrition?.fatTotal || 9999));
+              comparison = valA - valB;
+            } else if (sortBy === 'protein') {
+              const valA = parseFloat(String(a.nutrition?.protein || 0));
+              const valB = parseFloat(String(b.nutrition?.protein || 0));
+              comparison = valB - valA;  // Protein: higher is better, so reverse
+            } else if (sortBy === 'salt') {
+              const valA = parseFloat(String(a.nutrition?.salt || 9999));
+              const valB = parseFloat(String(b.nutrition?.salt || 9999));
+              comparison = valA - valB;
+            }
+            return sortOrder === 'desc' ? -comparison : comparison;
+          });
+          
+          // Slice to pageSize (we fetched pageSize from each store)
+          allProducts = allProducts.slice(0, pageSize);
+        }
+      }
+      
+      console.log(`GET products with options ${JSON.stringify(options)} returned ${allProducts.length} products, total: ${finalTotalCount}`);
       
       return {
-        products: productsWithDetails,
-        totalCount
+        products: allProducts,
+        totalCount: finalTotalCount
       };
       
     } catch (error) {

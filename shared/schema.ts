@@ -27,7 +27,7 @@ export const categories = pgTable("normalized_categories", {
   level: integer("level").notNull(),
 });
 
-// Products table schema
+// Products table schema (Rimi)
 export const products = pgTable("products", {
   productId: serial("product_id").primaryKey(),
   sku: text("sku").notNull().unique(),
@@ -35,6 +35,21 @@ export const products = pgTable("products", {
   name_norm: text("name_norm"),  // Normalized name for case-insensitive search
   rimiUrl: text("rimi_url").unique(),
   categoryId: integer("category_id").notNull(),
+  quantityValue: decimal("quantity_value", { precision: 10, scale: 2 }),
+  quantityUnit: varchar("quantity_unit", { length: 50 }),
+  createdAt: timestamp("created_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+// Maxima products table schema (different column names)
+export const maximaProducts = pgTable("products", {
+  productId: serial("product_id").primaryKey(),
+  sku: text("sku").notNull().unique(),
+  name: text("name").notNull(),
+  name_norm: text("name_norm"),
+  barboraUrl: text("barbora_url"),  // Different column name in Maxima DB
+  categoryId: integer("category_id").notNull(),
+  rimiCategoryCode: integer("rimi_category_code"),  // Maps to Rimi categories
   quantityValue: decimal("quantity_value", { precision: 10, scale: 2 }),
   quantityUnit: varchar("quantity_unit", { length: 50 }),
   createdAt: timestamp("created_at", { withTimezone: true }),
@@ -150,9 +165,17 @@ export type InsertProductPhoto = z.infer<typeof insertProductPhotoSchema>;
 export type Scan = typeof scans.$inferSelect;
 export type InsertScan = z.infer<typeof insertScanSchema>;
 
+// Store type for multi-store support
+export type Store = 'rimi' | 'maxima';
+
+// Maxima product type
+export type MaximaProduct = typeof maximaProducts.$inferSelect;
+
 // Combined Product type with relations for frontend use
 export type ProductWithDetails = Product & {
   nutrition?: NutritionFacts;
   photos?: ProductPhoto[];
   category?: Category;
+  store?: Store;
+  externalUrl?: string | null;  // rimiUrl or barboraUrl depending on store
 };
