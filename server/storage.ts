@@ -251,7 +251,7 @@ export class DatabaseStorage implements IStorage {
         orderByClause = asc(maximaProducts.name);
       }
 
-      // Query Maxima products
+      // Query Maxima products with INNER JOIN to only get products with Nutri-Score
       const maximaQuery = await maximaDb
         .select({
           productId: maximaProducts.productId,
@@ -264,18 +264,21 @@ export class DatabaseStorage implements IStorage {
           quantityUnit: maximaProducts.quantityUnit,
           createdAt: maximaProducts.createdAt,
           updatedAt: maximaProducts.updatedAt,
+          nutriScoreGrade: nutritionFacts.nutriScoreGrade,
         })
         .from(maximaProducts)
-        .where(and(...whereConditions))
+        .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
+        .where(and(...whereConditions, isNotNull(nutritionFacts.nutriScoreGrade)))
         .orderBy(orderByClause)
         .limit(limit)
         .offset(offset);
 
-      // Get count
+      // Get count of products with Nutri-Score
       const countQuery = await maximaDb
         .select({ count: sql<number>`count(*)` })
         .from(maximaProducts)
-        .where(and(...whereConditions));
+        .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
+        .where(and(...whereConditions, isNotNull(nutritionFacts.nutriScoreGrade)));
 
       const count = Number(countQuery[0]?.count) || 0;
 
@@ -327,7 +330,7 @@ export class DatabaseStorage implements IStorage {
         }, {} as Record<number, Category>);
       }
 
-      // Convert to ProductWithDetails format
+      // Convert to ProductWithDetails format (already filtered by INNER JOIN)
       const productsWithDetails: ProductWithDetails[] = maximaQuery.map(row => ({
         productId: row.productId,
         sku: row.sku,
@@ -418,7 +421,9 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Step 2: Build WHERE conditions for nutritional filters
-      let whereConditions: any[] = [];
+      let whereConditions: any[] = [
+        isNotNull(nutritionFacts.nutriScoreGrade)  // Only show products with Nutri-Score
+      ];
       
       // Add category filter if specified
       if (allCategoriesToInclude.length > 0) {
@@ -922,7 +927,9 @@ export class DatabaseStorage implements IStorage {
       const exactMatchPattern = `%${query}%`;
       
       // Step 2: Build nutritional filter conditions (same as getProducts)
-      let nutritionConditions: any[] = [];
+      let nutritionConditions: any[] = [
+        isNotNull(nutritionFacts.nutriScoreGrade)  // Only show products with Nutri-Score
+      ];
       
       if (nutriScores && nutriScores.length > 0) {
         nutritionConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
