@@ -263,6 +263,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
         <MobileMenu 
           isOpen={isMobileFiltersOpen} 
           categoryId={categoryId}
+          selectedStore={selectedStore}
+          onStoreChange={setSelectedStore}
           onApplyFilters={handleMobileFiltersApply}
         />
         

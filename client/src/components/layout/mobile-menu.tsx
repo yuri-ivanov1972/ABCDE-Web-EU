@@ -4,11 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getCategories } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
-import { NutriScoreGrade, Category } from '@/types';
+import StoreFilter from '@/components/filters/store-filter';
+import { NutriScoreGrade, Category, Store } from '@/types';
 
 interface MobileMenuProps {
   isOpen: boolean;
   categoryId?: number;
+  selectedStore?: Store;
+  onStoreChange?: (store?: Store) => void;
   onApplyFilters?: (nutriScores: NutriScoreGrade[], sugarMin?: number, sugarMax?: number, 
     fatMin?: number, fatMax?: number, proteinMin?: number, proteinMax?: number, 
     saltMin?: number, saltMax?: number) => void;
@@ -93,7 +96,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
   );
 };
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, onApplyFilters }) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedStore, onStoreChange, onApplyFilters }) => {
   const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
   const [filters, setFilters] = useState({
     sugar: { min: '', max: '' },
@@ -189,6 +192,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, onApplyFilt
       
       <div className="border-t border-gray-200 py-3 px-4">
         <h3 className="font-medium text-gray-900 mb-2">Filtri</h3>
+        
+        {/* Mobile Store Filter */}
+        {onStoreChange && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Veikals</h4>
+            <StoreFilter 
+              selectedStore={selectedStore}
+              onStoreChange={onStoreChange}
+            />
+          </div>
+        )}
         
         {/* Mobile Nutri-Score Filter */}
         <div className="mb-4">
