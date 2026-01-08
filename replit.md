@@ -2,7 +2,7 @@
 
 ## Overview
 
-ABCDE.lv is a web application designed to empower users to make healthier food choices by providing transparent nutritional information for products from Rimi supermarket. The platform enables product search, category browsing, nutritional filtering based on Nutri-Score, and displays detailed product information. It aims to improve public health awareness regarding food consumption.
+ABCDE.lv is a web application designed to empower users to make healthier food choices by providing transparent nutritional information for products from Rimi and Maxima supermarkets. The platform enables product search, category browsing, nutritional filtering based on Nutri-Score, and displays detailed product information. It aims to improve public health awareness regarding food consumption.
 
 ## User Preferences
 
@@ -25,13 +25,15 @@ Preferred communication style: Simple, everyday language.
 - **Scan Photo Storage**: Backend-only storage of scanned price tag photos and associated metadata using Replit App Storage, with a 30-day retention policy and automatic cleanup.
 
 ### Data Storage
-- **Databases**: PostgreSQL with two database connections:
-  - **Rimi Database** (RIMI_DATABASE_URL): Remote Neon Database for categories, products, nutrition facts, and product photos (consolidated production database from RimiScraper v2)
+- **Databases**: PostgreSQL with three database connections:
+  - **Rimi Database** (RIMI_DATABASE_URL): Remote Neon Database for categories, Rimi products, nutrition facts, and product photos (consolidated production database from RimiScraper v2)
+  - **Maxima Database** (MAXIMA_DATABASE_URL): Remote Neon Database for Maxima products (from Barbora scraper) - only products with valid rimi_category_code (~1,802 products)
   - **Scans Database** (DATABASE_URL): Local Replit PostgreSQL for scan data (user scans, OCR results, photos)
 - **ORM**: Drizzle ORM for database interactions and migrations.
-- **Database Clients**: `rimiDb` for all product/category operations, `scansDb` for local scan data
+- **Database Clients**: `rimiDb` for Rimi products/categories, `maximaDb` for Maxima products, `scansDb` for local scan data
 - **Schema Design**: Normalized hierarchical category structure, detailed product information including SKU, names, URLs, quantities, comprehensive nutrition facts with Nutri-Score calculations, and scan metadata with UUID-based photo access tokens.
-- **Note**: The remote database contains additional columns (country_of_origin, nutrition_source, needs_enrichment, etc.) that are safely ignored by the application schema.
+- **Multi-Store Architecture**: Products are queried from both databases in parallel, merged/sorted in memory, with store filtering support ('rimi', 'maxima', or combined). Maxima products use `rimi_category_code` (integer) to map to Rimi category IDs for unified category browsing.
+- **Note**: Maxima products currently lack nutrition data (Nutri-Score unavailable). The remote databases contain additional columns that are safely ignored by the application schema.
 
 ### UI/UX
 - **Component Libraries**: Radix UI for accessible components, Lucide React for icons.
