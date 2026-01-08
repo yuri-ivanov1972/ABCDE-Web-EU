@@ -35,6 +35,108 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     'E': smallE
   };
   
+  const isMaxima = product.store === 'maxima';
+  const linkUrl = isMaxima && product.externalUrl ? product.externalUrl : `/product/${productId}`;
+  
+  const cardContent = (
+    <>
+      <div className="relative">
+        <img 
+          src={mainPhoto?.photoUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`}
+          alt={mainPhoto?.altText || name}
+          className="w-full h-40 object-cover"
+        />
+        {nutrition?.nutriScoreGrade && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <img 
+              src={nutriScoreImages[nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
+              alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
+              className="h-14 md:h-12 w-auto"
+            />
+          </div>
+        )}
+        {product.store && (
+          <div className={`absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium text-white ${
+            product.store === 'rimi' ? 'bg-red-600' : 'bg-orange-500'
+          }`}>
+            {product.store === 'rimi' ? 'Rimi' : 'Maxima'}
+          </div>
+        )}
+      </div>
+      <div className="p-3">
+        <h3 className="font-medium text-gray-900 mb-1 text-sm md:text-base">{name}</h3>
+        {quantityFormatted && (
+          <p className="text-sm text-gray-500 mb-3">{quantityFormatted}</p>
+        )}
+        
+        {nutrition && (
+          <div className="space-y-2 mb-2">
+            {nutrition.carbsSugars !== null && (
+              <NutrientBar 
+                nutrient="sugar" 
+                value={Number(nutrition.carbsSugars)} 
+              />
+            )}
+            
+            {nutrition.fatTotal !== null && (
+              <NutrientBar 
+                nutrient="fat" 
+                value={Number(nutrition.fatTotal)} 
+              />
+            )}
+            
+            {nutrition.protein !== null && (
+              <NutrientBar 
+                nutrient="protein" 
+                value={Number(nutrition.protein)} 
+              />
+            )}
+            
+            {nutrition.salt !== null && (
+              <NutrientBar 
+                nutrient="salt" 
+                value={Number(nutrition.salt)} 
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
+  
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      {isMaxima && product.externalUrl ? (
+        <a href={linkUrl} target="_blank" rel="noopener noreferrer" className="block">
+          {cardContent}
+        </a>
+      ) : (
+        <LangLink href={linkUrl} className="block">
+          {cardContent}
+        </LangLink>
+      )}
+    </div>
+  );
+};
+
+const ProductCardOld: React.FC<ProductCardProps> = ({ product }) => {
+  const { t } = useTranslation('common');
+  const { productId, name, quantityValue, quantityUnit, nutrition, photos } = product;
+  
+  const mainPhoto = photos?.find(p => p.isPrimary) || photos?.[0];
+  
+  const quantityFormatted = quantityValue && quantityUnit 
+    ? `${quantityValue}${quantityUnit}`
+    : '';
+  
+  const nutriScoreImages = {
+    'A': smallA,
+    'B': smallB,
+    'C': smallC,
+    'D': smallD,
+    'E': smallE
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <LangLink href={`/product/${productId}`} className="block">
