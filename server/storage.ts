@@ -239,6 +239,11 @@ export class DatabaseStorage implements IStorage {
       if (allCategoriesToInclude.length > 0) {
         whereConditions.push(inArray(maximaProducts.rimiCategoryCode, allCategoriesToInclude));
       }
+      
+      // Add Nutri-Score filter
+      if (nutriScores && nutriScores.length > 0) {
+        whereConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
+      }
 
       // Build ORDER BY clause for Maxima (now includes nutrition data via INNER JOIN)
       let orderByClause: any;
