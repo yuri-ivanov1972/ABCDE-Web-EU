@@ -267,6 +267,20 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                 </a>
               </div>
             )}
+
+            {product.store === 'maxima' && product.externalUrl && (
+              <div className="mt-8">
+                <a 
+                  href={product.externalUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-primary hover:text-primary/90 font-medium flex items-center"
+                >
+                  {t('product:viewOnBarbora')}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>
