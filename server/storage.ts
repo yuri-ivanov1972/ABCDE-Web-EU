@@ -740,7 +740,9 @@ export class DatabaseStorage implements IStorage {
       ...product,
       nutrition,
       photos,
-      category
+      category,
+      store: 'rimi' as Store,
+      externalUrl: product.rimiUrl
     };
   }
   
@@ -780,7 +782,9 @@ export class DatabaseStorage implements IStorage {
       ...product,
       nutrition,
       photos,
-      category
+      category,
+      store: 'rimi' as Store,
+      externalUrl: product.rimiUrl
     };
   }
 
@@ -820,7 +824,9 @@ export class DatabaseStorage implements IStorage {
       ...product,
       nutrition,
       photos,
-      category
+      category,
+      store: 'rimi' as Store,
+      externalUrl: product.rimiUrl
     };
   }
   
@@ -1075,7 +1081,9 @@ export class DatabaseStorage implements IStorage {
           ...product,
           nutrition,
           photos: photosMap[product.productId] || [],
-          category: categoryMap[product.categoryId]
+          category: categoryMap[product.categoryId],
+          store: 'rimi' as Store,
+          externalUrl: product.rimiUrl
         };
       });
       

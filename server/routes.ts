@@ -28,7 +28,8 @@ const getProductsQuerySchema = z.object({
   saltMax: z.coerce.number().optional(),
   sortBy: z.enum(['name', 'nutriScore', 'sugar', 'fat', 'protein', 'salt']).optional().default('name'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
-  search: z.string().optional()
+  search: z.string().optional(),
+  store: z.enum(['rimi', 'maxima']).optional()
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -221,7 +222,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         saltMin,
         saltMax,
         sortBy,
-        sortOrder
+        sortOrder,
+        store
       } = getProductsQuerySchema.parse(req.query);
       
       // Cast nutriScores to the correct type (A, B, C, D, E)
@@ -244,7 +246,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         saltMin,
         saltMax,
         sortBy,
-        sortOrder
+        sortOrder,
+        store
       };
       
       // If search query is provided, use search endpoint
