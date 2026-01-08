@@ -229,11 +229,6 @@ export class DatabaseStorage implements IStorage {
       return { products: [], count: 0 };
     }
 
-    // Skip Maxima products if nutrient filters are applied (Maxima may not have nutrition data)
-    if (hasNutrientFilters) {
-      console.log("Skipping Maxima - nutrient filters applied");
-      return { products: [], count: 0 };
-    }
 
     try {
       // Build WHERE conditions for Maxima
@@ -284,15 +279,23 @@ export class DatabaseStorage implements IStorage {
 
       const count = Number(countQuery[0]?.count) || 0;
 
-      // Get photos for Maxima products
+      // Get photos and nutrition for Maxima products
       const productIds = maximaQuery.map(p => p.productId);
       let photosMap: Record<number, ProductPhoto[]> = {};
+      let nutritionMap: Record<number, NutritionFacts> = {};
       
       if (productIds.length > 0) {
-        const allPhotos = await maximaDb
-          .select()
-          .from(productPhotos)
-          .where(inArray(productPhotos.productId, productIds));
+        // Fetch photos and nutrition in parallel
+        const [allPhotos, allNutrition] = await Promise.all([
+          maximaDb
+            .select()
+            .from(productPhotos)
+            .where(inArray(productPhotos.productId, productIds)),
+          maximaDb
+            .select()
+            .from(nutritionFacts)
+            .where(inArray(nutritionFacts.productId, productIds))
+        ]);
         
         photosMap = allPhotos.reduce((map, photo) => {
           if (!map[photo.productId]) {
@@ -301,6 +304,11 @@ export class DatabaseStorage implements IStorage {
           map[photo.productId].push(photo);
           return map;
         }, {} as Record<number, ProductPhoto[]>);
+        
+        nutritionMap = allNutrition.reduce((map, nutrition) => {
+          map[nutrition.productId] = nutrition;
+          return map;
+        }, {} as Record<number, NutritionFacts>);
       }
 
       // Get categories from Rimi DB (they're shared)
@@ -331,7 +339,7 @@ export class DatabaseStorage implements IStorage {
         quantityUnit: row.quantityUnit,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
-        nutrition: undefined,  // Maxima products don't have nutrition data in this implementation
+        nutrition: nutritionMap[row.productId],
         photos: photosMap[row.productId] || [],
         category: row.categoryId ? categoryMap[row.categoryId] : undefined,
         store: 'maxima' as Store,
@@ -704,45 +712,101 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getProductById(id: number): Promise<ProductWithDetails | undefined> {
-    // First get the product
+  async getProductById(id: number, store?: Store): Promise<ProductWithDetails | undefined> {
+    // If store is 'maxima' or not specified, try Maxima first if it's a Maxima ID
+    if (store === 'maxima' && maximaDb) {
+      return this.getMaximaProductById(id);
+    }
+    
+    // First try Rimi
     const [product] = await rimiDb
       .select()
       .from(products)
       .where(eq(products.productId, id));
       
-    if (!product) return undefined;
+    if (product) {
+      // Get all related data in parallel
+      const [nutrition, photos, category] = await Promise.all([
+        rimiDb
+          .select()
+          .from(nutritionFacts)
+          .where(eq(nutritionFacts.productId, product.productId))
+          .then(results => results[0] || null),
+        rimiDb
+          .select()
+          .from(productPhotos)
+          .where(eq(productPhotos.productId, product.productId)),
+        rimiDb
+          .select()
+          .from(categories)
+          .where(eq(categories.categoryId, product.categoryId))
+          .then(results => results[0] || null)
+      ]);
+      
+      return {
+        ...product,
+        nutrition,
+        photos,
+        category,
+        store: 'rimi' as Store,
+        externalUrl: product.rimiUrl
+      };
+    }
     
-    // Get all related data in parallel
+    // If not found in Rimi and store not specified, try Maxima
+    if (!store && maximaDb) {
+      return this.getMaximaProductById(id);
+    }
+    
+    return undefined;
+  }
+  
+  private async getMaximaProductById(id: number): Promise<ProductWithDetails | undefined> {
+    if (!maximaDb) return undefined;
+    
+    const [maximaProduct] = await maximaDb
+      .select()
+      .from(maximaProducts)
+      .where(eq(maximaProducts.productId, id));
+      
+    if (!maximaProduct) return undefined;
+    
+    // Get nutrition, photos from Maxima DB and category from Rimi DB
     const [nutrition, photos, category] = await Promise.all([
-      // Get nutrition facts
-      rimiDb
+      maximaDb
         .select()
         .from(nutritionFacts)
-        .where(eq(nutritionFacts.productId, product.productId))
+        .where(eq(nutritionFacts.productId, maximaProduct.productId))
         .then(results => results[0] || null),
-        
-      // Get product photos
-      rimiDb
+      maximaDb
         .select()
         .from(productPhotos)
-        .where(eq(productPhotos.productId, product.productId)),
-        
-      // Get category
-      rimiDb
-        .select()
-        .from(categories)
-        .where(eq(categories.categoryId, product.categoryId))
-        .then(results => results[0] || null)
+        .where(eq(productPhotos.productId, maximaProduct.productId)),
+      maximaProduct.rimiCategoryCode 
+        ? rimiDb
+            .select()
+            .from(categories)
+            .where(eq(categories.categoryId, maximaProduct.rimiCategoryCode))
+            .then(results => results[0] || null)
+        : Promise.resolve(null)
     ]);
     
     return {
-      ...product,
-      nutrition,
+      productId: maximaProduct.productId,
+      sku: maximaProduct.sku,
+      name: maximaProduct.name,
+      name_norm: maximaProduct.name_norm,
+      categoryId: maximaProduct.rimiCategoryCode || 0,
+      rimiUrl: null,
+      quantityValue: maximaProduct.quantityValue,
+      quantityUnit: maximaProduct.quantityUnit,
+      createdAt: maximaProduct.createdAt,
+      updatedAt: maximaProduct.updatedAt,
+      nutrition: nutrition || undefined,
       photos,
-      category,
-      store: 'rimi' as Store,
-      externalUrl: product.rimiUrl
+      category: category || undefined,
+      store: 'maxima' as Store,
+      externalUrl: maximaProduct.barboraUrl
     };
   }
   

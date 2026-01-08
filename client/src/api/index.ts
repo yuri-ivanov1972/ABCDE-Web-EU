@@ -152,8 +152,15 @@ export const getProducts = async (options: {
   return response.json();
 };
 
-export const getProductById = async (id: number): Promise<ProductWithDetails> => {
-  const response = await fetch(`${API_BASE_URL}/products/${id}`);
+export const getProductById = async (id: number, store?: 'rimi' | 'maxima'): Promise<ProductWithDetails> => {
+  const params = new URLSearchParams();
+  if (store) {
+    params.set('store', store);
+  }
+  const queryString = params.toString();
+  const url = queryString ? `${API_BASE_URL}/products/${id}?${queryString}` : `${API_BASE_URL}/products/${id}`;
+  
+  const response = await fetch(url);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch product: ${response.status}`);

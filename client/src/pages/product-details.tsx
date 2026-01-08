@@ -26,10 +26,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   
   const productId = Number(id);
   
+  const urlParams = new URLSearchParams(window.location.search);
+  const store = urlParams.get('store') as 'rimi' | 'maxima' | undefined;
+  
   // Always call all hooks first before any early returns
   const { data: product, isLoading, error } = useQuery({
-    queryKey: ['/api/products', productId],
-    queryFn: () => getProductById(productId),
+    queryKey: ['/api/products', productId, store],
+    queryFn: () => getProductById(productId, store || undefined),
     enabled: ready && Number.isFinite(productId) && productId > 0 && !!id && !isNaN(productId)
   });
 
