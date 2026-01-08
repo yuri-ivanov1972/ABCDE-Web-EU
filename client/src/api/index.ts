@@ -1,4 +1,4 @@
-import { Category, ProductWithDetails, ProductsResponse, NutriScoreGrade, SortOption, SortOrder } from '../types';
+import { Category, ProductWithDetails, ProductsResponse, NutriScoreGrade, SortOption, SortOrder, Store } from '../types';
 
 // Base API URL
 const API_BASE_URL = '/api';
@@ -66,6 +66,7 @@ export const getProducts = async (options: {
   sortBy?: SortOption;
   sortOrder?: SortOrder;
   search?: string;
+  store?: Store;
 }): Promise<ProductsResponse> => {
   const { 
     categoryId,
@@ -82,7 +83,8 @@ export const getProducts = async (options: {
     saltMax,
     sortBy = 'name',
     sortOrder = 'asc',
-    search
+    search,
+    store
   } = options;
   
   const params = new URLSearchParams();
@@ -135,6 +137,10 @@ export const getProducts = async (options: {
   
   if (search) {
     params.append('search', search);
+  }
+  
+  if (store) {
+    params.append('store', store);
   }
   
   const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);

@@ -6,7 +6,8 @@ import { Category } from '@/types';
 import { getCategories, getCategoryById, getCategoryPath } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import NutrientFilters from '@/components/filters/nutrient-filters';
-import { Filters, NutrientFilter, NutriScoreGrade } from '@/types';
+import StoreFilter from '@/components/filters/store-filter';
+import { Filters, NutrientFilter, NutriScoreGrade, Store } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import LangLink from '@/components/routing/LangLink';
 
@@ -15,6 +16,8 @@ interface SidebarProps {
   filters: Filters;
   onUpdateFilters: (filters: Filters) => void;
   onApplyFilters: () => void;
+  selectedStore?: Store;
+  onStoreChange?: (store?: Store) => void;
 }
 
 // Recursive category component to handle any depth of nesting
@@ -112,7 +115,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters, onApplyFilters }) => {
+const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters, onApplyFilters, selectedStore, onStoreChange }) => {
   const [location] = useLocation();
   const { t } = useTranslation(['filters', 'categories']);
   
@@ -210,6 +213,17 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
       {/* Filters */}
       <div>
         <h2 className="font-medium text-lg text-gray-900 mb-3">{t('filters:title')}</h2>
+        
+        {/* Store Filter */}
+        {onStoreChange && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Veikals</h3>
+            <StoreFilter 
+              selectedStore={selectedStore}
+              onStoreChange={onStoreChange}
+            />
+          </div>
+        )}
         
         {/* Nutri-Score Filter */}
         <div className="mb-6">

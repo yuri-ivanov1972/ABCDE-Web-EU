@@ -53,6 +53,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               />
             </div>
           )}
+          {product.store && (
+            <div className={`absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium text-white ${
+              product.store === 'rimi' ? 'bg-red-600' : 'bg-orange-500'
+            }`}>
+              {product.store === 'rimi' ? 'Rimi' : 'Maxima'}
+            </div>
+          )}
         </div>
         <div className="p-3">
           <h3 className="font-medium text-gray-900 mb-1 text-sm md:text-base">{name}</h3>

@@ -8,7 +8,7 @@ import { getCanonicalUrl } from '@/lib/canonical';
 import { SlidersHorizontal } from 'lucide-react';
 
 import { getProducts, getCategoryById } from '@/api';
-import { Filters, NutriScoreGrade, SortOption, SortOrder } from '@/types';
+import { Filters, NutriScoreGrade, SortOption, SortOrder, Store } from '@/types';
 
 import Sidebar from '@/components/layout/sidebar';
 import MobileMenu from '@/components/layout/mobile-menu';
@@ -50,6 +50,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const [sortOption, setSortOption] = useState<SortOption>('nutriScore');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
+  const [selectedStore, setSelectedStore] = useState<Store | undefined>(undefined);
   
   // Initialize search from props
   useEffect(() => {
@@ -77,7 +78,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   
   // Fetch products with filters
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['/api/products', categoryId, page, filters, sortOption, sortOrder, searchQuery],
+    queryKey: ['/api/products', categoryId, page, filters, sortOption, sortOrder, searchQuery, selectedStore],
     queryFn: () => getProducts({
       categoryId,
       page,
@@ -93,7 +94,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       saltMax: filters.salt.max,
       sortBy: sortOption,
       sortOrder,
-      search: searchQuery
+      search: searchQuery,
+      store: selectedStore
     })
   });
   
@@ -268,9 +270,11 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
         <Sidebar 
           categoryId={categoryId}
           filters={filters} 
-        onUpdateFilters={handleUpdateFilters}
-        onApplyFilters={handleApplyFilters}
-      />
+          onUpdateFilters={handleUpdateFilters}
+          onApplyFilters={handleApplyFilters}
+          selectedStore={selectedStore}
+          onStoreChange={setSelectedStore}
+        />
       
       {/* Main Content */}
       <main className="flex-grow">

@@ -49,11 +49,16 @@ export interface ProductPhoto {
   isPrimary: boolean;
 }
 
+// Store type
+export type Store = 'rimi' | 'maxima';
+
 // Combined product type with relations for frontend use
 export interface ProductWithDetails extends Product {
   nutrition?: NutritionFacts;
   photos?: ProductPhoto[];
   category?: Category;
+  store?: Store;
+  externalUrl?: string | null;
 }
 
 // Filter types

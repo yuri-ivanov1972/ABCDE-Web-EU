@@ -622,7 +622,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: matchedProduct.name,
           sku: matchedProduct.sku,
           rimiUrl: matchedProduct.rimiUrl,
-          nutriScoreGrade: matchedProduct.nutrition?.nutriScoreGrade || null
+          nutriScoreGrade: matchedProduct.nutrition?.nutriScoreGrade || null,
+          store: matchedProduct.store || 'rimi',
+          externalUrl: matchedProduct.externalUrl || matchedProduct.rimiUrl
         } : null
       });
     } catch (error) {
