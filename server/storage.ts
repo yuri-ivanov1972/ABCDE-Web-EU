@@ -240,13 +240,30 @@ export class DatabaseStorage implements IStorage {
         whereConditions.push(inArray(maximaProducts.rimiCategoryCode, allCategoriesToInclude));
       }
 
-      // Build ORDER BY clause for Maxima
+      // Build ORDER BY clause for Maxima (now includes nutrition data via INNER JOIN)
       let orderByClause: any;
       if (sortBy === 'name') {
         orderByClause = sortOrder === 'asc' ? asc(maximaProducts.name) : desc(maximaProducts.name);
       } else if (sortBy === 'nutriScore') {
-        // Maxima products don't have nutrition data, sort by name
-        orderByClause = asc(maximaProducts.name);
+        orderByClause = sortOrder === 'asc' 
+          ? asc(nutritionFacts.nutriScoreGrade)
+          : desc(nutritionFacts.nutriScoreGrade);
+      } else if (sortBy === 'sugar') {
+        orderByClause = sortOrder === 'asc' 
+          ? asc(nutritionFacts.carbsSugars)
+          : desc(nutritionFacts.carbsSugars);
+      } else if (sortBy === 'fat') {
+        orderByClause = sortOrder === 'asc' 
+          ? asc(nutritionFacts.fatTotal)
+          : desc(nutritionFacts.fatTotal);
+      } else if (sortBy === 'protein') {
+        orderByClause = sortOrder === 'asc' 
+          ? asc(nutritionFacts.protein)
+          : desc(nutritionFacts.protein);
+      } else if (sortBy === 'salt') {
+        orderByClause = sortOrder === 'asc' 
+          ? asc(nutritionFacts.salt)
+          : desc(nutritionFacts.salt);
       } else {
         orderByClause = asc(maximaProducts.name);
       }
