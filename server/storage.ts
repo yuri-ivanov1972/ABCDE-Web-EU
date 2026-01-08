@@ -701,6 +701,7 @@ export class DatabaseStorage implements IStorage {
           finalTotalCount = Number(totalCount) + Number(maximaResult.count);
           
           // Sort the merged results according to sortBy/sortOrder
+          // Use secondary sort by name to interleave products from both stores when primary values are equal
           allProducts.sort((a, b) => {
             let comparison = 0;
             if (sortBy === 'name') {
@@ -709,22 +710,38 @@ export class DatabaseStorage implements IStorage {
               const gradeA = a.nutrition?.nutriScoreGrade || 'Z';
               const gradeB = b.nutrition?.nutriScoreGrade || 'Z';
               comparison = gradeA.localeCompare(gradeB);
+              // Secondary sort by name when grades are equal
+              if (comparison === 0) {
+                comparison = a.name.localeCompare(b.name, 'lv');
+              }
             } else if (sortBy === 'sugar') {
               const valA = parseFloat(String(a.nutrition?.carbsSugars || 9999));
               const valB = parseFloat(String(b.nutrition?.carbsSugars || 9999));
               comparison = valA - valB;
+              if (comparison === 0) {
+                comparison = a.name.localeCompare(b.name, 'lv');
+              }
             } else if (sortBy === 'fat') {
               const valA = parseFloat(String(a.nutrition?.fatTotal || 9999));
               const valB = parseFloat(String(b.nutrition?.fatTotal || 9999));
               comparison = valA - valB;
+              if (comparison === 0) {
+                comparison = a.name.localeCompare(b.name, 'lv');
+              }
             } else if (sortBy === 'protein') {
               const valA = parseFloat(String(a.nutrition?.protein || 0));
               const valB = parseFloat(String(b.nutrition?.protein || 0));
               comparison = valB - valA;  // Protein: higher is better, so reverse
+              if (comparison === 0) {
+                comparison = a.name.localeCompare(b.name, 'lv');
+              }
             } else if (sortBy === 'salt') {
               const valA = parseFloat(String(a.nutrition?.salt || 9999));
               const valB = parseFloat(String(b.nutrition?.salt || 9999));
               comparison = valA - valB;
+              if (comparison === 0) {
+                comparison = a.name.localeCompare(b.name, 'lv');
+              }
             }
             return sortOrder === 'desc' ? -comparison : comparison;
           });
