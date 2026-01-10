@@ -341,11 +341,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to merge adjacent OCR segments into meaningful patterns
+  // e.g., "35" + "%" → "35%", "200" + "g" → "200g", "UHT" stays as is
+  const mergeAdjacentSegments = (segments: string[]): string[] => {
+    // First, trim all segments to handle OCR whitespace artifacts
+    const trimmedSegments = segments.map(s => s.trim()).filter(s => s.length > 0);
+    
+    const merged: string[] = [];
+    let i = 0;
+    
+    while (i < trimmedSegments.length) {
+      const current = trimmedSegments[i];
+      const next = trimmedSegments[i + 1];
+      const nextTrimmed = next ? next.trim() : '';
+      
+      // Pattern: number + "%" → percentage (e.g., "35" + "%" → "35%")
+      if (nextTrimmed === '%' && /^\d+(\.\d+)?$/.test(current)) {
+        merged.push(current + '%');
+        i += 2;
+        continue;
+      }
+      
+      // Pattern: number + unit → quantity (e.g., "200" + "g" → "200g", "200" + "ml" → "200ml")
+      if (nextTrimmed && /^(g|kg|ml|l|gr)$/i.test(nextTrimmed) && /^\d+(\.\d+)?$/.test(current)) {
+        merged.push(current + nextTrimmed.toLowerCase());
+        i += 2;
+        continue;
+      }
+      
+      // Keep the current segment as-is
+      merged.push(current);
+      i++;
+    }
+    
+    return merged;
+  };
+  
+  // Check if a segment is a percentage value (critical for product differentiation)
+  const isPercentageValue = (segment: string): boolean => {
+    return /^\d+(\.\d+)?%$/.test(segment.trim());
+  };
+  
+  // Check if a segment is a quantity value (useful for matching)
+  const isQuantityValue = (segment: string): boolean => {
+    return /^\d+(\.\d+)?(g|kg|ml|l|gr)$/i.test(segment.trim());
+  };
+  
   // Helper function to normalize and filter text segments
+  // Now preserves percentages and quantities even if short
   const normalizeTextSegments = (segments: string[]): string[] => {
-    return segments
-      .map(segment => normalizeLvText(segment))
-      .filter(segment => segment.length > 3); // Filter out segments shorter than 4 characters
+    // First merge adjacent segments to form patterns like "35%"
+    const mergedSegments = mergeAdjacentSegments(segments);
+    
+    return mergedSegments
+      .map(segment => normalizeLvText(segment.trim()))
+      .filter(segment => {
+        // Always keep percentage values (critical for product differentiation)
+        if (isPercentageValue(segment)) return true;
+        // Always keep quantity values
+        if (isQuantityValue(segment)) return true;
+        // Keep short but common product identifiers (UHT, BIO, etc.)
+        if (/^(uht|bio|eko)$/i.test(segment)) return true;
+        // Filter out segments shorter than 4 characters (noise like "ES", "RTI", etc.)
+        return segment.length > 3;
+      });
+  };
+  
+  // Extract and normalize percentage from a product name (e.g., "10%" from "Saldais krējums 10% UHT")
+  // Returns lowercase normalized percentage for consistent comparison
+  const extractPercentage = (text: string): string | null => {
+    const match = text.match(/(\d+(?:\.\d+)?)\s*%/);
+    return match ? match[1] + '%' : null;
   };
 
   // Helper function to find matching product using two-pass token matching
@@ -363,11 +429,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     console.log(`Normalized segments for matching: ${normalizedSegments.join(', ')}`);
+    
+    // Extract percentage from OCR segments for strict matching
+    const ocrPercentage = normalizedSegments.find(s => isPercentageValue(s));
+    if (ocrPercentage) {
+      console.log(`OCR detected percentage: ${ocrPercentage}`);
+    }
 
     // PASS 1: Find potential matches using SQL - products containing any of the segments
     const potentialMatches: any[] = [];
     
-    for (const segment of normalizedSegments) {
+    // Prioritize searching with percentage if available
+    const searchSegments = ocrPercentage 
+      ? [ocrPercentage, ...normalizedSegments.filter(s => s !== ocrPercentage)]
+      : normalizedSegments;
+    
+    for (const segment of searchSegments) {
+      // Skip searching with just percentage as it won't find products
+      if (segment === ocrPercentage) continue;
+      
       try {
         const searchResults = await storage.searchProducts(segment, {
           page: 1,
@@ -376,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         for (const product of searchResults.products) {
           // Avoid duplicates
-          if (!potentialMatches.find(m => m.productId === product.productId)) {
+          if (!potentialMatches.find(m => m.productId === product.productId && m.store === product.store)) {
             potentialMatches.push(product);
           }
         }
@@ -393,25 +473,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Pass 1 found ${potentialMatches.length} potential matches`);
 
     // PASS 2: Token-based verification with confidence scoring
+    // Now includes percentage matching for accurate differentiation
     const confirmedMatches: Array<{
       product: any;
       matchConfidence: number;
       tokenCount: number;
+      percentageMatch: boolean;
     }> = [];
 
     for (const product of potentialMatches) {
       const normalizedProductName = normalizeLvText(product.name);
       const tokens = normalizedProductName.split(/\s+/);
       
-      // Filter to significant tokens (longer than 3 characters)
-      const significantTokens = tokens.filter(token => token.length > 3);
-      const tokensToMatch = significantTokens.length > 0 ? significantTokens : tokens;
+      // Extract percentage from product name (already normalized to lowercase like "35%")
+      const productPercentage = extractPercentage(product.name);
+      
+      // Check percentage match - CRITICAL for differentiating variants
+      let percentageMatch = true; // Default to true if no percentage in OCR
+      if (ocrPercentage) {
+        // OCR detected a percentage value
+        if (productPercentage) {
+          // Both OCR and product have percentages - they must match
+          percentageMatch = ocrPercentage === productPercentage;
+          if (!percentageMatch) {
+            console.log(`Percentage mismatch: OCR "${ocrPercentage}" vs Product "${productPercentage}" (${product.name})`);
+          }
+        } else {
+          // OCR has percentage but product doesn't - demote this product
+          percentageMatch = false;
+          console.log(`Product missing percentage: OCR "${ocrPercentage}" but product has none (${product.name})`);
+        }
+      }
+      
+      // Include ALL tokens for matching, including short ones like percentage and UHT
+      const tokensToMatch = tokens;
 
       // Calculate how many tokens are found in the text segments
       let matchingTokenCount = 0;
       
       for (const token of tokensToMatch) {
-        const tokenFound = normalizedSegments.some((segment: string) => segment.includes(token));
+        const tokenFound = normalizedSegments.some((segment: string) => 
+          segment.includes(token) || token.includes(segment)
+        );
         if (tokenFound) {
           matchingTokenCount++;
         }
@@ -427,7 +530,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         confirmedMatches.push({
           product,
           matchConfidence,
-          tokenCount: tokens.length
+          tokenCount: tokens.length,
+          percentageMatch
         });
       }
     }
@@ -437,16 +541,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return null;
     }
 
-    // Sort by confidence (descending), then by token count (descending) for specificity
+    // Sort by: 1) percentage match (exact match first), 2) confidence, 3) token count
     confirmedMatches.sort((a, b) => {
+      // Percentage match takes priority
+      if (a.percentageMatch !== b.percentageMatch) {
+        return a.percentageMatch ? -1 : 1;
+      }
+      // Then by confidence
       if (b.matchConfidence !== a.matchConfidence) {
         return b.matchConfidence - a.matchConfidence;
       }
+      // Then by token count for specificity
       return b.tokenCount - a.tokenCount;
     });
 
     const bestMatch = confirmedMatches[0];
-    console.log(`Best match: ${bestMatch.product.name} with confidence ${bestMatch.matchConfidence.toFixed(2)}`);
+    console.log(`Best match: ${bestMatch.product.name} with confidence ${bestMatch.matchConfidence.toFixed(2)}, percentage match: ${bestMatch.percentageMatch}`);
 
     return bestMatch.product;
   };
