@@ -49,6 +49,7 @@ export function Scanner({ onCapture }: ScannerProps) {
       sku: string;
       rimiUrl: string | null;
       nutriScoreGrade: string | null;
+      store: 'rimi' | 'maxima';
     } | null;
   } | null>(null);
 
@@ -447,7 +448,7 @@ export function Scanner({ onCapture }: ScannerProps) {
               data-testid="button-view-product"
             >
               <a 
-                href={`/${i18n.language}/product/${scanResult.product.productId}`}
+                href={`/${i18n.language}/product/${scanResult.product.productId}${scanResult.product.store === 'maxima' ? '?store=maxima' : ''}`}
                 onClick={() => {
                   // Track when user clicks to view product details after scanning
                   trackProductViewAfterScan({
