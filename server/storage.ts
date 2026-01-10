@@ -1205,11 +1205,134 @@ export class DatabaseStorage implements IStorage {
         };
       });
       
-      console.log(`SEARCH products with query "${query}" and options ${JSON.stringify(options)} returned ${productsWithDetails.length} products, total: ${totalCount}`);
+      // Step 9: Also search Maxima products and merge results
+      let allProducts = productsWithDetails;
+      let finalTotalCount = Number(totalCount);
+      
+      if (maximaDb) {
+        try {
+          // Build Maxima search conditions
+          const maximaSearchConditions = [
+            isNotNull(maximaProducts.rimiCategoryCode),  // Only products with rimi_category_code
+            or(
+              sql`${maximaProducts.name} ILIKE ${exactMatchPattern}`,
+              sql`${maximaProducts.name_norm} LIKE ${searchPattern}`
+            )
+          ];
+          
+          // Add Nutri-Score filter for Maxima
+          const maximaNutritionConditions = [isNotNull(nutritionFacts.nutriScoreGrade)];
+          if (nutriScores && nutriScores.length > 0) {
+            maximaNutritionConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
+          }
+          
+          // Query Maxima products with INNER JOIN to only get products with Nutri-Score
+          const maximaSearchQuery = await maximaDb
+            .select({
+              productId: maximaProducts.productId,
+              sku: maximaProducts.sku,
+              name: maximaProducts.name,
+              nameNorm: maximaProducts.name_norm,
+              categoryId: maximaProducts.rimiCategoryCode,
+              barboraUrl: maximaProducts.barboraUrl,
+              quantityValue: maximaProducts.quantityValue,
+              quantityUnit: maximaProducts.quantityUnit,
+              createdAt: maximaProducts.createdAt,
+              updatedAt: maximaProducts.updatedAt,
+              nutriScoreGrade: nutritionFacts.nutriScoreGrade,
+            })
+            .from(maximaProducts)
+            .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
+            .where(and(...maximaSearchConditions, ...maximaNutritionConditions))
+            .orderBy(sortBy === 'name' 
+              ? (sortOrder === 'asc' ? asc(maximaProducts.name) : desc(maximaProducts.name))
+              : (sortOrder === 'asc' ? asc(nutritionFacts.nutriScoreGrade) : desc(nutritionFacts.nutriScoreGrade)))
+            .limit(pageSize)
+            .offset(offset);
+          
+          // Get Maxima count
+          const maximaCountQuery = await maximaDb
+            .select({ count: sql<number>`count(*)` })
+            .from(maximaProducts)
+            .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
+            .where(and(...maximaSearchConditions, ...maximaNutritionConditions));
+          
+          const maximaCount = Number(maximaCountQuery[0]?.count) || 0;
+          
+          // Get nutrition and photos for Maxima products
+          const maximaProductIds = maximaSearchQuery.map(p => p.productId);
+          let maximaPhotosMap: Record<number, ProductPhoto[]> = {};
+          let maximaNutritionMap: Record<number, NutritionFacts> = {};
+          let maximaCategoryMap: Record<number, Category> = {};
+          
+          if (maximaProductIds.length > 0) {
+            const [maximaPhotos, maximaNutrition] = await Promise.all([
+              maximaDb.select().from(productPhotos).where(inArray(productPhotos.productId, maximaProductIds)),
+              maximaDb.select().from(nutritionFacts).where(inArray(nutritionFacts.productId, maximaProductIds))
+            ]);
+            
+            maximaPhotosMap = maximaPhotos.reduce((map, photo) => {
+              if (!map[photo.productId]) map[photo.productId] = [];
+              map[photo.productId].push(photo);
+              return map;
+            }, {} as Record<number, ProductPhoto[]>);
+            
+            maximaNutritionMap = maximaNutrition.reduce((map, n) => {
+              map[n.productId] = n;
+              return map;
+            }, {} as Record<number, NutritionFacts>);
+            
+            // Get categories from Rimi DB
+            const categoryIds = maximaSearchQuery.map(p => p.categoryId).filter(id => id !== null) as number[];
+            if (categoryIds.length > 0) {
+              const cats = await rimiDb.select().from(categories).where(inArray(categories.categoryId, categoryIds));
+              maximaCategoryMap = cats.reduce((map, c) => { map[c.categoryId] = c; return map; }, {} as Record<number, Category>);
+            }
+          }
+          
+          // Convert Maxima products to ProductWithDetails
+          const maximaProducts_: ProductWithDetails[] = maximaSearchQuery.map(row => ({
+            productId: row.productId,
+            sku: row.sku,
+            name: row.name,
+            name_norm: row.nameNorm,
+            categoryId: row.categoryId || 0,
+            rimiUrl: null,
+            quantityValue: row.quantityValue,
+            quantityUnit: row.quantityUnit,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
+            nutrition: maximaNutritionMap[row.productId],
+            photos: maximaPhotosMap[row.productId] || [],
+            category: row.categoryId ? maximaCategoryMap[row.categoryId] : undefined,
+            store: 'maxima' as Store,
+            externalUrl: row.barboraUrl
+          }));
+          
+          // Merge results
+          allProducts = [...productsWithDetails, ...maximaProducts_];
+          finalTotalCount = Number(totalCount) + maximaCount;
+          
+          // Sort merged results by name
+          allProducts.sort((a, b) => {
+            let comparison = a.name.localeCompare(b.name, 'lv');
+            return sortOrder === 'desc' ? -comparison : comparison;
+          });
+          
+          // Limit to pageSize
+          allProducts = allProducts.slice(0, pageSize);
+          
+          console.log(`Added ${maximaProducts_.length} Maxima products to search results`);
+        } catch (err) {
+          console.error('Error searching Maxima products:', err);
+        }
+      }
+      
+      console.log(`SEARCH products with query "${query}" and options ${JSON.stringify(options)} returned ${allProducts.length} products, total: ${finalTotalCount}`);
       
       return {
-        products: productsWithDetails,
-        totalCount
+        products: allProducts,
+        totalCount: finalTotalCount
       };
       
     } catch (error) {
