@@ -731,7 +731,7 @@ export class DatabaseStorage implements IStorage {
             } else if (sortBy === 'protein') {
               const valA = parseFloat(String(a.nutrition?.protein || 0));
               const valB = parseFloat(String(b.nutrition?.protein || 0));
-              comparison = valB - valA;  // Protein: higher is better, so reverse
+              comparison = valA - valB;  // Same direction as other nutrients
               if (comparison === 0) {
                 comparison = a.name.localeCompare(b.name, 'lv');
               }
