@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getCategories } from '@/api';
+import LangLink from '@/components/routing/LangLink';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
 import StoreFilter from '@/components/filters/store-filter';
 import { NutriScoreGrade, Category, Store } from '@/types';
@@ -49,7 +49,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
   return (
     <li className="mb-2">
       <div className="flex items-center">
-        <Link 
+        <LangLink 
           href={`/category/${category.categoryId}`}
           className={`flex-grow flex items-center justify-between px-2 py-1.5 rounded ${
             isSelected 
@@ -75,7 +75,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           )}
-        </Link>
+        </LangLink>
       </div>
       
       {/* Display subcategories if expanded */}
@@ -128,6 +128,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
       <nav className="py-3 px-4">
         <h3 className="font-medium text-gray-900 mb-2">{t('categories:title')}</h3>
         <ul className="space-y-1">
+          <li className="mb-2">
+            <LangLink 
+              href="/"
+              className={`block px-2 py-1.5 rounded ${
+                !categoryId 
+                  ? 'bg-primary text-white font-medium' 
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+              {t('categories:allCategories')}
+            </LangLink>
+          </li>
           {categories.map((category) => (
             <MobileCategoryItem 
               key={category.categoryId}
