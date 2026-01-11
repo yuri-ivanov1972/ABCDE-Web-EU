@@ -2,7 +2,8 @@
   "title": "Filters",
   "applyFilters": "Apply filters",
   "store": {
-    "label": "Store"
+    "label": "Store",
+    "all": "All"
   },
   "nutriScore": {
     "label": "Nutri-Score",

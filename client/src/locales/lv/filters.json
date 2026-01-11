@@ -2,7 +2,8 @@
   "title": "Filtri",
   "applyFilters": "Pielietot filtrus",
   "store": {
-    "label": "Veikals"
+    "label": "Veikals",
+    "all": "Visi"
   },
   "nutriScore": {
     "label": "Nutri-Score",
