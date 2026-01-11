@@ -64,17 +64,8 @@ export interface ProductWithDetails extends Product {
 // Filter types
 export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
-export interface NutrientFilter {
-  min?: number;
-  max?: number;
-}
-
 export interface Filters {
   nutriScores: NutriScoreGrade[];
-  sugar: NutrientFilter;
-  fat: NutrientFilter;
-  protein: NutrientFilter;
-  salt: NutrientFilter;
 }
 
 export interface ProductsResponse {

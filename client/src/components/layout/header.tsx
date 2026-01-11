@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, X, SlidersHorizontal, ExternalLink } from 'lucide-react';
+import { Search, X, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -7,14 +7,11 @@ import nutriScoreLogo from '@assets/medium_A_1762616394620.png';
 import { trackPetitionClick } from '@/lib/analytics';
 
 interface HeaderProps {
-  isMobileFiltersOpen: boolean;
-  toggleMobileFilters: () => void;
   onSearch: (query: string) => void;
   categoryId?: number;
-  hasActiveFilters?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilters, onSearch, categoryId, hasActiveFilters = false }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, categoryId }) => {
   const { t, ready, i18n } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -39,9 +36,7 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="md:hidden text-gray-500" disabled>
-              <SlidersHorizontal className="h-5 w-5" />
-            </button>
+            <LanguageSwitcher compact={true} />
           </div>
         </div>
       </header>
@@ -127,28 +122,16 @@ const Header: React.FC<HeaderProps> = ({ isMobileFiltersOpen, toggleMobileFilter
               <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
             </a>
 
-            {/* Language Switcher and Filter Actions */}
+            {/* Language Switcher */}
             <div className="flex items-center gap-2">
               {/* Language Switcher - Desktop */}
               <div className="hidden md:block">
                 <LanguageSwitcher />
               </div>
               
-              {/* Mobile Actions - Language + Filter */}
-              <div className="md:hidden flex items-center gap-2">
+              {/* Language Switcher - Mobile */}
+              <div className="md:hidden">
                 <LanguageSwitcher compact={true} />
-                
-                <button 
-                  className="relative text-gray-600 hover:text-primary focus:outline-none transition-colors p-2"
-                  onClick={toggleMobileFilters}
-                  aria-label={t('header:filters.toggle')}
-                  data-testid="mobile-filter-button"
-                >
-                  <SlidersHorizontal className="h-5 w-5" />
-                  {hasActiveFilters && (
-                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
-                  )}
-                </button>
               </div>
             </div>
           </div>

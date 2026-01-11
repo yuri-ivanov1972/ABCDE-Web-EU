@@ -5,9 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Category } from '@/types';
 import { getCategories, getCategoryById, getCategoryPath } from '@/api';
 import NutriScoreFilter from '@/components/filters/nutri-score-filter';
-import NutrientFilters from '@/components/filters/nutrient-filters';
 import StoreFilter from '@/components/filters/store-filter';
-import { Filters, NutrientFilter, NutriScoreGrade, Store } from '@/types';
+import { Filters, NutriScoreGrade, Store } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import LangLink from '@/components/routing/LangLink';
 
@@ -139,20 +138,6 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
     enabled: !!categoryId
   });
   
-  // Handle nutrient filter update
-  const handleUpdateNutrientFilter = (
-    nutrient: 'sugar' | 'fat' | 'protein' | 'salt',
-    type: 'min' | 'max',
-    value: number
-  ) => {
-    const updatedFilters = { ...filters };
-    updatedFilters[nutrient] = {
-      ...updatedFilters[nutrient],
-      [type]: value
-    };
-    onUpdateFilters(updatedFilters);
-  };
-  
   // Handle nutri-score filter update
   const handleToggleNutriScore = (score: NutriScoreGrade) => {
     const updatedScores = [...filters.nutriScores];
@@ -233,12 +218,6 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
             onToggleScore={handleToggleNutriScore}
           />
         </div>
-        
-        {/* Nutrient Filters */}
-        <NutrientFilters 
-          filters={filters}
-          onUpdateFilter={handleUpdateNutrientFilter}
-        />
         
         {/* Apply Filters Button */}
         <button 

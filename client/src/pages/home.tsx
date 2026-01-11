@@ -19,12 +19,9 @@ import ActiveFilters from '@/components/filters/active-filters';
 interface HomeProps {
   initialSearchQuery?: string;
   categoryId?: number;
-  isMobileFiltersOpen?: boolean;
-  toggleMobileFilters?: () => void;
-  onFiltersChange?: (hasActiveFilters: boolean) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId, isMobileFiltersOpen = false, toggleMobileFilters, onFiltersChange }) => {
+const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
   const { t, ready, i18n } = useTranslation(['home', 'common']);
   const [location] = useLocation();
   const params = useParams<{ id?: string }>();
@@ -40,12 +37,9 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   // States
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
-    nutriScores: [],
-    sugar: {},
-    fat: {},
-    protein: {},
-    salt: {}
+    nutriScores: []
   });
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   
   const [sortOption, setSortOption] = useState<SortOption>('nutriScore');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -84,14 +78,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       page,
       pageSize: 12,
       nutriScores: filters.nutriScores.length > 0 ? filters.nutriScores : undefined,
-      sugarMin: filters.sugar.min,
-      sugarMax: filters.sugar.max,
-      fatMin: filters.fat.min,
-      fatMax: filters.fat.max,
-      proteinMin: filters.protein.min,
-      proteinMax: filters.protein.max,
-      saltMin: filters.salt.min,
-      saltMax: filters.salt.max,
       sortBy: sortOption,
       sortOrder,
       search: searchQuery,
@@ -104,20 +90,13 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   // Use real page count from API response to ensure proper pagination with filters
   const totalPages = calculatedPages;
   
-  // Check if there are any active filters for the header indicator
-  const hasActiveFilters = 
-    filters.nutriScores.length > 0 ||
-    Object.values(filters.sugar).some(v => v !== undefined) ||
-    Object.values(filters.fat).some(v => v !== undefined) ||
-    Object.values(filters.protein).some(v => v !== undefined) ||
-    Object.values(filters.salt).some(v => v !== undefined);
+  // Check if there are any active filters
+  const hasActiveFilters = filters.nutriScores.length > 0;
   
-  // Notify parent when filters change
-  useEffect(() => {
-    if (onFiltersChange) {
-      onFiltersChange(hasActiveFilters);
-    }
-  }, [hasActiveFilters, onFiltersChange]);
+  // Toggle mobile filters
+  const toggleMobileFilters = () => {
+    setIsMobileFiltersOpen(!isMobileFiltersOpen);
+  };
   
   // Log data for debugging pagination with filters
   useEffect(() => {
@@ -151,57 +130,36 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   };
   
   // Handle remove filter
-  const handleRemoveFilter = (filterType: 'nutriScores' | 'sugar' | 'fat' | 'protein' | 'salt') => {
+  const handleRemoveFilter = (filterType: 'nutriScores') => {
     const newFilters = { ...filters };
-    
-    if (filterType === 'nutriScores') {
-      newFilters.nutriScores = [];
-    } else {
-      newFilters[filterType] = {};
-    }
+    newFilters.nutriScores = [];
     
     setFilters(newFilters);
     setPage(1);
     console.log('Removed filter:', filterType);
-    // Immediately refetch to update results with removed filter
     refetch();
   };
   
   // Clear all filters
   const handleClearAllFilters = () => {
     setFilters({
-      nutriScores: [],
-      sugar: {},
-      fat: {},
-      protein: {},
-      salt: {}
+      nutriScores: []
     });
     setPage(1);
     console.log('Cleared all filters');
-    // Immediately refetch to update results with all filters cleared
     refetch();
   };
   
   // Handle mobile filters applied
-  const handleMobileFiltersApply = (
-    nutriScores: NutriScoreGrade[],
-    sugarMin?: number, sugarMax?: number,
-    fatMin?: number, fatMax?: number,
-    proteinMin?: number, proteinMax?: number,
-    saltMin?: number, saltMax?: number
-  ) => {
+  const handleMobileFiltersApply = (nutriScores: NutriScoreGrade[]) => {
     // Close mobile filters panel
-    if (isMobileFiltersOpen && toggleMobileFilters) {
-      toggleMobileFilters();
+    if (isMobileFiltersOpen) {
+      setIsMobileFiltersOpen(false);
     }
     
     // Apply the filter values to the main filters state
     const newFilters: Filters = {
-      nutriScores: nutriScores,
-      sugar: { min: sugarMin, max: sugarMax },
-      fat: { min: fatMin, max: fatMax },
-      protein: { min: proteinMin, max: proteinMax },
-      salt: { min: saltMin, max: saltMax }
+      nutriScores: nutriScores
     };
     
     // Update filters state and trigger refetch
@@ -280,7 +238,19 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       
       {/* Main Content */}
       <main className="flex-grow">
-        {/* Mobile filter button moved to header, this section is now empty */}
+        {/* Mobile filter toggle button */}
+        <div className="md:hidden mb-4">
+          <button
+            onClick={toggleMobileFilters}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary transition-colors px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            <span>{isMobileFiltersOpen ? 'Aizvērt filtrus' : 'Filtri'}</span>
+            {hasActiveFilters && (
+              <span className="h-2 w-2 bg-primary rounded-full"></span>
+            )}
+          </button>
+        </div>
 
         {/* Title and Active Filters */}
         <div className="mb-6">

@@ -55,14 +55,6 @@ export const getProducts = async (options: {
   page?: number;
   pageSize?: number;
   nutriScores?: NutriScoreGrade[];
-  sugarMin?: number;
-  sugarMax?: number;
-  fatMin?: number;
-  fatMax?: number;
-  proteinMin?: number;
-  proteinMax?: number;
-  saltMin?: number;
-  saltMax?: number;
   sortBy?: SortOption;
   sortOrder?: SortOrder;
   search?: string;
@@ -73,14 +65,6 @@ export const getProducts = async (options: {
     page = 1,
     pageSize = 12,
     nutriScores,
-    sugarMin,
-    sugarMax,
-    fatMin,
-    fatMax,
-    proteinMin,
-    proteinMax,
-    saltMin,
-    saltMax,
     sortBy = 'name',
     sortOrder = 'asc',
     search,
@@ -98,38 +82,6 @@ export const getProducts = async (options: {
   
   if (nutriScores && nutriScores.length > 0) {
     params.append('nutriScores', nutriScores.join(','));
-  }
-  
-  if (sugarMin !== undefined) {
-    params.append('sugarMin', sugarMin.toString());
-  }
-  
-  if (sugarMax !== undefined) {
-    params.append('sugarMax', sugarMax.toString());
-  }
-  
-  if (fatMin !== undefined) {
-    params.append('fatMin', fatMin.toString());
-  }
-  
-  if (fatMax !== undefined) {
-    params.append('fatMax', fatMax.toString());
-  }
-  
-  if (proteinMin !== undefined) {
-    params.append('proteinMin', proteinMin.toString());
-  }
-  
-  if (proteinMax !== undefined) {
-    params.append('proteinMax', proteinMax.toString());
-  }
-  
-  if (saltMin !== undefined) {
-    params.append('saltMin', saltMin.toString());
-  }
-  
-  if (saltMax !== undefined) {
-    params.append('saltMax', saltMax.toString());
   }
   
   params.append('sortBy', sortBy);

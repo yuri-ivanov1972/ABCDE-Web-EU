@@ -21,12 +21,9 @@ const PageLoader = () => (
 
 interface LanguageRouterProps {
   searchQuery?: string;
-  isMobileFiltersOpen?: boolean;
-  toggleMobileFilters?: () => void;
-  onFiltersChange?: (hasActiveFilters: boolean) => void;
 }
 
-const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMobileFiltersOpen = false, toggleMobileFilters, onFiltersChange }) => {
+const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '' }) => {
   const [location, setLocation] = useLocation();
   const { i18n } = useTranslation();
 
@@ -78,7 +75,7 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           }
           return (
             <Suspense fallback={<PageLoader />}>
-              <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />
+              <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} {...params} />
             </Suspense>
           );
         }}
@@ -166,7 +163,7 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           }
           return (
             <Suspense fallback={<PageLoader />}>
-              <Home initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} toggleMobileFilters={toggleMobileFilters} onFiltersChange={onFiltersChange} {...params} />
+              <Home initialSearchQuery={searchQuery} {...params} />
             </Suspense>
           );
         }}

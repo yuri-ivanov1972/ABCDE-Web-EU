@@ -10,9 +10,7 @@ import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 
 function App() {
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
   // Extract current category ID from URL (considering language prefix)
   const [location] = useLocation();
@@ -22,21 +20,10 @@ function App() {
   const categoryIdMatch = /^\/category\/(\d+)$/.exec(pathWithoutLang);
   const currentCategoryId = categoryIdMatch ? Number(categoryIdMatch[1]) : undefined;
 
-  // Clear search query only when clicking logo or "All categories" link
-  // This effect has been removed to allow search functionality on the home page
-
-  const toggleMobileFilters = () => {
-    setIsMobileFiltersOpen(!isMobileFiltersOpen);
-  };
-
   const handleSearch = (query: string) => {
     // Additional normalization at the app level
     const trimmedQuery = query.trim();
     setSearchQuery(trimmedQuery);
-  };
-
-  const handleFiltersChange = (hasFilters: boolean) => {
-    setHasActiveFilters(hasFilters);
   };
 
   // Check if current page is the scan page
@@ -48,18 +35,12 @@ function App() {
         <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
           <div className="min-h-screen flex flex-col">
             <Header 
-              isMobileFiltersOpen={isMobileFiltersOpen} 
-              toggleMobileFilters={toggleMobileFilters}
               onSearch={handleSearch}
               categoryId={currentCategoryId}
-              hasActiveFilters={hasActiveFilters}
             />
             <div className="flex-grow">
               <LanguageRouter 
                 searchQuery={searchQuery} 
-                isMobileFiltersOpen={isMobileFiltersOpen}
-                toggleMobileFilters={toggleMobileFilters}
-                onFiltersChange={handleFiltersChange}
               />
             </div>
             <Footer />
