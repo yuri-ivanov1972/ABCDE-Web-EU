@@ -187,6 +187,30 @@ export type Store = 'rimi' | 'maxima';
 // Maxima product type
 export type MaximaProduct = typeof maximaProducts.$inferSelect;
 
+// Ingredient analysis types for product cards
+export type IngredientItem = {
+  id: number;
+  name: string;
+  category: 'natural' | 'processed' | 'uncategorized';
+  is_processed: boolean | null;
+  suspicion_level: 'avoid' | 'limit' | 'caution' | 'clean' | null;
+  suspicion_category: string | null;
+  health_note: string | null;
+};
+
+export type ProductIngredientCard = {
+  sku: string;
+  name: string;
+  categoryId: number;
+  categoryName: string | null;
+  ingredients: IngredientItem[];
+  naturalCount: number;
+  processedCount: number;
+  avoidCount: number;
+  limitCount: number;
+  cautionCount: number;
+};
+
 // Combined Product type with relations for frontend use
 export type ProductWithDetails = Product & {
   nutrition?: NutritionFacts;
@@ -194,4 +218,5 @@ export type ProductWithDetails = Product & {
   category?: Category;
   store?: Store;
   externalUrl?: string | null;  // rimiUrl or barboraUrl depending on store
+  ingredientCard?: ProductIngredientCard;  // Ingredient analysis data
 };
