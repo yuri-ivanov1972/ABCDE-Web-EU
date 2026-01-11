@@ -52,6 +52,30 @@ export interface ProductPhoto {
 // Store type
 export type Store = 'rimi' | 'maxima';
 
+// Ingredient analysis types
+export interface IngredientItem {
+  id: number;
+  name: string;
+  category: 'natural' | 'processed' | 'uncategorized';
+  is_processed: boolean | null;
+  suspicion_level: 'avoid' | 'limit' | 'caution' | 'clean' | null;
+  suspicion_category: string | null;
+  health_note: string | null;
+}
+
+export interface ProductIngredientCard {
+  sku: string;
+  name: string;
+  categoryId: number;
+  categoryName: string | null;
+  ingredients: IngredientItem[];
+  naturalCount: number;
+  processedCount: number;
+  avoidCount: number;
+  limitCount: number;
+  cautionCount: number;
+}
+
 // Combined product type with relations for frontend use
 export interface ProductWithDetails extends Product {
   nutrition?: NutritionFacts;
@@ -59,6 +83,7 @@ export interface ProductWithDetails extends Product {
   category?: Category;
   store?: Store;
   externalUrl?: string | null;
+  ingredientCard?: ProductIngredientCard;
 }
 
 // Filter types

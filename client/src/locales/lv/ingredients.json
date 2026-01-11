@@ -1,0 +1,23 @@
+{
+  "natural": {
+    "label": "Dabīgas",
+    "tooltip": "{{count}} dabīgas sastāvdaļas"
+  },
+  "processed": {
+    "label": "Pārstrādātas",
+    "tooltip": "{{count}} pārstrādātas sastāvdaļas"
+  },
+  "avoid": {
+    "label": "Izvairīties",
+    "tooltip": "{{count}} sastāvdaļas, no kurām labāk izvairīties"
+  },
+  "limit": {
+    "label": "Ierobežot",
+    "tooltip": "{{count}} sastāvdaļas, kuras ierobežot"
+  },
+  "caution": {
+    "label": "Uzmanīgi",
+    "tooltip": "{{count}} sastāvdaļas, ar kurām jābūt uzmanīgam"
+  },
+  "title": "Sastāvdaļu analīze"
+}

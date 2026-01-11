@@ -20,12 +20,13 @@ export const NAMESPACES = [
   'categories',
   'pagination',
   'errors',
-  'scan'
+  'scan',
+  'ingredients'
 ] as const;
 
 // Load namespaces needed for home page initially (most commonly visited)
 // Other namespaces (product, errors, scan) will be lazy-loaded
-const INITIAL_NAMESPACES = ['common', 'header', 'home', 'filters', 'categories', 'pagination'] as const;
+const INITIAL_NAMESPACES = ['common', 'header', 'home', 'filters', 'categories', 'pagination', 'ingredients'] as const;
 
 // Language detection configuration
 const detectionOptions = {
