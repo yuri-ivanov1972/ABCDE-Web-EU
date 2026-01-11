@@ -1,12 +1,4 @@
 {
-  "natural": {
-    "label": "Natural",
-    "tooltip": "{{count}} natural ingredients"
-  },
-  "processed": {
-    "label": "Processed",
-    "tooltip": "{{count}} processed ingredients"
-  },
   "avoid": {
     "label": "Avoid",
     "tooltip": "{{count}} ingredients to avoid"
@@ -19,5 +11,7 @@
     "label": "Caution",
     "tooltip": "{{count}} ingredients to use with caution"
   },
-  "title": "Ingredient Analysis"
+  "title": "Ingredient Analysis",
+  "showDetails": "Show details",
+  "hideDetails": "Hide details"
 }
