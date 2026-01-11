@@ -8,8 +8,6 @@ import smallB from '@assets/small_B_1762616394620.png';
 import smallC from '@assets/small_C_1762616394620.png';
 import smallD from '@assets/small_D_1762616394619.png';
 import smallE from '@assets/small_E_1762616394619.png';
-import rimiLogo from '@assets/rimi-logo.svg';
-import maximaLogo from '@assets/maxima-logo.svg';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -56,12 +54,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
           {product.store && (
-            <div className="absolute top-2 right-2 z-10">
-              <img 
-                src={product.store === 'rimi' ? rimiLogo : maximaLogo} 
-                alt={product.store === 'rimi' ? 'Rimi' : 'Maxima'}
-                className="h-5 w-auto"
-              />
+            <div className={`absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium text-white ${
+              product.store === 'rimi' ? 'bg-[#D33731]' : 'bg-[#24488B]'
+            }`}>
+              {product.store === 'rimi' ? 'Rimi' : 'Maxima'}
             </div>
           )}
         </div>
