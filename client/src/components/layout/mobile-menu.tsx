@@ -121,11 +121,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
 
   return (
     <div 
-      className={`md:hidden bg-white shadow-md transition-all duration-300 ease-in-out overflow-hidden ${
-        isOpen ? 'max-h-[1000px]' : 'max-h-0'
+      className={`md:hidden bg-white shadow-md transition-all duration-300 ease-in-out flex flex-col ${
+        isOpen ? 'max-h-[85vh]' : 'max-h-0 overflow-hidden'
       }`}
     >
-      <nav className="py-3 px-4">
+      <nav className="py-3 px-4 flex-1 overflow-y-auto min-h-0">
         <h3 className="font-medium text-gray-900 mb-2">{t('categories:title')}</h3>
         <ul className="space-y-1">
           <li className="mb-2">
@@ -150,7 +150,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
         </ul>
       </nav>
       
-      <div className="border-t border-gray-200 py-3 px-4">
+      <div className="border-t border-gray-200 py-3 px-4 flex-shrink-0">
         <h3 className="font-medium text-gray-900 mb-2">{t('filters:title')}</h3>
         
         {/* Mobile Store Filter */}
