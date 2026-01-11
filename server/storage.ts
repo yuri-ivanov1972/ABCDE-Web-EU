@@ -1,7 +1,8 @@
 import { 
   users, type User, type InsertUser,
   categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory, scans,
-  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store
+  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store,
+  type ProductIngredientCard, type IngredientItem
 } from "@shared/schema";
 import { rimiDb, maximaDb, scansDb, rimiPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
@@ -93,6 +94,7 @@ export type ProductWithDetails = Product & {
   category?: Category;
   store?: Store;
   externalUrl?: string | null;
+  ingredientCard?: ProductIngredientCard;
 };
 
 export class DatabaseStorage implements IStorage {
@@ -103,6 +105,71 @@ export class DatabaseStorage implements IStorage {
       .from(categories)
       .where(eq(categories.categoryId, rimiCategoryCode));
     return category?.categoryId || null;
+  }
+
+  // Helper method to fetch ingredient cards for a batch of SKUs from the materialized view
+  private async fetchIngredientCardsBySku(skus: string[]): Promise<Map<string, ProductIngredientCard>> {
+    if (skus.length === 0) {
+      return new Map();
+    }
+    
+    try {
+      // Query the materialized view using raw SQL
+      const placeholders = skus.map((_, i) => `$${i + 1}`).join(', ');
+      const query = `
+        SELECT 
+          sku,
+          name,
+          category_id,
+          category_name,
+          ingredients,
+          natural_count,
+          processed_count,
+          avoid_count,
+          limit_count,
+          caution_count
+        FROM product_ingredient_cards
+        WHERE sku IN (${placeholders})
+      `;
+      
+      const result = await rimiPool.query(query, skus);
+      
+      const ingredientCardsMap = new Map<string, ProductIngredientCard>();
+      
+      for (const row of result.rows) {
+        // Parse the ingredients JSONB - handle both string and already-parsed formats
+        let ingredients: IngredientItem[] = [];
+        if (row.ingredients) {
+          if (typeof row.ingredients === 'string') {
+            try {
+              ingredients = JSON.parse(row.ingredients);
+            } catch {
+              ingredients = [];
+            }
+          } else {
+            ingredients = row.ingredients;
+          }
+        }
+        
+        ingredientCardsMap.set(row.sku, {
+          sku: row.sku,
+          name: row.name,
+          categoryId: row.category_id,
+          categoryName: row.category_name,
+          ingredients,
+          naturalCount: Number(row.natural_count) || 0,
+          processedCount: Number(row.processed_count) || 0,
+          avoidCount: Number(row.avoid_count) || 0,
+          limitCount: Number(row.limit_count) || 0,
+          cautionCount: Number(row.caution_count) || 0
+        });
+      }
+      
+      return ingredientCardsMap;
+    } catch (error) {
+      console.error('Error fetching ingredient cards:', error);
+      return new Map();
+    }
   }
 
   // Original template methods
@@ -773,10 +840,23 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      console.log(`GET products with options ${JSON.stringify(options)} returned ${allProducts.length} products, total: ${finalTotalCount}`);
+      // Step 9: Enrich products with ingredient card data (Rimi products only)
+      const rimiSkus = allProducts
+        .filter(p => p.store === 'rimi')
+        .map(p => p.sku);
+      
+      const ingredientCardsMap = await this.fetchIngredientCardsBySku(rimiSkus);
+      
+      // Attach ingredient cards to products
+      const enrichedProducts = allProducts.map(p => ({
+        ...p,
+        ingredientCard: ingredientCardsMap.get(p.sku)
+      }));
+      
+      console.log(`GET products with options ${JSON.stringify(options)} returned ${enrichedProducts.length} products, total: ${finalTotalCount}`);
       
       return {
-        products: allProducts,
+        products: enrichedProducts,
         totalCount: finalTotalCount
       };
       
@@ -799,8 +879,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(products.productId, id));
       
     if (product) {
-      // Get all related data in parallel
-      const [nutrition, photos, category] = await Promise.all([
+      // Get all related data in parallel (including ingredient card)
+      const [nutrition, photos, category, ingredientCardsMap] = await Promise.all([
         rimiDb
           .select()
           .from(nutritionFacts)
@@ -814,7 +894,8 @@ export class DatabaseStorage implements IStorage {
           .select()
           .from(categories)
           .where(eq(categories.categoryId, product.categoryId))
-          .then(results => results[0] || null)
+          .then(results => results[0] || null),
+        this.fetchIngredientCardsBySku([product.sku])
       ]);
       
       return {
@@ -823,7 +904,8 @@ export class DatabaseStorage implements IStorage {
         photos,
         category,
         store: 'rimi' as Store,
-        externalUrl: product.rimiUrl
+        externalUrl: product.rimiUrl,
+        ingredientCard: ingredientCardsMap.get(product.sku)
       };
     }
     
@@ -893,8 +975,8 @@ export class DatabaseStorage implements IStorage {
       
     if (!product) return undefined;
     
-    // Get all related data in parallel
-    const [nutrition, photos, category] = await Promise.all([
+    // Get all related data in parallel (including ingredient card)
+    const [nutrition, photos, category, ingredientCardsMap] = await Promise.all([
       // Get nutrition facts
       rimiDb
         .select()
@@ -913,7 +995,10 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(categories)
         .where(eq(categories.categoryId, product.categoryId))
-        .then(results => results[0] || null)
+        .then(results => results[0] || null),
+        
+      // Get ingredient card
+      this.fetchIngredientCardsBySku([sku])
     ]);
     
     return {
@@ -922,7 +1007,8 @@ export class DatabaseStorage implements IStorage {
       photos,
       category,
       store: 'rimi' as Store,
-      externalUrl: product.rimiUrl
+      externalUrl: product.rimiUrl,
+      ingredientCard: ingredientCardsMap.get(sku)
     };
   }
 
@@ -935,8 +1021,8 @@ export class DatabaseStorage implements IStorage {
       
     if (!product) return undefined;
     
-    // Get all related data in parallel
-    const [nutrition, photos, category] = await Promise.all([
+    // Get all related data in parallel (including ingredient card)
+    const [nutrition, photos, category, ingredientCardsMap] = await Promise.all([
       // Get nutrition facts
       rimiDb
         .select()
@@ -955,7 +1041,10 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(categories)
         .where(eq(categories.categoryId, product.categoryId))
-        .then(results => results[0] || null)
+        .then(results => results[0] || null),
+        
+      // Get ingredient card
+      this.fetchIngredientCardsBySku([product.sku])
     ]);
     
     return {
@@ -964,7 +1053,8 @@ export class DatabaseStorage implements IStorage {
       photos,
       category,
       store: 'rimi' as Store,
-      externalUrl: product.rimiUrl
+      externalUrl: product.rimiUrl,
+      ingredientCard: ingredientCardsMap.get(product.sku)
     };
   }
   
@@ -1372,10 +1462,23 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      console.log(`SEARCH products with query "${query}" and options ${JSON.stringify(options)} returned ${allProducts.length} products, total: ${finalTotalCount}`);
+      // Enrich products with ingredient card data (Rimi products only)
+      const rimiSkus = allProducts
+        .filter(p => p.store === 'rimi')
+        .map(p => p.sku);
+      
+      const ingredientCardsMap = await this.fetchIngredientCardsBySku(rimiSkus);
+      
+      // Attach ingredient cards to products
+      const enrichedProducts = allProducts.map(p => ({
+        ...p,
+        ingredientCard: ingredientCardsMap.get(p.sku)
+      }));
+      
+      console.log(`SEARCH products with query "${query}" and options ${JSON.stringify(options)} returned ${enrichedProducts.length} products, total: ${finalTotalCount}`);
       
       return {
-        products: allProducts,
+        products: enrichedProducts,
         totalCount: finalTotalCount
       };
       
