@@ -1,6 +1,6 @@
 import { 
   users, type User, type InsertUser,
-  categories, products, maximaProducts, nutritionFacts, productPhotos, scans,
+  categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory, scans,
   type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store
 } from "@shared/schema";
 import { rimiDb, maximaDb, scansDb, rimiPool, scansPool } from "./db";
@@ -233,7 +233,18 @@ export class DatabaseStorage implements IStorage {
     try {
       // Build WHERE conditions for Maxima
       let whereConditions: any[] = [
-        isNotNull(maximaProducts.rimiCategoryCode)  // Only products with rimi_category_code
+        isNotNull(maximaProducts.rimiCategoryCode),  // Only products with rimi_category_code
+        // Only show products that are currently available (latest price history record has is_available = true)
+        sql`EXISTS (
+          SELECT 1 FROM product_price_history pph 
+          WHERE pph.product_id = ${maximaProducts.productId}
+          AND pph.is_available = true
+          AND pph.recorded_at = (
+            SELECT MAX(pph2.recorded_at) 
+            FROM product_price_history pph2 
+            WHERE pph2.product_id = pph.product_id
+          )
+        )`
       ];
 
       if (allCategoriesToInclude.length > 0) {
@@ -444,7 +455,18 @@ export class DatabaseStorage implements IStorage {
       
       // Step 2: Build WHERE conditions for nutritional filters
       let whereConditions: any[] = [
-        isNotNull(nutritionFacts.nutriScoreGrade)  // Only show products with Nutri-Score
+        isNotNull(nutritionFacts.nutriScoreGrade),  // Only show products with Nutri-Score
+        // Only show products that are currently available (latest price history record has is_available = true)
+        sql`EXISTS (
+          SELECT 1 FROM product_price_history pph 
+          WHERE pph.product_id = ${products.productId}
+          AND pph.is_available = true
+          AND pph.recorded_at = (
+            SELECT MAX(pph2.recorded_at) 
+            FROM product_price_history pph2 
+            WHERE pph2.product_id = pph.product_id
+          )
+        )`
       ];
       
       // Add category filter if specified
@@ -975,7 +997,18 @@ export class DatabaseStorage implements IStorage {
       
       // Step 2: Build nutritional filter conditions (same as getProducts)
       let nutritionConditions: any[] = [
-        isNotNull(nutritionFacts.nutriScoreGrade)  // Only show products with Nutri-Score
+        isNotNull(nutritionFacts.nutriScoreGrade),  // Only show products with Nutri-Score
+        // Only show products that are currently available (latest price history record has is_available = true)
+        sql`EXISTS (
+          SELECT 1 FROM product_price_history pph 
+          WHERE pph.product_id = ${products.productId}
+          AND pph.is_available = true
+          AND pph.recorded_at = (
+            SELECT MAX(pph2.recorded_at) 
+            FROM product_price_history pph2 
+            WHERE pph2.product_id = pph.product_id
+          )
+        )`
       ];
       
       if (nutriScores && nutriScores.length > 0) {
@@ -1217,7 +1250,18 @@ export class DatabaseStorage implements IStorage {
             or(
               sql`${maximaProducts.name} ILIKE ${exactMatchPattern}`,
               sql`${maximaProducts.name_norm} LIKE ${searchPattern}`
-            )
+            ),
+            // Only show products that are currently available
+            sql`EXISTS (
+              SELECT 1 FROM product_price_history pph 
+              WHERE pph.product_id = ${maximaProducts.productId}
+              AND pph.is_available = true
+              AND pph.recorded_at = (
+                SELECT MAX(pph2.recorded_at) 
+                FROM product_price_history pph2 
+                WHERE pph2.product_id = pph.product_id
+              )
+            )`
           ];
           
           // Add Nutri-Score filter for Maxima

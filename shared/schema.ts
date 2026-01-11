@@ -84,6 +84,22 @@ export const productPhotos = pgTable("productphotos", {
   isPrimary: boolean("is_primary").default(false),
 });
 
+// Product price history table schema (for availability tracking)
+export const productPriceHistory = pgTable("product_price_history", {
+  priceHistoryId: serial("price_history_id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 10 }).notNull(),
+  isAvailable: boolean("is_available").notNull(),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
+  dataSource: varchar("data_source", { length: 50 }),
+  createdAt: timestamp("created_at", { withTimezone: true }),
+  pricePerUnit: decimal("price_per_unit", { precision: 10, scale: 2 }),
+  pricePerUnitType: varchar("price_per_unit_type", { length: 20 }),
+  discountPrice: decimal("discount_price", { precision: 10, scale: 2 }),
+  discountPricePerUnit: decimal("discount_price_per_unit", { precision: 10, scale: 2 }),
+});
+
 // Scans table schema - stores scan photos and metadata for debugging
 export const scans = pgTable("scans", {
   scanId: serial("scan_id").primaryKey(),
