@@ -11,6 +11,8 @@ import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
   // Extract current category ID from URL (considering language prefix)
   const [location] = useLocation();
@@ -25,9 +27,14 @@ function App() {
     const trimmedQuery = query.trim();
     setSearchQuery(trimmedQuery);
   };
+  
+  const toggleMobileFilters = () => {
+    setIsMobileFiltersOpen(!isMobileFiltersOpen);
+  };
 
-  // Check if current page is the scan page
+  // Check if current page is the scan page or a page that doesn't show filters
   const isScanPage = pathWithoutLang === '/scan';
+  const isHomePage = pathWithoutLang === '/' || pathWithoutLang.startsWith('/category/');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -37,10 +44,16 @@ function App() {
             <Header 
               onSearch={handleSearch}
               categoryId={currentCategoryId}
+              isMobileFiltersOpen={isMobileFiltersOpen}
+              onToggleMobileFilters={isHomePage ? toggleMobileFilters : undefined}
+              hasActiveFilters={hasActiveFilters}
             />
             <div className="flex-grow">
               <LanguageRouter 
-                searchQuery={searchQuery} 
+                searchQuery={searchQuery}
+                isMobileFiltersOpen={isMobileFiltersOpen}
+                onCloseMobileFilters={() => setIsMobileFiltersOpen(false)}
+                onActiveFiltersChange={setHasActiveFilters}
               />
             </div>
             <Footer />

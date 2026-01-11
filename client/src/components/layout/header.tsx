@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, X, ExternalLink } from 'lucide-react';
+import { Search, X, ExternalLink, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -9,9 +9,12 @@ import { trackPetitionClick } from '@/lib/analytics';
 interface HeaderProps {
   onSearch: (query: string) => void;
   categoryId?: number;
+  isMobileFiltersOpen?: boolean;
+  onToggleMobileFilters?: () => void;
+  hasActiveFilters?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch, categoryId }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOpen, onToggleMobileFilters, hasActiveFilters }) => {
   const { t, ready, i18n } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -103,24 +106,42 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId }) => {
 
           {/* Right side: Petition Link and Actions */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Petition Link */}
-            <a 
-              href={t('header:petition.url')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
-              data-testid="petition-link"
-              onClick={() => {
-                trackPetitionClick({
-                  linkUrl: t('header:petition.url'),
-                  linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
-                  language: i18n.language || 'unknown',
-                });
-              }}
-            >
-              <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
-              <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
-            </a>
+            {/* Petition Link + Mobile Filter Toggle */}
+            <div className="flex items-center gap-2">
+              {/* Mobile Filter Toggle */}
+              {onToggleMobileFilters && (
+                <button
+                  onClick={onToggleMobileFilters}
+                  className="md:hidden flex items-center gap-1 text-xs text-gray-600 hover:text-primary transition-colors px-2 py-1 border border-gray-300 rounded-md"
+                  aria-label={t('header:filters.toggle')}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <span>{t('header:filters.toggle')}</span>
+                  {hasActiveFilters && (
+                    <span className="h-1.5 w-1.5 bg-primary rounded-full"></span>
+                  )}
+                </button>
+              )}
+              
+              {/* Petition Link */}
+              <a 
+                href={t('header:petition.url')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
+                data-testid="petition-link"
+                onClick={() => {
+                  trackPetitionClick({
+                    linkUrl: t('header:petition.url'),
+                    linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
+                    language: i18n.language || 'unknown',
+                  });
+                }}
+              >
+                <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
+                <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
+              </a>
+            </div>
 
             {/* Language Switcher */}
             <div className="flex items-center gap-2">

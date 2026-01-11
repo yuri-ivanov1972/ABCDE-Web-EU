@@ -1,6 +1,9 @@
 {
   "title": "Filters",
   "applyFilters": "Apply filters",
+  "store": {
+    "label": "Store"
+  },
   "nutriScore": {
     "label": "Nutri-Score",
     "remove": "Remove Nutri-Score filter"

@@ -95,6 +95,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
 };
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedStore, onStoreChange, onApplyFilters }) => {
+  const { t } = useTranslation(['filters', 'categories', 'common']);
   const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
 
   // Fetch main categories
@@ -125,15 +126,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
       }`}
     >
       <nav className="py-3 px-4">
-        <div className="mb-4">
-          <Link 
-            href="/product-search" 
-            className="block py-2 text-gray-700 hover:text-primary"
-          >
-            Meklēt pēc URL
-          </Link>
-        </div>
-        <h3 className="font-medium text-gray-900 mb-2">Kategorijas</h3>
+        <h3 className="font-medium text-gray-900 mb-2">{t('categories:title')}</h3>
         <ul className="space-y-1">
           {categories.map((category) => (
             <MobileCategoryItem 
@@ -146,12 +139,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
       </nav>
       
       <div className="border-t border-gray-200 py-3 px-4">
-        <h3 className="font-medium text-gray-900 mb-2">Filtri</h3>
+        <h3 className="font-medium text-gray-900 mb-2">{t('filters:title')}</h3>
         
         {/* Mobile Store Filter */}
         {onStoreChange && (
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Veikals</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('filters:store.label')}</h4>
             <StoreFilter 
               selectedStore={selectedStore}
               onStoreChange={onStoreChange}
@@ -161,7 +154,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
         
         {/* Mobile Nutri-Score Filter */}
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Nutri-Score</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('filters:nutriScore.label')}</h4>
           <div className="flex space-x-2">
             <NutriScoreFilter 
               selectedScores={selectedNutriScores}
@@ -176,7 +169,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
           className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={handleApplyFilters}
         >
-          Pielietot filtrus
+          {t('filters:applyFilters')}
         </button>
       </div>
     </div>

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { getPathWithoutLanguage } from '@/i18n';
 import { getCanonicalUrl } from '@/lib/canonical';
-import { SlidersHorizontal } from 'lucide-react';
 
 import { getProducts, getCategoryById } from '@/api';
 import { Filters, NutriScoreGrade, SortOption, SortOrder, Store } from '@/types';
@@ -19,9 +18,12 @@ import ActiveFilters from '@/components/filters/active-filters';
 interface HomeProps {
   initialSearchQuery?: string;
   categoryId?: number;
+  isMobileFiltersOpen?: boolean;
+  onCloseMobileFilters?: () => void;
+  onActiveFiltersChange?: (hasActive: boolean) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId }) => {
+const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId, isMobileFiltersOpen = false, onCloseMobileFilters, onActiveFiltersChange }) => {
   const { t, ready, i18n } = useTranslation(['home', 'common']);
   const [location] = useLocation();
   const params = useParams<{ id?: string }>();
@@ -39,7 +41,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const [filters, setFilters] = useState<Filters>({
     nutriScores: []
   });
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   
   const [sortOption, setSortOption] = useState<SortOption>('nutriScore');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -93,10 +94,12 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   // Check if there are any active filters
   const hasActiveFilters = filters.nutriScores.length > 0;
   
-  // Toggle mobile filters
-  const toggleMobileFilters = () => {
-    setIsMobileFiltersOpen(!isMobileFiltersOpen);
-  };
+  // Report active filters state to parent
+  useEffect(() => {
+    if (onActiveFiltersChange) {
+      onActiveFiltersChange(hasActiveFilters);
+    }
+  }, [hasActiveFilters, onActiveFiltersChange]);
   
   // Log data for debugging pagination with filters
   useEffect(() => {
@@ -153,8 +156,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   // Handle mobile filters applied
   const handleMobileFiltersApply = (nutriScores: NutriScoreGrade[]) => {
     // Close mobile filters panel
-    if (isMobileFiltersOpen) {
-      setIsMobileFiltersOpen(false);
+    if (onCloseMobileFilters) {
+      onCloseMobileFilters();
     }
     
     // Apply the filter values to the main filters state
@@ -238,20 +241,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       
       {/* Main Content */}
       <main className="flex-grow">
-        {/* Mobile filter toggle button */}
-        <div className="md:hidden mb-4">
-          <button
-            onClick={toggleMobileFilters}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary transition-colors px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span>{isMobileFiltersOpen ? 'Aizvērt filtrus' : 'Filtri'}</span>
-            {hasActiveFilters && (
-              <span className="h-2 w-2 bg-primary rounded-full"></span>
-            )}
-          </button>
-        </div>
-
         {/* Title and Active Filters */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
