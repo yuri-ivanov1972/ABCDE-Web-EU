@@ -107,61 +107,91 @@ export class DatabaseStorage implements IStorage {
     return category?.categoryId || null;
   }
 
-  // Helper method to fetch ingredient cards for a batch of SKUs from the materialized view
+  // Helper method to fetch ingredient cards for a batch of SKUs by joining tables
   private async fetchIngredientCardsBySku(skus: string[]): Promise<Map<string, ProductIngredientCard>> {
     if (skus.length === 0) {
       return new Map();
     }
     
     try {
-      // Query the materialized view using raw SQL
+      // Query ingredient_product_mapping joined with ingredient_analysis
       const placeholders = skus.map((_, i) => `$${i + 1}`).join(', ');
       const query = `
         SELECT 
-          sku,
-          name,
-          category_id,
-          category_name,
-          ingredients,
-          natural_count,
-          processed_count,
-          avoid_count,
-          limit_count,
-          caution_count
-        FROM product_ingredient_cards
-        WHERE sku IN (${placeholders})
+          ipm.product_sku,
+          ia.id as ingredient_id,
+          ia.ingredient,
+          ia.clean_name,
+          ia.category,
+          ia.is_processed,
+          ia.suspicion_level,
+          ia.suspicion_category,
+          ia.health_note
+        FROM ingredient_product_mapping ipm
+        JOIN ingredient_analysis ia ON ipm.ingredient_id = ia.id
+        WHERE ipm.product_sku IN (${placeholders})
+        ORDER BY ipm.product_sku, ia.id
       `;
       
       const result = await rimiPool.query(query, skus);
       
-      const ingredientCardsMap = new Map<string, ProductIngredientCard>();
+      // Group ingredients by SKU and calculate counts
+      const ingredientsBySku = new Map<string, IngredientItem[]>();
       
       for (const row of result.rows) {
-        // Parse the ingredients JSONB - handle both string and already-parsed formats
-        let ingredients: IngredientItem[] = [];
-        if (row.ingredients) {
-          if (typeof row.ingredients === 'string') {
-            try {
-              ingredients = JSON.parse(row.ingredients);
-            } catch {
-              ingredients = [];
-            }
-          } else {
-            ingredients = row.ingredients;
+        const sku = row.product_sku;
+        if (!ingredientsBySku.has(sku)) {
+          ingredientsBySku.set(sku, []);
+        }
+        
+        ingredientsBySku.get(sku)!.push({
+          id: row.ingredient_id,
+          name: row.clean_name || row.ingredient,
+          category: row.category || 'uncategorized',
+          is_processed: row.is_processed,
+          suspicion_level: row.suspicion_level,
+          suspicion_category: row.suspicion_category,
+          health_note: row.health_note
+        });
+      }
+      
+      // Build ingredient cards map with counts
+      const ingredientCardsMap = new Map<string, ProductIngredientCard>();
+      
+      for (const [sku, ingredients] of ingredientsBySku) {
+        let naturalCount = 0;
+        let processedCount = 0;
+        let avoidCount = 0;
+        let limitCount = 0;
+        let cautionCount = 0;
+        
+        for (const ing of ingredients) {
+          if (ing.category === 'natural') {
+            naturalCount++;
+          } else if (ing.category === 'processed') {
+            processedCount++;
+          }
+          
+          if (ing.suspicion_level === 'avoid') {
+            avoidCount++;
+          } else if (ing.suspicion_level === 'limit') {
+            limitCount++;
+          } else if (ing.suspicion_level === 'caution') {
+            cautionCount++;
           }
         }
         
-        ingredientCardsMap.set(row.sku, {
-          sku: row.sku,
-          name: row.name,
-          categoryId: row.category_id,
-          categoryName: row.category_name,
+        ingredientCardsMap.set(sku, {
+          sku,
+          name: '', // Name would come from product table
+          categoryId: 0, // Category would come from product table
+          categoryName: null,
           ingredients,
-          naturalCount: Number(row.natural_count) || 0,
-          processedCount: Number(row.processed_count) || 0,
-          avoidCount: Number(row.avoid_count) || 0,
-          limitCount: Number(row.limit_count) || 0,
-          cautionCount: Number(row.caution_count) || 0
+          naturalCount,
+          processedCount,
+          avoidCount,
+          limitCount,
+          cautionCount
         });
       }
       

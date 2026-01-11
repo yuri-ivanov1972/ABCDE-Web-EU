@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import { ProductWithDetails } from '@/types';
 import NutrientBar from '@/components/ui/nutrient-bar';
+import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import smallA from '@assets/small_A_1762616394620.png';
 import smallB from '@assets/small_B_1762616394620.png';
@@ -96,6 +97,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   value={Number(nutrition.salt)} 
                 />
               )}
+            </div>
+          )}
+          
+          {product.ingredientCard && (
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              <IngredientIndicator ingredientCard={product.ingredientCard} compact />
             </div>
           )}
         </div>
