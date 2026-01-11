@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import NutrientBar from '@/components/ui/nutrient-bar';
+import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/types';
 import { getCanonicalUrl } from '@/lib/canonical';
@@ -251,6 +252,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
               <div className="mt-8">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('product:ingredients')}</h2>
                 <p className="text-gray-700 text-sm">{product.nutrition.ingredientsText}</p>
+                
+                {product.ingredientCard && (
+                  <div className="mt-4">
+                    <IngredientIndicator ingredientCard={product.ingredientCard} />
+                  </div>
+                )}
               </div>
             )}
 
