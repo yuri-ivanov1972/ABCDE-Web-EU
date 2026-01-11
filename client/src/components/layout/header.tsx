@@ -106,44 +106,26 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
 
           {/* Right side: Petition Link and Actions */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Petition Link + Mobile Filter Toggle */}
-            <div className="flex items-center gap-2">
-              {/* Mobile Filter Toggle */}
-              {onToggleMobileFilters && (
-                <button
-                  onClick={onToggleMobileFilters}
-                  className="md:hidden flex items-center gap-1 text-xs text-gray-600 hover:text-primary transition-colors px-2 py-1 border border-gray-300 rounded-md"
-                  aria-label={t('header:filters.toggle')}
-                >
-                  <SlidersHorizontal className="h-3.5 w-3.5" />
-                  <span>{t('header:filters.toggle')}</span>
-                  {hasActiveFilters && (
-                    <span className="h-1.5 w-1.5 bg-primary rounded-full"></span>
-                  )}
-                </button>
-              )}
-              
-              {/* Petition Link */}
-              <a 
-                href={t('header:petition.url')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
-                data-testid="petition-link"
-                onClick={() => {
-                  trackPetitionClick({
-                    linkUrl: t('header:petition.url'),
-                    linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
-                    language: i18n.language || 'unknown',
-                  });
-                }}
-              >
-                <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
-                <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
-              </a>
-            </div>
+            {/* Petition Link */}
+            <a 
+              href={t('header:petition.url')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
+              data-testid="petition-link"
+              onClick={() => {
+                trackPetitionClick({
+                  linkUrl: t('header:petition.url'),
+                  linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
+                  language: i18n.language || 'unknown',
+                });
+              }}
+            >
+              <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
+              <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
+            </a>
 
-            {/* Language Switcher */}
+            {/* Language Switcher + Mobile Filter Toggle */}
             <div className="flex items-center gap-2">
               {/* Language Switcher - Desktop */}
               <div className="hidden md:block">
@@ -154,6 +136,20 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
               <div className="md:hidden">
                 <LanguageSwitcher compact={true} />
               </div>
+              
+              {/* Mobile Filter Toggle - Icon only */}
+              {onToggleMobileFilters && (
+                <button
+                  onClick={onToggleMobileFilters}
+                  className="md:hidden relative h-9 w-9 flex items-center justify-center text-gray-600 hover:text-primary transition-colors border border-gray-300 rounded-md"
+                  aria-label={t('header:filters.toggle')}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {hasActiveFilters && (
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full"></span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
