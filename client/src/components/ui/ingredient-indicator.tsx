@@ -20,9 +20,11 @@ const IngredientIndicator: React.FC<IngredientIndicatorProps> = ({ ingredientCar
     return null;
   }
 
-  const concernIngredients = ingredients.filter(
-    ing => ing.suspicion_level === 'avoid' || ing.suspicion_level === 'limit' || ing.suspicion_level === 'caution'
-  );
+  const suspicionOrder: Record<string, number> = { avoid: 0, limit: 1, caution: 2 };
+  
+  const concernIngredients = ingredients
+    .filter(ing => ing.suspicion_level === 'avoid' || ing.suspicion_level === 'limit' || ing.suspicion_level === 'caution')
+    .sort((a, b) => (suspicionOrder[a.suspicion_level || ''] ?? 3) - (suspicionOrder[b.suspicion_level || ''] ?? 3));
 
   if (compact) {
     return (
