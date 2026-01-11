@@ -4,7 +4,7 @@ import {
   type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store,
   type ProductIngredientCard, type IngredientItem
 } from "@shared/schema";
-import { rimiDb, maximaDb, scansDb, rimiPool, scansPool } from "./db";
+import { rimiDb, maximaDb, scansDb, rimiPool, maximaPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
@@ -107,14 +107,76 @@ export class DatabaseStorage implements IStorage {
     return category?.categoryId || null;
   }
 
-  // Helper method to fetch ingredient cards for a batch of SKUs by joining tables
-  private async fetchIngredientCardsBySku(skus: string[]): Promise<Map<string, ProductIngredientCard>> {
+  // Helper to build ingredient card map from query results
+  private buildIngredientCardsFromRows(rows: any[]): Map<string, ProductIngredientCard> {
+    const ingredientsBySku = new Map<string, IngredientItem[]>();
+    
+    for (const row of rows) {
+      const sku = row.product_sku;
+      if (!ingredientsBySku.has(sku)) {
+        ingredientsBySku.set(sku, []);
+      }
+      
+      ingredientsBySku.get(sku)!.push({
+        id: row.ingredient_id,
+        name: row.clean_name || row.ingredient,
+        category: row.category || 'uncategorized',
+        is_processed: row.is_processed,
+        suspicion_level: row.suspicion_level,
+        suspicion_category: row.suspicion_category,
+        health_note: row.health_note
+      });
+    }
+    
+    const ingredientCardsMap = new Map<string, ProductIngredientCard>();
+    
+    ingredientsBySku.forEach((ingredients, sku) => {
+      let naturalCount = 0;
+      let processedCount = 0;
+      let avoidCount = 0;
+      let limitCount = 0;
+      let cautionCount = 0;
+      
+      for (const ing of ingredients) {
+        if (ing.category === 'natural') {
+          naturalCount++;
+        } else if (ing.category === 'processed') {
+          processedCount++;
+        }
+        
+        if (ing.suspicion_level === 'avoid') {
+          avoidCount++;
+        } else if (ing.suspicion_level === 'limit') {
+          limitCount++;
+        } else if (ing.suspicion_level === 'caution') {
+          cautionCount++;
+        }
+      }
+      
+      ingredientCardsMap.set(sku, {
+        sku,
+        name: '',
+        categoryId: 0,
+        categoryName: null,
+        ingredients,
+        naturalCount,
+        processedCount,
+        avoidCount,
+        limitCount,
+        cautionCount
+      });
+    });
+    
+    return ingredientCardsMap;
+  }
+
+  // Helper method to fetch ingredient cards for Rimi products
+  private async fetchRimiIngredientCardsBySku(skus: string[]): Promise<Map<string, ProductIngredientCard>> {
     if (skus.length === 0) {
       return new Map();
     }
     
     try {
-      // Query ingredient_product_mapping joined with ingredient_analysis
       const placeholders = skus.map((_, i) => `$${i + 1}`).join(', ');
       const query = `
         SELECT 
@@ -134,72 +196,79 @@ export class DatabaseStorage implements IStorage {
       `;
       
       const result = await rimiPool.query(query, skus);
-      
-      // Group ingredients by SKU and calculate counts
-      const ingredientsBySku = new Map<string, IngredientItem[]>();
-      
-      for (const row of result.rows) {
-        const sku = row.product_sku;
-        if (!ingredientsBySku.has(sku)) {
-          ingredientsBySku.set(sku, []);
-        }
-        
-        ingredientsBySku.get(sku)!.push({
-          id: row.ingredient_id,
-          name: row.clean_name || row.ingredient,
-          category: row.category || 'uncategorized',
-          is_processed: row.is_processed,
-          suspicion_level: row.suspicion_level,
-          suspicion_category: row.suspicion_category,
-          health_note: row.health_note
-        });
-      }
-      
-      // Build ingredient cards map with counts
-      const ingredientCardsMap = new Map<string, ProductIngredientCard>();
-      
-      for (const [sku, ingredients] of ingredientsBySku) {
-        let naturalCount = 0;
-        let processedCount = 0;
-        let avoidCount = 0;
-        let limitCount = 0;
-        let cautionCount = 0;
-        
-        for (const ing of ingredients) {
-          if (ing.category === 'natural') {
-            naturalCount++;
-          } else if (ing.category === 'processed') {
-            processedCount++;
-          }
-          
-          if (ing.suspicion_level === 'avoid') {
-            avoidCount++;
-          } else if (ing.suspicion_level === 'limit') {
-            limitCount++;
-          } else if (ing.suspicion_level === 'caution') {
-            cautionCount++;
-          }
-        }
-        
-        ingredientCardsMap.set(sku, {
-          sku,
-          name: '', // Name would come from product table
-          categoryId: 0, // Category would come from product table
-          categoryName: null,
-          ingredients,
-          naturalCount,
-          processedCount,
-          avoidCount,
-          limitCount,
-          cautionCount
-        });
-      }
-      
-      return ingredientCardsMap;
+      return this.buildIngredientCardsFromRows(result.rows);
     } catch (error) {
-      console.error('Error fetching ingredient cards:', error);
+      console.error('Error fetching Rimi ingredient cards:', error);
       return new Map();
     }
+  }
+
+  // Helper method to fetch ingredient cards for Maxima products
+  private async fetchMaximaIngredientCardsBySku(skus: string[]): Promise<Map<string, ProductIngredientCard>> {
+    if (skus.length === 0 || !maximaPool) {
+      return new Map();
+    }
+    
+    try {
+      const placeholders = skus.map((_, i) => `$${i + 1}`).join(', ');
+      const query = `
+        SELECT 
+          ipm.product_sku,
+          ia.id as ingredient_id,
+          ia.ingredient,
+          ia.clean_name,
+          ia.category,
+          ia.is_processed,
+          ia.suspicion_level,
+          ia.suspicion_category,
+          ia.health_note
+        FROM ingredient_product_mapping ipm
+        JOIN ingredient_analysis ia ON ipm.ingredient_id = ia.id
+        WHERE ipm.product_sku IN (${placeholders})
+        ORDER BY ipm.product_sku, ia.id
+      `;
+      
+      const result = await maximaPool.query(query, skus);
+      return this.buildIngredientCardsFromRows(result.rows);
+    } catch (error) {
+      console.error('Error fetching Maxima ingredient cards:', error);
+      return new Map();
+    }
+  }
+
+  // Combined method to fetch ingredient cards for both stores
+  private async fetchIngredientCardsBySku(skus: string[], store?: Store): Promise<Map<string, ProductIngredientCard>> {
+    if (skus.length === 0) {
+      return new Map();
+    }
+    
+    if (store === 'rimi') {
+      return this.fetchRimiIngredientCardsBySku(skus);
+    } else if (store === 'maxima') {
+      return this.fetchMaximaIngredientCardsBySku(skus);
+    } else {
+      // Fetch from both stores - this shouldn't normally be called with mixed SKUs
+      // but handle it just in case
+      return this.fetchRimiIngredientCardsBySku(skus);
+    }
+  }
+
+  // Fetch ingredient cards for products with known stores
+  private async fetchIngredientCardsForProducts(products: { sku: string; store?: Store }[]): Promise<Map<string, ProductIngredientCard>> {
+    const rimiSkus = products.filter(p => p.store === 'rimi').map(p => p.sku);
+    const maximaSkus = products.filter(p => p.store === 'maxima').map(p => p.sku);
+    
+    const [rimiCards, maximaCards] = await Promise.all([
+      this.fetchRimiIngredientCardsBySku(rimiSkus),
+      this.fetchMaximaIngredientCardsBySku(maximaSkus)
+    ]);
+    
+    // Merge both maps
+    const combinedMap = new Map<string, ProductIngredientCard>();
+    rimiCards.forEach((card, sku) => combinedMap.set(sku, card));
+    maximaCards.forEach((card, sku) => combinedMap.set(sku, card));
+    
+    return combinedMap;
   }
 
   // Original template methods
@@ -870,12 +939,10 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Step 9: Enrich products with ingredient card data (Rimi products only)
-      const rimiSkus = allProducts
-        .filter(p => p.store === 'rimi')
-        .map(p => p.sku);
-      
-      const ingredientCardsMap = await this.fetchIngredientCardsBySku(rimiSkus);
+      // Step 9: Enrich products with ingredient card data (both stores)
+      const ingredientCardsMap = await this.fetchIngredientCardsForProducts(
+        allProducts.map(p => ({ sku: p.sku, store: p.store }))
+      );
       
       // Attach ingredient cards to products
       const enrichedProducts = allProducts.map(p => ({
@@ -925,7 +992,7 @@ export class DatabaseStorage implements IStorage {
           .from(categories)
           .where(eq(categories.categoryId, product.categoryId))
           .then(results => results[0] || null),
-        this.fetchIngredientCardsBySku([product.sku])
+        this.fetchRimiIngredientCardsBySku([product.sku])
       ]);
       
       return {
@@ -957,8 +1024,8 @@ export class DatabaseStorage implements IStorage {
       
     if (!maximaProduct) return undefined;
     
-    // Get nutrition, photos from Maxima DB and category from Rimi DB
-    const [nutrition, photos, category] = await Promise.all([
+    // Get nutrition, photos, ingredient cards from Maxima DB and category from Rimi DB
+    const [nutrition, photos, category, ingredientCardsMap] = await Promise.all([
       maximaDb
         .select()
         .from(nutritionFacts)
@@ -974,7 +1041,8 @@ export class DatabaseStorage implements IStorage {
             .from(categories)
             .where(eq(categories.categoryId, maximaProduct.rimiCategoryCode))
             .then(results => results[0] || null)
-        : Promise.resolve(null)
+        : Promise.resolve(null),
+      this.fetchMaximaIngredientCardsBySku([maximaProduct.sku])
     ]);
     
     return {
@@ -992,7 +1060,8 @@ export class DatabaseStorage implements IStorage {
       photos,
       category: category || undefined,
       store: 'maxima' as Store,
-      externalUrl: maximaProduct.barboraUrl
+      externalUrl: maximaProduct.barboraUrl,
+      ingredientCard: ingredientCardsMap.get(maximaProduct.sku)
     };
   }
   
@@ -1027,8 +1096,8 @@ export class DatabaseStorage implements IStorage {
         .where(eq(categories.categoryId, product.categoryId))
         .then(results => results[0] || null),
         
-      // Get ingredient card
-      this.fetchIngredientCardsBySku([sku])
+      // Get ingredient card (Rimi products only in this method)
+      this.fetchRimiIngredientCardsBySku([sku])
     ]);
     
     return {
@@ -1073,8 +1142,8 @@ export class DatabaseStorage implements IStorage {
         .where(eq(categories.categoryId, product.categoryId))
         .then(results => results[0] || null),
         
-      // Get ingredient card
-      this.fetchIngredientCardsBySku([product.sku])
+      // Get ingredient card (Rimi products only in this method)
+      this.fetchRimiIngredientCardsBySku([product.sku])
     ]);
     
     return {
@@ -1492,12 +1561,10 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Enrich products with ingredient card data (Rimi products only)
-      const rimiSkus = allProducts
-        .filter(p => p.store === 'rimi')
-        .map(p => p.sku);
-      
-      const ingredientCardsMap = await this.fetchIngredientCardsBySku(rimiSkus);
+      // Enrich products with ingredient card data (both stores)
+      const ingredientCardsMap = await this.fetchIngredientCardsForProducts(
+        allProducts.map(p => ({ sku: p.sku, store: p.store }))
+      );
       
       // Attach ingredient cards to products
       const enrichedProducts = allProducts.map(p => ({
