@@ -183,11 +183,26 @@ export function Scanner({ onCapture }: ScannerProps) {
     const displayWidth = video.clientWidth;
     const displayHeight = video.clientHeight;
     
-    // Calculate scale factors
+    // Calculate object-cover scaling
+    // object-cover uses the LARGER scale factor to ensure the container is fully covered
     const scaleX = videoWidth / displayWidth;
     const scaleY = videoHeight / displayHeight;
     
-    // Calculate 16:9 frame dimensions in CSS pixels
+    // object-cover uses the smaller of these to scale up (covering the container)
+    // but from video-to-display perspective, we use the larger one
+    const scale = Math.min(scaleX, scaleY);
+    
+    // Calculate how the video is positioned within its container under object-cover
+    // The scaled video dimensions in "display space" terms
+    const scaledVideoWidth = videoWidth / scale;
+    const scaledVideoHeight = videoHeight / scale;
+    
+    // Offset is the excess that gets hidden (cropped) by object-cover, in display pixels
+    const offsetX = (scaledVideoWidth - displayWidth) / 2;
+    const offsetY = (scaledVideoHeight - displayHeight) / 2;
+    
+    // Calculate 16:9 frame dimensions in CSS pixels (matching the overlay)
+    // The overlay uses p-8 (32px padding) around the frame
     const margin = 32; // 32px margin from edges
     const maxFrameWidth = displayWidth - (margin * 2);
     const maxFrameHeight = displayHeight - (margin * 2);
@@ -206,44 +221,52 @@ export function Scanner({ onCapture }: ScannerProps) {
       frameHeight = frameWidth / targetAspect;
     }
     
-    // Calculate frame position (centered)
+    // Calculate frame position in display coordinates (centered in container)
     const frameX = (displayWidth - frameWidth) / 2;
     const frameY = (displayHeight - frameHeight) / 2;
     
-    // Convert to video stream pixels
-    const cropX = frameX * scaleX;
-    const cropY = frameY * scaleY;
-    const cropWidth = frameWidth * scaleX;
-    const cropHeight = frameHeight * scaleY;
+    // Convert display coordinates to video stream coordinates
+    // Add the offset (hidden portion) and then scale to video pixels
+    const cropX = (frameX + offsetX) * scale;
+    const cropY = (frameY + offsetY) * scale;
+    const cropWidth = frameWidth * scale;
+    const cropHeight = frameHeight * scale;
 
-    // Set canvas to cropped dimensions (16:9)
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
+    // Output canvas at a reasonable resolution (1280x720 for 16:9)
+    const outputWidth = Math.min(1280, Math.round(cropWidth));
+    const outputHeight = Math.round(outputWidth / targetAspect);
+    
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
     // Log cropping info for debugging
     console.log('Cropping info:', {
       videoSize: { width: videoWidth, height: videoHeight },
       displaySize: { width: displayWidth, height: displayHeight },
+      objectCover: { 
+        scale: scale.toFixed(3),
+        scaledVideoWidth: Math.round(scaledVideoWidth),
+        scaledVideoHeight: Math.round(scaledVideoHeight),
+        offsetX: Math.round(offsetX),
+        offsetY: Math.round(offsetY)
+      },
+      frameInDisplay: { x: Math.round(frameX), y: Math.round(frameY), width: Math.round(frameWidth), height: Math.round(frameHeight) },
       cropRegion: { x: Math.round(cropX), y: Math.round(cropY), width: Math.round(cropWidth), height: Math.round(cropHeight) },
-      canvasSize: { width: Math.round(cropWidth), height: Math.round(cropHeight) },
-      cropPercentage: { 
-        width: Math.round((cropWidth / videoWidth) * 100), 
-        height: Math.round((cropHeight / videoHeight) * 100) 
-      }
+      outputSize: { width: outputWidth, height: outputHeight }
     });
 
-    // Draw only the cropped portion of the video frame
+    // Draw only the cropped portion of the video frame, scaled to output size
     console.log('🖼️ About to call drawImage with crop region');
     context.drawImage(
       video,
       cropX, cropY, cropWidth, cropHeight,  // source rectangle (from video)
-      0, 0, cropWidth, cropHeight            // destination rectangle (on canvas)
+      0, 0, outputWidth, outputHeight        // destination rectangle (on canvas)
     );
     console.log('✅ drawImage completed');
 
-    // Convert canvas to data URL
-    const imageData = canvas.toDataURL('image/jpeg', 0.9);
-    console.log('📦 Image data created, length:', imageData.length);
+    // Convert canvas to data URL with good quality but reasonable file size
+    const imageData = canvas.toDataURL('image/jpeg', 0.85);
+    console.log('📦 Image data created, length:', imageData.length, 'bytes:', Math.round(imageData.length * 0.75 / 1024), 'KB');
     setCapturedImage(imageData);
 
     // Stop camera stream
