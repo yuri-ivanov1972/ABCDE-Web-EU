@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { Scanner } from '@/components/scanner/scanner';
@@ -8,6 +9,10 @@ import { getCanonicalUrl } from '@/lib/canonical';
 
 export default function ScanPage() {
   const { t } = useTranslation('scan');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleCapture = (imageData: string) => {
     // For now, just log the image data
