@@ -4,11 +4,11 @@ import { ProductWithDetails } from '@/types';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
-import smallA from '@assets/small_A_1762616394620.png';
-import smallB from '@assets/small_B_1762616394620.png';
-import smallC from '@assets/small_C_1762616394620.png';
-import smallD from '@assets/small_D_1762616394619.png';
-import smallE from '@assets/small_E_1762616394619.png';
+import smallA from '@assets/RVB_A_1768762923165.png';
+import smallB from '@assets/RVB_B_1768762923165.png';
+import smallC from '@assets/RVB_C_1768762923166.png';
+import smallD from '@assets/RVB_D_1768762923166.png';
+import smallE from '@assets/RVB_E_1768762923166.png';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -50,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <img 
                 src={nutriScoreImages[nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                 alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
-                className="h-14 md:h-12 w-auto"
+                className="h-11 md:h-10 w-auto"
               />
             </div>
           )}
