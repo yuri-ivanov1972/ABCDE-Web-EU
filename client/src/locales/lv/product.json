@@ -35,5 +35,8 @@
     "D": "Var ēst, bet sevi ierobežojot; zemāka līmeņa uzturvērtība.",
     "E": "Neveselīgs produkts; ieteicams izvēlēties pēc iespējas retāk."
   },
+  "petition": {
+    "text": "Balsojiet, ja vēlaties redzēt šo marķējumu uz visiem produktiem."
+  },
   "ingredients": "Sastāvdaļas"
 }

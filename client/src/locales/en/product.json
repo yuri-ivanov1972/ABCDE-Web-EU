@@ -35,5 +35,8 @@
     "D": "Limit consumption; lower nutritional value.",
     "E": "Unhealthy product; choose as rarely as possible."
   },
+  "petition": {
+    "text": "Vote if you want to see this labeling on all products."
+  },
   "ingredients": "Ingredients"
 }

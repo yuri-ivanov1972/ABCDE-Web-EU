@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
-import { ChevronRight, ChevronDown, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink } from 'lucide-react';
+import { trackPetitionClick } from '@/lib/analytics';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -113,7 +114,7 @@ const NutritionFactsCollapsible: React.FC<NutritionFactsCollapsibleProps> = ({ n
 };
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
-  const { t, ready, i18n } = useTranslation(['product', 'common']);
+  const { t, ready, i18n } = useTranslation(['product', 'common', 'header']);
   
   const productId = Number(id);
   
@@ -267,6 +268,22 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
                   </p>
                 </div>
+                <a 
+                  href={t('header:petition.url')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-3"
+                  onClick={() => {
+                    trackPetitionClick({
+                      linkUrl: t('header:petition.url'),
+                      linkText: t('product:petition.text'),
+                      language: i18n.language || 'unknown',
+                    });
+                  }}
+                >
+                  {t('product:petition.text')}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </div>
             )}
 
