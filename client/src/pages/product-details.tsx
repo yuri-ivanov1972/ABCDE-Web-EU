@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -133,6 +133,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     queryFn: () => getCategoryPath(product!.categoryId),
     enabled: !!product?.categoryId
   });
+
+  // Scroll to top when navigating to product page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [productId]);
 
   // Now handle early returns after all hooks are called
   if (!id || isNaN(productId) || productId <= 0) {
