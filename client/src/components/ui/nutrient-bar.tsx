@@ -5,12 +5,14 @@ interface NutrientBarProps {
   nutrient: 'sugar' | 'fat' | 'saturatedFat' | 'protein' | 'salt';
   value: number;
   unit?: string;
+  compact?: boolean;
 }
 
 const NutrientBar: React.FC<NutrientBarProps> = ({ 
   nutrient, 
   value, 
-  unit = 'g'
+  unit = 'g',
+  compact = false
 }) => {
   // Define thresholds for nutrient colors (based on Nutri-Score criteria)
   const thresholds = useMemo(() => {
@@ -80,7 +82,7 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
     sugar: t('nutrients.sugar'),
     fat: t('nutrients.fat'),
     saturatedFat: t('nutrients.saturatedFat'),
-    protein: t('nutrients.protein'),
+    protein: compact ? t('nutrients.proteinShort') : t('nutrients.protein'),
     salt: t('nutrients.salt')
   };
 

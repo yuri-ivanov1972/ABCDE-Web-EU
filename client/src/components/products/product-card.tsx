@@ -74,6 +74,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <NutrientBar 
                   nutrient="sugar" 
                   value={Number(nutrition.carbsSugars)} 
+                  compact
                 />
               )}
               
@@ -81,6 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <NutrientBar 
                   nutrient="saturatedFat" 
                   value={Number(nutrition.fatSaturated)} 
+                  compact
                 />
               )}
               
@@ -88,6 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <NutrientBar 
                   nutrient="protein" 
                   value={Number(nutrition.protein)} 
+                  compact
                 />
               )}
               
@@ -95,6 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <NutrientBar 
                   nutrient="salt" 
                   value={Number(nutrition.salt)} 
+                  compact
                 />
               )}
             </div>

@@ -17,6 +17,7 @@
     "fat": "Fat",
     "saturatedFat": "Sat. fat",
     "protein": "Protein",
+    "proteinShort": "Protein",
     "salt": "Salt"
   },
   "noImage": "No Image",
