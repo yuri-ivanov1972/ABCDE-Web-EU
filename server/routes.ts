@@ -800,6 +800,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sitemap.xml endpoint for SEO
+  app.get("/sitemap.xml", async (_req: Request, res: Response) => {
+    try {
+      const baseUrl = "https://abcde.lv";
+      const languages = ['lv', 'en'];
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      // Static pages with their priorities and change frequencies
+      const staticPages = [
+        { path: '/', priority: '1.0', changefreq: 'daily' },
+        { path: '/about-nutriscore', priority: '0.8', changefreq: 'monthly' },
+        { path: '/scan', priority: '0.7', changefreq: 'monthly' }
+      ];
+      
+      // Get all categories
+      const categoriesResult = await rimiDb.execute(sql`
+        SELECT category_id FROM normalized_categories ORDER BY category_id
+      `);
+      const categories = Array.isArray(categoriesResult) ? categoriesResult : 
+        (categoriesResult && typeof categoriesResult === 'object' && 'rows' in categoriesResult) ? 
+          (categoriesResult as any).rows : [];
+      
+      // Get all product IDs from Rimi that have Nutri-Score
+      const rimiProductsResult = await rimiDb.execute(sql`
+        SELECT DISTINCT p.product_id 
+        FROM products p
+        JOIN nutritionfacts nf ON p.product_id = nf.product_id
+        WHERE nf.nutri_score_grade IS NOT NULL
+        ORDER BY p.product_id
+      `);
+      const rimiProducts = Array.isArray(rimiProductsResult) ? rimiProductsResult : 
+        (rimiProductsResult && typeof rimiProductsResult === 'object' && 'rows' in rimiProductsResult) ? 
+          (rimiProductsResult as any).rows : [];
+      
+      // Build XML
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ';
+      xml += 'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n';
+      
+      // Add static pages with hreflang alternates
+      for (const page of staticPages) {
+        for (const lang of languages) {
+          xml += '  <url>\n';
+          xml += `    <loc>${baseUrl}/${lang}${page.path === '/' ? '' : page.path}</loc>\n`;
+          xml += `    <lastmod>${currentDate}</lastmod>\n`;
+          xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
+          xml += `    <priority>${page.priority}</priority>\n`;
+          // Add hreflang alternates
+          for (const altLang of languages) {
+            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}${page.path === '/' ? '' : page.path}" />\n`;
+          }
+          xml += '  </url>\n';
+        }
+      }
+      
+      // Add category pages with hreflang alternates
+      for (const category of categories) {
+        const categoryId = (category as any).category_id;
+        for (const lang of languages) {
+          xml += '  <url>\n';
+          xml += `    <loc>${baseUrl}/${lang}/category/${categoryId}</loc>\n`;
+          xml += `    <lastmod>${currentDate}</lastmod>\n`;
+          xml += '    <changefreq>weekly</changefreq>\n';
+          xml += '    <priority>0.6</priority>\n';
+          for (const altLang of languages) {
+            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}/category/${categoryId}" />\n`;
+          }
+          xml += '  </url>\n';
+        }
+      }
+      
+      // Add product pages with hreflang alternates
+      for (const product of rimiProducts) {
+        const productId = (product as any).product_id;
+        for (const lang of languages) {
+          xml += '  <url>\n';
+          xml += `    <loc>${baseUrl}/${lang}/product/${productId}</loc>\n`;
+          xml += `    <lastmod>${currentDate}</lastmod>\n`;
+          xml += '    <changefreq>weekly</changefreq>\n';
+          xml += '    <priority>0.5</priority>\n';
+          for (const altLang of languages) {
+            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}/product/${productId}" />\n`;
+          }
+          xml += '  </url>\n';
+        }
+      }
+      
+      xml += '</urlset>';
+      
+      res.header('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (error) {
+      console.error("Error generating sitemap:", error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -7,5 +7,5 @@ Allow: /
 # No restrictions - allow search engines to crawl all content
 Disallow:
 
-# Sitemap location (if you add one in the future)
-# Sitemap: https://abcde.lv/sitemap.xml
+# Sitemap location
+Sitemap: https://abcde.lv/sitemap.xml
