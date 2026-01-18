@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import LangLink from '@/components/routing/LangLink';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation('common');
@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
             <span className="font-bold text-gray-800">ABCDE.lv</span>
           </div>
           <div>
-            <a href="https://en.wikipedia.org/wiki/Nutri-Score" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-primary">{t('footer.aboutNutriScore')}</a>
+            <LangLink href="/about-nutriscore" className="text-sm text-gray-600 hover:text-primary">{t('footer.aboutNutriScore')}</LangLink>
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-8 text-center">

@@ -7,6 +7,7 @@ const Home = lazy(() => import('@/pages/home'));
 const ProductDetails = lazy(() => import('@/pages/product-details'));
 const ProductSearch = lazy(() => import('@/pages/product-search'));
 const ScanPage = lazy(() => import('@/pages/scan'));
+const AboutNutriScore = lazy(() => import('@/pages/about-nutriscore'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 const Debug = lazy(() => import('@/pages/debug'));
 
@@ -142,6 +143,21 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         }}
       </Route>
       
+      {/* About Nutri-Score route with language prefix */}
+      <Route path="/:lang/about-nutriscore">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/about-nutriscore`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <AboutNutriScore />
+            </Suspense>
+          );
+        }}
+      </Route>
+      
       {/* Debug route with language prefix */}
       <Route path="/:lang/debug">
         {(params) => {
@@ -191,6 +207,10 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
       
       <Route path="/scan">
         <Redirect to={`/${DEFAULT_LANGUAGE}/scan`} replace />
+      </Route>
+      
+      <Route path="/about-nutriscore">
+        <Redirect to={`/${DEFAULT_LANGUAGE}/about-nutriscore`} replace />
       </Route>
       
       <Route path="/debug">
