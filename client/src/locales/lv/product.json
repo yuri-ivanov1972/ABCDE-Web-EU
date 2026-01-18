@@ -29,11 +29,11 @@
     "salt": "Sāls"
   },
   "nutriScore": {
-    "A": "Var ēst daudz un bieži; ieteicamākā izvēle.",
-    "B": "Ēd droši; ļoti laba izvēle.",
-    "C": "Jāēd ar mēru; vidēja līmeņa uzturvērtība.",
-    "D": "Var ēst, bet sevi ierobežojot; zemāka līmeņa uzturvērtība.",
-    "E": "Neveselīgs produkts; ieteicams izvēlēties pēc iespējas retāk."
+    "A": "Augstvērtīgs produkts; piemērots regulāram patēriņam bez ierobežojumiem.",
+    "B": "Kvalitatīva izvēle; ieteicams droši iekļaut ikdienas ēdienkartē.",
+    "C": "Vidējas kvalitātes uzturvērtība; uzturā vēlams lietot mērenos daudzumos.",
+    "D": "Zemāka uzturvērtība; ikdienā ieteicams patērēt uzmanīgi un nelielās devās.",
+    "E": "Mazvērtīgs uztura ziņā; rekomendējams lietot tikai retos izņēmuma gadījumos."
   },
   "petition": {
     "text": "Balsojiet, ja vēlaties redzēt šo marķējumu uz visiem produktiem."

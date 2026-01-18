@@ -6,7 +6,7 @@
   "backToHome": "Atpakaļ uz sākumu",
   "title": "Par Nutri-Score",
   "subtitle": "Zinātniski pamatota uztura marķējuma sistēma, kas palīdz patērētājiem ātri izvēlēties veselīgākus pārtikas produktus.",
-  "intro": "Nutri-Score ir uztura marķējums uz iepakojuma priekšpuses, kas izmanto 5 krāsu skalu no A (tumši zaļa, visizdevīgākā) līdz E (sarkana, vismazāk izdevīgā), lai novērtētu pārtikas produktu un dzērienu kopējo uzturvērtību. To izstrādāja Francijas sabiedrības veselības iestādes, un tagad to izmanto vairākās Eiropas valstīs.",
+  "intro": "Nutri-Score ir uztura marķējums uz iepakojuma priekšpuses, kas izmanto 5 krāsu skalu no A (tumši zaļa, veselīgākā) līdz E (sarkana, vismazāk veselīgā), lai novērtētu pārtikas produktu un dzērienu kopējo uzturvērtību. To izstrādāja Francijas sabiedrības veselības iestādes, un tagad to izmanto vairākās Eiropas valstīs.",
   "sections": {
     "whatIs": {
       "title": "Kas ir Nutri-Score?",
@@ -25,16 +25,16 @@
     },
     "howCalculated": {
       "title": "Kā tiek aprēķināts Nutri-Score?",
-      "p1": "Nutri-Score tiek aprēķināts uz 100g vai 100ml produkta, pamatojoties uz neizdevīgo un izdevīgo uzturvielu un sastāvdaļu līdzsvaru:",
+      "p1": "Nutri-Score tiek aprēķināts uz 100g vai 100ml produkta, pamatojoties uz neveselīgo un veselīgo uzturvielu un sastāvdaļu līdzsvaru:",
       "negative": {
-        "title": "Komponenti, kas paaugstina punktu skaitu (mazāk izdevīgi):",
+        "title": "Komponenti, kas paaugstina punktu skaitu (mazāk veselīgi):",
         "item1": "Enerģētiskā vērtība (kalorijas/kilodžouli)",
         "item2": "Cukuri",
         "item3": "Piesātinātās taukskābes",
         "item4": "Nātrijs (sāls)"
       },
       "positive": {
-        "title": "Komponenti, kas pazemina punktu skaitu (izdevīgāki):",
+        "title": "Komponenti, kas pazemina punktu skaitu (veselīgāki):",
         "item1": "Šķiedrvielas",
         "item2": "Olbaltumvielas",
         "item3": "Augļi, dārzeņi, pākšaugi, rieksti un noteiktas eļļas (olīvu, rapšu, valriekstu u.c.)"
