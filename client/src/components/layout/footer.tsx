@@ -15,8 +15,9 @@ const Footer: React.FC = () => {
             </svg>
             <span className="font-bold text-gray-800">ABCDE.lv</span>
           </div>
-          <div>
+          <div className="flex gap-4">
             <LangLink href="/about-nutriscore" className="text-sm text-gray-600 hover:text-primary">{t('footer.aboutNutriScore')}</LangLink>
+            <LangLink href="/about-project" className="text-sm text-gray-600 hover:text-primary">{t('footer.aboutProject')}</LangLink>
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-8 text-center">

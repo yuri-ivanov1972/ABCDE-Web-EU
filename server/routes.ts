@@ -811,6 +811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const staticPages = [
         { path: '/', priority: '1.0', changefreq: 'daily' },
         { path: '/about-nutriscore', priority: '0.8', changefreq: 'monthly' },
+        { path: '/about-project', priority: '0.6', changefreq: 'monthly' },
         { path: '/scan', priority: '0.7', changefreq: 'monthly' }
       ];
       

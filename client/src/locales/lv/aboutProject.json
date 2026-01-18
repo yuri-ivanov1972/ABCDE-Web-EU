@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "Par projektu | ABCDE.lv",
+    "description": "Uzzini vairāk par ABCDE.lv projektu un tā mērķiem veselīgākas pārtikas izvēlei Latvijā."
+  },
+  "title": "Par projektu",
+  "backToHome": "Atpakaļ",
+  "intro": "Šis ir mans, Jurija Ivanova, personīgais projekts.",
+  "goal": {
+    "title": "Mans mērķis",
+    "description": "Mans galvenais mērķis ir panākt, lai Nutri-Score marķējums Latvijā kļūtu obligāts. Es uzskatu, ka skaidra informācija par uzturvērtību tieši uz cenu zīmēm palīdz ikvienam vieglāk izdarīt veselīgākas izvēles."
+  },
+  "support": {
+    "title": "Atbalsti iniciatīvu",
+    "description": "Aicinu Tevi nobalsot par veselīga uztura marķējumu uz produktu cenu zīmēm veikalos:"
+  },
+  "technical": {
+    "title": "Tehniskā informācija",
+    "hosting": "Šo vietni es izstrādāju un uzturu platformā Replit.com.",
+    "disclaimer": "Informāciju par produktiem es iegūstu no rimi.lv un barbora.lv. Lūdzu, ņem vērā, ka es nevaru garantēt šajās vietnēs pieejamo datu pilnīgu precizitāti."
+  },
+  "contact": {
+    "title": "Saziņai",
+    "description": "Atsauksmēm vai ziņojumiem par kļūdām raksti man uz:"
+  }
+}
