@@ -33,7 +33,13 @@ Preferred communication style: Simple, everyday language.
 - **Database Clients**: `rimiDb` for Rimi products/categories, `maximaDb` for Maxima products, `scansDb` for local scan data
 - **Schema Design**: Normalized hierarchical category structure, detailed product information including SKU, names, URLs, quantities, comprehensive nutrition facts with Nutri-Score calculations, and scan metadata with UUID-based photo access tokens.
 - **Multi-Store Architecture**: Products are queried from both databases in parallel, merged/sorted in memory, with store filtering support ('rimi', 'maxima', or combined). Maxima products use `rimi_category_code` (integer) to map to Rimi category IDs for unified category browsing.
-- **Note**: Maxima products currently lack nutrition data (Nutri-Score unavailable). The remote databases contain additional columns that are safely ignored by the application schema.
+- **Note**: Both Rimi and Maxima products have nutrition data including Nutri-Score grades. The remote databases contain additional columns that are safely ignored by the application schema.
+
+### SEO
+- **Canonical URLs**: Language-prefixed canonical URLs (e.g., `/lv/product/123`) with Latvian as default language.
+- **Hreflang Tags**: All pages include hreflang alternate links for LV and EN language versions.
+- **Dynamic Sitemap**: `/sitemap.xml` endpoint generates sitemap including static pages, categories, and all products (Rimi + Maxima) with Nutri-Score, with proper hreflang alternates.
+- **www Redirect**: 301 redirect from www.abcde.lv to abcde.lv for canonical domain consolidation.
 
 ### UI/UX
 - **Component Libraries**: Radix UI for accessible components, Lucide React for icons.

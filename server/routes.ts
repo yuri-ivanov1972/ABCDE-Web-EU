@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
-import { rimiDb } from "./db";
+import { rimiDb, maximaDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
 import { ObjectStorageService } from "./objectStorage";
 
@@ -834,6 +834,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (rimiProductsResult && typeof rimiProductsResult === 'object' && 'rows' in rimiProductsResult) ? 
           (rimiProductsResult as any).rows : [];
       
+      // Get all product IDs from Maxima that have Nutri-Score (if database is available)
+      let maximaProducts: any[] = [];
+      if (maximaDb) {
+        const maximaProductsResult = await maximaDb.execute(sql`
+          SELECT DISTINCT p.product_id 
+          FROM products p
+          JOIN nutritionfacts nf ON p.product_id = nf.product_id
+          WHERE nf.nutri_score_grade IS NOT NULL
+          ORDER BY p.product_id
+        `);
+        maximaProducts = Array.isArray(maximaProductsResult) ? maximaProductsResult : 
+          (maximaProductsResult && typeof maximaProductsResult === 'object' && 'rows' in maximaProductsResult) ? 
+            (maximaProductsResult as any).rows : [];
+      }
+      
+      // Combine all products (both stores use product_id in URLs)
+      const allProducts = [...rimiProducts, ...maximaProducts];
+      
       // Build XML
       let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ';
@@ -871,8 +889,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Add product pages with hreflang alternates
-      for (const product of rimiProducts) {
+      // Add product pages with hreflang alternates (both Rimi and Maxima)
+      for (const product of allProducts) {
         const productId = (product as any).product_id;
         for (const lang of languages) {
           xml += '  <url>\n';
