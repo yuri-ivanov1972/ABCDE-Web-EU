@@ -11,7 +11,7 @@ import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Category } from '@/types';
-import { getCanonicalUrl } from '@/lib/canonical';
+import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 import NotFound from '@/pages/not-found';
 import mediumA from '@assets/medium_A_1762616394620.png';
 import mediumB from '@assets/medium_B_1762616394619.png';
@@ -195,10 +195,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     'E': mediumE
   };
 
+  const currentLang = i18n.language?.split('-')[0] || 'lv';
+  const hreflangUrls = getHreflangUrls(`/product/${productId}`);
+
   return (
     <>
       <Helmet>
-        <link rel="canonical" href={getCanonicalUrl(`/product/${productId}`)} />
+        <link rel="canonical" href={getCanonicalUrl(`/product/${productId}`, currentLang)} />
+        {hreflangUrls.map(({ lang, url }) => (
+          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
+        ))}
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Back link */}

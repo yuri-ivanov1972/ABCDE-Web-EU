@@ -5,10 +5,12 @@ import { Scanner } from '@/components/scanner/scanner';
 import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getCanonicalUrl } from '@/lib/canonical';
+import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 export default function ScanPage() {
-  const { t } = useTranslation('scan');
+  const { t, i18n } = useTranslation('scan');
+  const currentLang = i18n.language?.split('-')[0] || 'lv';
+  const hreflangUrls = getHreflangUrls('/scan');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -23,7 +25,10 @@ export default function ScanPage() {
   return (
     <>
       <Helmet>
-        <link rel="canonical" href={getCanonicalUrl('/scan')} />
+        <link rel="canonical" href={getCanonicalUrl('/scan', currentLang)} />
+        {hreflangUrls.map(({ lang, url }) => (
+          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
+        ))}
       </Helmet>
       <div className="min-h-screen bg-background">
       {/* Header */}

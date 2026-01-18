@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getCanonicalUrl } from '@/lib/canonical';
+import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 import {
   Accordion,
   AccordionContent,
@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/accordion";
 
 export default function AboutNutriScore() {
-  const { t } = useTranslation('aboutNutriScore');
+  const { t, i18n } = useTranslation('aboutNutriScore');
+  const currentLang = i18n.language?.split('-')[0] || 'lv';
+  const hreflangUrls = getHreflangUrls('/about-nutriscore');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -24,7 +26,10 @@ export default function AboutNutriScore() {
       <Helmet>
         <title>{t('meta.title')}</title>
         <meta name="description" content={t('meta.description')} />
-        <link rel="canonical" href={getCanonicalUrl('/about-nutriscore')} />
+        <link rel="canonical" href={getCanonicalUrl('/about-nutriscore', currentLang)} />
+        {hreflangUrls.map(({ lang, url }) => (
+          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
+        ))}
       </Helmet>
       <div className="min-h-screen bg-background">
         <div className="border-b">

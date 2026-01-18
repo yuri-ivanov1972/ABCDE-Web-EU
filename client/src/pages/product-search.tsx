@@ -8,12 +8,14 @@ import { addLanguageToPath, getLanguageFromPath } from '@/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
-import { getCanonicalUrl } from '@/lib/canonical';
+import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 const ProductSearch: React.FC = () => {
   const [url, setUrl] = useState('');
   const [rimiUrl, setRimiUrl] = useState<string | null>(null);
   const [currentLocation, navigate] = useLocation();
+  const currentLang = getLanguageFromPath(currentLocation) || 'lv';
+  const hreflangUrls = getHreflangUrls('/product-search');
 
   // Query for fetching product by URL
   const { data: product, isLoading, error, refetch } = useQuery({
@@ -41,7 +43,10 @@ const ProductSearch: React.FC = () => {
   return (
     <>
       <Helmet>
-        <link rel="canonical" href={getCanonicalUrl('/product-search')} />
+        <link rel="canonical" href={getCanonicalUrl('/product-search', currentLang)} />
+        {hreflangUrls.map(({ lang, url }) => (
+          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
+        ))}
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
