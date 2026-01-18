@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath } from '@/api';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowLeft } from 'lucide-react';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Category } from '@/types';
 import { getCanonicalUrl } from '@/lib/canonical';
 import NotFound from '@/pages/not-found';
@@ -21,6 +22,95 @@ interface ProductDetailsProps {
   lang?: string;
   id?: string;
 }
+
+interface NutritionFactsCollapsibleProps {
+  nutrition: {
+    energyKcal?: number | null;
+    energyKj?: number | null;
+    protein?: number | null;
+    fatTotal?: number | null;
+    fatSaturated?: number | null;
+    carbsTotal?: number | null;
+    carbsSugars?: number | null;
+    fiber?: number | null;
+    salt?: number | null;
+  };
+  formatEnergy: (kcal?: number | null, kj?: number | null) => string;
+  t: (key: string) => string;
+}
+
+const NutritionFactsCollapsible: React.FC<NutritionFactsCollapsibleProps> = ({ nutrition, formatEnergy, t }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-6">
+      <CollapsibleTrigger className="flex items-center gap-2 text-primary hover:text-primary/90 font-medium text-sm">
+        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        {isOpen ? t('product:nutrition.hideFacts') : t('product:nutrition.showFacts')}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-4">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('product:nutrition.facts')}</h2>
+        <p className="text-sm text-gray-500 mb-4">{t('common:per100g')}</p>
+
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.energy')}</p>
+            <p className="text-gray-900">{formatEnergy(nutrition.energyKcal, nutrition.energyKj)}</p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.protein')}</p>
+            <p className="text-gray-900">
+              {nutrition.protein != null ? `${nutrition.protein}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatTotal')}</p>
+            <p className="text-gray-900">
+              {nutrition.fatTotal != null ? `${nutrition.fatTotal}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatSaturated')}</p>
+            <p className="text-gray-900">
+              {nutrition.fatSaturated != null ? `${nutrition.fatSaturated}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.carbsTotal')}</p>
+            <p className="text-gray-900">
+              {nutrition.carbsTotal != null ? `${nutrition.carbsTotal}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.sugar')}</p>
+            <p className="text-gray-900">
+              {nutrition.carbsSugars != null ? `${nutrition.carbsSugars}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fiber')}</p>
+            <p className="text-gray-900">
+              {nutrition.fiber != null ? `${nutrition.fiber}g` : t('common:notAvailable')}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('product:nutrition.salt')}</p>
+            <p className="text-gray-900">
+              {nutrition.salt != null ? `${nutrition.salt}g` : t('common:notAvailable')}
+            </p>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   const { t, ready, i18n } = useTranslation(['product', 'common']);
@@ -150,15 +240,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
               alt={mainPhoto?.altText || product.name}
               className="w-full h-full object-contain md:max-h-[500px]"
             />
-            {product.nutrition?.nutriScoreGrade && (
-              <div className="absolute bottom-4 left-4">
-                <img 
-                  src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
-                  alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
-                  className="h-20 md:h-[4.5rem] w-auto"
-                />
-              </div>
-            )}
           </div>
 
           {/* Product Details */}
@@ -166,77 +247,34 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
 
             {quantityFormatted && (
-              <p className="text-gray-600 mb-6">{quantityFormatted}</p>
+              <p className="text-gray-600 mb-4">{quantityFormatted}</p>
+            )}
+
+            {product.nutrition?.nutriScoreGrade && (
+              <div className="mb-6">
+                <div className="flex items-start gap-4">
+                  <img 
+                    src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
+                    alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
+                    className="h-16 w-auto flex-shrink-0"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
+                    {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
+                  </p>
+                </div>
+              </div>
             )}
 
             {product.nutrition && (
               <>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-8">{t('product:nutrition.facts')}</h2>
-                <p className="text-sm text-gray-500 mb-4">{t('common:per100g')}</p>
-
-                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.energy')}</p>
-                    <p className="text-gray-900">{formatEnergy(product.nutrition.energyKcal, product.nutrition.energyKj)}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.protein')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.protein != null ? `${product.nutrition.protein}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatTotal')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.fatTotal != null ? `${product.nutrition.fatTotal}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fatSaturated')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.fatSaturated != null ? `${product.nutrition.fatSaturated}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.carbsTotal')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.carbsTotal != null ? `${product.nutrition.carbsTotal}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.sugar')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.carbsSugars != null ? `${product.nutrition.carbsSugars}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.fiber')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.fiber != null ? `${product.nutrition.fiber}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{t('product:nutrition.salt')}</p>
-                    <p className="text-gray-900">
-                      {product.nutrition.salt != null ? `${product.nutrition.salt}g` : t('common:notAvailable')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-8 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('product:nutrition.characteristics')}</h3>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">{t('product:nutrition.characteristics')}</h3>
+                  <p className="text-sm text-gray-500">{t('common:per100g')}</p>
                   {product.nutrition.carbsSugars != null && (
                     <NutrientBar nutrient="sugar" value={Number(product.nutrition.carbsSugars)} />
                   )}
-                  {product.nutrition.fatTotal != null && (
-                    <NutrientBar nutrient="fat" value={Number(product.nutrition.fatTotal)} />
+                  {product.nutrition.fatSaturated != null && (
+                    <NutrientBar nutrient="saturatedFat" value={Number(product.nutrition.fatSaturated)} />
                   )}
                   {product.nutrition.protein != null && (
                     <NutrientBar nutrient="protein" value={Number(product.nutrition.protein)} />
@@ -245,6 +283,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     <NutrientBar nutrient="salt" value={Number(product.nutrition.salt)} />
                   )}
                 </div>
+
+                <NutritionFactsCollapsible 
+                  nutrition={product.nutrition} 
+                  formatEnergy={formatEnergy}
+                  t={t}
+                />
               </>
             )}
 

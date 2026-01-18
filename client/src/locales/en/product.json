@@ -16,6 +16,8 @@
   },
   "nutrition": {
     "facts": "Nutrition Facts",
+    "showFacts": "Show nutrition facts",
+    "hideFacts": "Hide nutrition facts",
     "characteristics": "Nutritional Characteristics",
     "energy": "Energy",
     "protein": "Protein",
@@ -25,6 +27,13 @@
     "sugar": "Sugar",
     "fiber": "Fiber",
     "salt": "Salt"
+  },
+  "nutriScore": {
+    "A": "Eat plenty and often; the most recommended choice.",
+    "B": "Eat safely; a very good choice.",
+    "C": "Eat in moderation; medium nutritional value.",
+    "D": "Limit consumption; lower nutritional value.",
+    "E": "Unhealthy product; choose as rarely as possible."
   },
   "ingredients": "Ingredients"
 }

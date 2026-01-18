@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface NutrientBarProps {
-  nutrient: 'sugar' | 'fat' | 'protein' | 'salt';
+  nutrient: 'sugar' | 'fat' | 'saturatedFat' | 'protein' | 'salt';
   value: number;
   unit?: string;
 }
@@ -12,13 +12,16 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
   value, 
   unit = 'g'
 }) => {
-  // Define thresholds for nutrient colors
+  // Define thresholds for nutrient colors (based on Nutri-Score criteria)
   const thresholds = useMemo(() => {
     switch(nutrient) {
       case 'sugar':
         return { low: 5, medium: 10, high: 15 };
       case 'fat':
         return { low: 10, medium: 20, high: 30 };
+      case 'saturatedFat':
+        // Nutri-Score thresholds for saturated fat
+        return { low: 1, medium: 4, high: 7 };
       case 'protein':
         // For protein, higher is better
         return { low: 5, medium: 10, high: 15 };
@@ -36,6 +39,8 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
         return Math.min(100, (value / 20) * 100);
       case 'fat':
         return Math.min(100, (value / 30) * 100);
+      case 'saturatedFat':
+        return Math.min(100, (value / 10) * 100);
       case 'protein':
         // For protein, show as percentage of a good amount (20g)
         return Math.min(100, (value / 20) * 100);
@@ -69,6 +74,7 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
   const nutrientLabels = {
     sugar: t('nutrients.sugar'),
     fat: t('nutrients.fat'),
+    saturatedFat: t('nutrients.saturatedFat'),
     protein: t('nutrients.protein'),
     salt: t('nutrients.salt')
   };

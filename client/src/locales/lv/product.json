@@ -16,6 +16,8 @@
   },
   "nutrition": {
     "facts": "Uzturvērtības fakti",
+    "showFacts": "Rādīt uzturvērtības faktus",
+    "hideFacts": "Slēpt uzturvērtības faktus",
     "characteristics": "Uzturvērtības īpatnības",
     "energy": "Enerģija",
     "protein": "Olbaltumvielas",
@@ -25,6 +27,13 @@
     "sugar": "Cukurs",
     "fiber": "Šķiedrvielas",
     "salt": "Sāls"
+  },
+  "nutriScore": {
+    "A": "Var ēst daudz un bieži; ieteicamākā izvēle.",
+    "B": "Ēd droši; ļoti laba izvēle.",
+    "C": "Jāēd ar mēru; vidēja līmeņa uzturvērtība.",
+    "D": "Var ēst, bet sevi ierobežojot; zemāka līmeņa uzturvērtība.",
+    "E": "Neveselīgs produkts; ieteicams izvēlēties pēc iespējas retāk."
   },
   "ingredients": "Sastāvdaļas"
 }

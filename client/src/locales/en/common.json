@@ -15,6 +15,7 @@
   "nutrients": {
     "sugar": "Sugar",
     "fat": "Fat",
+    "saturatedFat": "Sat. fat",
     "protein": "Protein",
     "salt": "Salt"
   },

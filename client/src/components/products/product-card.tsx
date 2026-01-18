@@ -77,10 +77,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 />
               )}
               
-              {nutrition.fatTotal !== null && (
+              {nutrition.fatSaturated !== null && (
                 <NutrientBar 
-                  nutrient="fat" 
-                  value={Number(nutrition.fatTotal)} 
+                  nutrient="saturatedFat" 
+                  value={Number(nutrition.fatSaturated)} 
                 />
               )}
               

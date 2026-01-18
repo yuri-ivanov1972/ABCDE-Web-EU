@@ -15,6 +15,7 @@
   "nutrients": {
     "sugar": "Cukurs",
     "fat": "Tauki",
+    "saturatedFat": "Pies. tauki",
     "protein": "Olbaltumvielas",
     "salt": "Sāls"
   },
