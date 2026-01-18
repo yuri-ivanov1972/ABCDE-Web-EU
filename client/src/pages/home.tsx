@@ -268,16 +268,16 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
         {/* Product Results */}
         <div className="mb-6">
           {/* Sort Options */}
-          <div className="flex justify-end items-center mb-4">
+          <div className="flex flex-col-reverse md:flex-row md:justify-end md:items-center gap-2 mb-4">
             {/* Loading indicator */}
             {isLoading && (
-              <p className="text-sm text-gray-600 mr-auto">
+              <p className="text-sm text-gray-600 md:mr-auto">
                 {t('home:loading')}
               </p>
             )}
             
             {/* Sort Dropdown */}
-            <div className="relative">
+            <div className="relative self-end md:self-auto">
               <select 
                 className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={sortOption === 'nutriScore' ? 'nutri-score' : sortOption}
