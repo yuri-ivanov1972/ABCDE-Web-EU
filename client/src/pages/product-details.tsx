@@ -295,7 +295,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
 
             {product.nutrition && (
               <>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-gray-800">{t('product:nutrition.characteristics')}</h3>
                   <p className="text-sm text-gray-500">{t('common:per100g')}</p>
                   {product.nutrition.carbsSugars != null && (

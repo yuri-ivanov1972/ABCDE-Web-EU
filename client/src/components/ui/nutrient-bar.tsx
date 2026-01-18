@@ -51,17 +51,22 @@ const NutrientBar: React.FC<NutrientBarProps> = ({
     }
   }, [nutrient, value]);
   
-  // Determine color based on value and nutrient type
+  // Determine color based on nutrient type
   const color = useMemo(() => {
-    // For protein, higher is better
+    // Gray for zero values
+    if (value === 0) return 'bg-gray-400';
+    
+    // Protein is always green when > 0
     if (nutrient === 'protein') {
-      if (value >= thresholds.high) return 'bg-green-500';
-      if (value >= thresholds.medium) return 'bg-lime-500';
-      if (value >= thresholds.low) return 'bg-yellow-500';
+      return 'bg-green-500';
+    }
+    
+    // Sugar, saturated fat, salt are always red when > 0
+    if (nutrient === 'sugar' || nutrient === 'saturatedFat' || nutrient === 'salt') {
       return 'bg-red-500';
     }
     
-    // For others, lower is better
+    // Fat (regular) keeps existing logic
     if (value <= thresholds.low) return 'bg-green-500';
     if (value <= thresholds.medium) return 'bg-yellow-500';
     if (value <= thresholds.high) return 'bg-orange-500';

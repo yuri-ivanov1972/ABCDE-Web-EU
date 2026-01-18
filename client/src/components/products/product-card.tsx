@@ -69,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
           
           {nutrition && (
-            <div className="space-y-2 mb-2">
+            <div className="space-y-1.5 mb-2">
               {nutrition.carbsSugars !== null && (
                 <NutrientBar 
                   nutrient="sugar" 
