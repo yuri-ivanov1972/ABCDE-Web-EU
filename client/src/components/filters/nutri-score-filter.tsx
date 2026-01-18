@@ -36,7 +36,7 @@ const NutriScoreFilter: React.FC<NutriScoreFilterProps> = ({
   };
   
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-1.5">
       {nutriScores.map((score) => (
         <button 
           key={score}
@@ -45,7 +45,7 @@ const NutriScoreFilter: React.FC<NutriScoreFilterProps> = ({
             ${scoreColors[score]} 
             ${ringColors[score]} 
             ${selectedScores.includes(score) ? 'ring-2 ring-offset-2' : ''}
-            rounded-full flex items-center justify-center text-white font-semibold 
+            rounded-md flex items-center justify-center text-white font-semibold 
             focus:outline-none focus:ring-2 focus:ring-offset-2
           `}
           onClick={() => onToggleScore(score)}
