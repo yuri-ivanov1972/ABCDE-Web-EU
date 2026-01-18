@@ -7,6 +7,21 @@
     <meta name="description" content="ABCDE - Veselīgu pārtikas produktu meklēšanas platforma ar Nutri-Score rādītājiem." />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     
+    <!-- Critical CSS for above-the-fold content - prevents render blocking -->
+    <style>
+      *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"}
+      body{margin:0;line-height:inherit;background-color:#f3f4f6}
+      #root{min-height:100vh;display:flex;flex-direction:column}
+      .container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+      @media(min-width:640px){.container{max-width:640px}}
+      @media(min-width:768px){.container{max-width:768px}}
+      @media(min-width:1024px){.container{max-width:1024px}}
+      @media(min-width:1280px){.container{max-width:1280px}}
+      header{background-color:#fff;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);position:sticky;top:0;z-index:50}
+      footer{background-color:#fff;border-top:1px solid #e5e7eb;padding:1.5rem 0}
+    </style>
+    
     <!-- Resource hints for faster external connections -->
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
