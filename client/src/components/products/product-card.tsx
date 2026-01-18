@@ -4,11 +4,11 @@ import { ProductWithDetails } from '@/types';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
-import smallA from '@assets/RVB_A_1768762923165.png';
-import smallB from '@assets/RVB_B_1768762923165.png';
-import smallC from '@assets/RVB_C_1768762923166.png';
-import smallD from '@assets/RVB_D_1768762923166.png';
-import smallE from '@assets/RVB_E_1768762923166.png';
+import smallA from '@assets/RVB_A_1768766381068.png';
+import smallB from '@assets/RVB_B_1768766381068.png';
+import smallC from '@assets/RVB_C_1768766381068.png';
+import smallD from '@assets/RVB_D_1768766381067.png';
+import smallE from '@assets/RVB_E_1768766381067.png';
 
 interface ProductCardProps {
   product: ProductWithDetails;

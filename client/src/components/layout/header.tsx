@@ -3,7 +3,7 @@ import { Search, X, ExternalLink, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-import nutriScoreLogo from '@assets/RVB_neutre_1768762923167.png';
+import nutriScoreLogo from '@assets/RVB_neutre_1768766381066.png';
 import { trackPetitionClick } from '@/lib/analytics';
 
 interface HeaderProps {

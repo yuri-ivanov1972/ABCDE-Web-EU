@@ -13,11 +13,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Category } from '@/types';
 import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 import NotFound from '@/pages/not-found';
-import mediumA from '@assets/RVB_A_1768762923165.png';
-import mediumB from '@assets/RVB_B_1768762923165.png';
-import mediumC from '@assets/RVB_C_1768762923166.png';
-import mediumD from '@assets/RVB_D_1768762923166.png';
-import mediumE from '@assets/RVB_E_1768762923166.png';
+import mediumA from '@assets/RVB_A_1768766381068.png';
+import mediumB from '@assets/RVB_B_1768766381068.png';
+import mediumC from '@assets/RVB_C_1768766381068.png';
+import mediumD from '@assets/RVB_D_1768766381067.png';
+import mediumE from '@assets/RVB_E_1768766381067.png';
 
 interface ProductDetailsProps {
   lang?: string;
