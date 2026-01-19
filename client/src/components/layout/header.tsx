@@ -60,6 +60,18 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
   return (
     <>
       <header className="bg-white shadow-sm sticky top-0 z-50">
+        {/* Top navigation bar */}
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="container mx-auto px-4 py-1.5 flex justify-center gap-6">
+            <LangLink href="/about-nutriscore" className="text-sm text-gray-700 hover:text-primary font-medium">
+              {t('common:footer.aboutNutriScore')}
+            </LangLink>
+            <LangLink href="/about-project" className="text-sm text-gray-700 hover:text-primary font-medium">
+              {t('common:footer.aboutProject')}
+            </LangLink>
+          </div>
+        </div>
+        
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center shrink-0">
