@@ -224,31 +224,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       else if (currentGrade === 'D') betterGrades = ['A', 'B', 'C'];
       else if (currentGrade === 'E') betterGrades = ['A', 'B', 'C', 'D'];
       
-      // Check Rimi products using IN clause
+      // Build category list including subcategories (same logic as products API)
+      let allCategoriesToInclude: number[] = [categoryId];
+      
+      // Get the current category to check its level
+      const categoryResult = await rimiDb.execute(sql`
+        SELECT level FROM normalized_categories WHERE category_id = ${categoryId}
+      `);
+      
+      if (categoryResult && Array.isArray(categoryResult) && categoryResult.length > 0) {
+        const level = Number(categoryResult[0].level);
+        
+        // If level 1 or 2, include subcategories
+        if (level < 3) {
+          const subcatsResult = await rimiDb.execute(sql`
+            SELECT category_id FROM normalized_categories WHERE parent_category_id = ${categoryId}
+          `);
+          
+          if (subcatsResult && Array.isArray(subcatsResult)) {
+            const subcatIds = subcatsResult.map((r: any) => Number(r.category_id));
+            allCategoriesToInclude.push(...subcatIds);
+            
+            // If level 1, go one level deeper
+            if (level === 1 && subcatIds.length > 0) {
+              const subsubcatsResult = await rimiDb.execute(sql`
+                SELECT category_id FROM normalized_categories 
+                WHERE parent_category_id IN (${sql.join(subcatIds.map(id => sql`${id}`), sql`, `)})
+              `);
+              
+              if (subsubcatsResult && Array.isArray(subsubcatsResult)) {
+                allCategoriesToInclude.push(...subsubcatsResult.map((r: any) => Number(r.category_id)));
+              }
+            }
+          }
+        }
+      }
+      
+      // Check Rimi products using IN clause for categories
       const rimiResult = await rimiDb.execute(sql`
         SELECT COUNT(*) as count FROM products p
         JOIN nutritionfacts nf ON p.product_id = nf.product_id
-        WHERE p.category_id = ${categoryId}
+        WHERE p.category_id IN (${sql.join(allCategoriesToInclude.map(id => sql`${id}`), sql`, `)})
         AND nf.nutri_score_grade IN (${sql.join(betterGrades.map(g => sql`${g}`), sql`, `)})
       `);
       
-      const rimiCount = rimiResult && Array.isArray(rimiResult) && rimiResult.length > 0 
-        ? Number(rimiResult[0].count) 
-        : 0;
+      // Handle Neon result which has rows property
+      const rimiRows = rimiResult && typeof rimiResult === 'object' && 'rows' in rimiResult 
+        ? (rimiResult as any).rows 
+        : (Array.isArray(rimiResult) ? rimiResult : []);
+      const rimiCount = rimiRows.length > 0 ? Number(rimiRows[0].count) : 0;
       
-      // Check Maxima products
+      // Check Maxima products (using same category list)
       let maximaCount = 0;
       try {
         if (maximaDb) {
           const maximaResult = await maximaDb.execute(sql`
             SELECT COUNT(*) as count FROM products p
             JOIN nutritionfacts nf ON p.product_id = nf.product_id
-            WHERE p.rimi_category_code = ${categoryId}
+            WHERE p.rimi_category_code IN (${sql.join(allCategoriesToInclude.map(id => sql`${id}`), sql`, `)})
             AND nf.nutri_score_grade IN (${sql.join(betterGrades.map(g => sql`${g}`), sql`, `)})
           `);
-          maximaCount = maximaResult && Array.isArray(maximaResult) && maximaResult.length > 0 
-            ? Number(maximaResult[0].count) 
-            : 0;
+          // Handle Neon result which has rows property
+          const maximaRows = maximaResult && typeof maximaResult === 'object' && 'rows' in maximaResult 
+            ? (maximaResult as any).rows 
+            : (Array.isArray(maximaResult) ? maximaResult : []);
+          maximaCount = maximaRows.length > 0 ? Number(maximaRows[0].count) : 0;
         }
       } catch (err) {
         // Maxima DB might not be available, that's ok
