@@ -219,18 +219,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Determine which grades are better
-      const betterGrades: string[] = [];
-      if (currentGrade === 'C') betterGrades.push('A', 'B');
-      else if (currentGrade === 'D') betterGrades.push('A', 'B', 'C');
-      else if (currentGrade === 'E') betterGrades.push('A', 'B', 'C', 'D');
+      let betterGrades: string[] = [];
+      if (currentGrade === 'C') betterGrades = ['A', 'B'];
+      else if (currentGrade === 'D') betterGrades = ['A', 'B', 'C'];
+      else if (currentGrade === 'E') betterGrades = ['A', 'B', 'C', 'D'];
       
-      // Check Rimi products
+      // Check Rimi products using IN clause
       const rimiResult = await rimiDb.execute(sql`
         SELECT COUNT(*) as count FROM products p
-        JOIN product_nutrition pn ON p.product_id = pn.product_id
+        JOIN nutritionfacts nf ON p.product_id = nf.product_id
         WHERE p.category_id = ${categoryId}
-        AND p.is_available = true
-        AND pn.nutri_score_grade = ANY(${betterGrades}::text[])
+        AND nf.nutri_score_grade IN (${sql.join(betterGrades.map(g => sql`${g}`), sql`, `)})
       `);
       
       const rimiCount = rimiResult && Array.isArray(rimiResult) && rimiResult.length > 0 
@@ -242,10 +241,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (maximaDb) {
           const maximaResult = await maximaDb.execute(sql`
-            SELECT COUNT(*) as count FROM products
-            WHERE rimi_category_code = ${categoryId}
-            AND is_available = true
-            AND nutri_score_grade = ANY(${betterGrades}::text[])
+            SELECT COUNT(*) as count FROM products p
+            JOIN nutritionfacts nf ON p.product_id = nf.product_id
+            WHERE p.rimi_category_code = ${categoryId}
+            AND nf.nutri_score_grade IN (${sql.join(betterGrades.map(g => sql`${g}`), sql`, `)})
           `);
           maximaCount = maximaResult && Array.isArray(maximaResult) && maximaResult.length > 0 
             ? Number(maximaResult[0].count) 
