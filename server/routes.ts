@@ -203,6 +203,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch category path" });
     }
   });
+
+  // Check if healthier products exist in a category
+  app.get("/api/categories/:id/has-healthier-products", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id, 10);
+      const currentGrade = req.query.currentGrade as string;
+      
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      if (!currentGrade || !['C', 'D', 'E'].includes(currentGrade)) {
+        return res.status(400).json({ message: "Invalid current grade. Must be C, D, or E." });
+      }
+      
+      // Determine which grades are better
+      const betterGrades: string[] = [];
+      if (currentGrade === 'C') betterGrades.push('A', 'B');
+      else if (currentGrade === 'D') betterGrades.push('A', 'B', 'C');
+      else if (currentGrade === 'E') betterGrades.push('A', 'B', 'C', 'D');
+      
+      // Check Rimi products
+      const rimiResult = await rimiDb.execute(sql`
+        SELECT COUNT(*) as count FROM products p
+        JOIN product_nutrition pn ON p.product_id = pn.product_id
+        WHERE p.category_id = ${categoryId}
+        AND p.is_available = true
+        AND pn.nutri_score_grade = ANY(${betterGrades}::text[])
+      `);
+      
+      const rimiCount = rimiResult && Array.isArray(rimiResult) && rimiResult.length > 0 
+        ? Number(rimiResult[0].count) 
+        : 0;
+      
+      // Check Maxima products
+      let maximaCount = 0;
+      try {
+        if (maximaDb) {
+          const maximaResult = await maximaDb.execute(sql`
+            SELECT COUNT(*) as count FROM products
+            WHERE rimi_category_code = ${categoryId}
+            AND is_available = true
+            AND nutri_score_grade = ANY(${betterGrades}::text[])
+          `);
+          maximaCount = maximaResult && Array.isArray(maximaResult) && maximaResult.length > 0 
+            ? Number(maximaResult[0].count) 
+            : 0;
+        }
+      } catch (err) {
+        // Maxima DB might not be available, that's ok
+        console.log("Maxima DB check failed:", err);
+      }
+      
+      const hasHealthierProducts = (rimiCount + maximaCount) > 0;
+      
+      res.json({ 
+        hasHealthierProducts,
+        betterGrades,
+        count: rimiCount + maximaCount
+      });
+    } catch (error) {
+      console.error("Error checking for healthier products:", error);
+      res.status(500).json({ message: "Failed to check for healthier products" });
+    }
+  });
   
   // Product routes
   app.get("/api/products", async (req: Request, res: Response) => {

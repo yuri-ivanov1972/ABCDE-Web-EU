@@ -3,8 +3,9 @@ import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import { getProductById, getCategoryById, getCategoryPath } from '@/api';
-import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink } from 'lucide-react';
+import { getProductById, getCategoryById, getCategoryPath, checkHealthierProducts } from '@/api';
+import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink, Search } from 'lucide-react';
+import LangLink from '@/components/routing/LangLink';
 import { trackPetitionClick } from '@/lib/analytics';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
@@ -133,6 +134,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     queryKey: ['/api/categories', product?.categoryId, 'path'],
     queryFn: () => getCategoryPath(product!.categoryId),
     enabled: !!product?.categoryId
+  });
+
+  // Check for healthier products in the same category (only for C, D, E grades)
+  const nutriScoreGrade = product?.nutrition?.nutriScoreGrade;
+  const shouldCheckAlternatives = !!(nutriScoreGrade && ['C', 'D', 'E'].includes(nutriScoreGrade));
+  
+  const { data: healthierProductsData } = useQuery({
+    queryKey: ['/api/categories', product?.categoryId, 'has-healthier-products', nutriScoreGrade],
+    queryFn: () => checkHealthierProducts(product!.categoryId, nutriScoreGrade!),
+    enabled: !!product?.categoryId && shouldCheckAlternatives
   });
 
   // Scroll to top when navigating to product page
@@ -274,6 +285,26 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
                   </p>
                 </div>
+                
+                {/* Better alternatives button/message for C, D, E grades */}
+                {shouldCheckAlternatives && healthierProductsData && (
+                  <div className="mt-4">
+                    {healthierProductsData.hasHealthierProducts ? (
+                      <LangLink
+                        href={`/?categoryId=${product.categoryId}&sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
+                      >
+                        <Search className="h-4 w-4" />
+                        {t('product:alternatives.button')}
+                      </LangLink>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">
+                        {t('product:alternatives.noAlternatives')}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
                 <a 
                   href={t('header:petition.url')}
                   target="_blank"

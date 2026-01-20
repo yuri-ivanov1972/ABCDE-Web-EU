@@ -49,6 +49,22 @@ export const getCategoryPath = async (id: number): Promise<Category[]> => {
   return response.json();
 };
 
+export interface HealthierProductsResponse {
+  hasHealthierProducts: boolean;
+  betterGrades: string[];
+  count: number;
+}
+
+export const checkHealthierProducts = async (categoryId: number, currentGrade: string): Promise<HealthierProductsResponse> => {
+  const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/has-healthier-products?currentGrade=${currentGrade}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to check healthier products: ${response.status}`);
+  }
+  
+  return response.json();
+};
+
 // Products API
 export const getProducts = async (options: {
   categoryId?: number;
