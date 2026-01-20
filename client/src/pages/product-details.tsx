@@ -291,7 +291,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   <div className="mt-4">
                     {healthierProductsData.hasHealthierProducts ? (
                       <LangLink
-                        href={`/?categoryId=${product.categoryId}&sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}`}
+                        href={`/category/${product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
                       >
                         <Search className="h-4 w-4" />

@@ -58,6 +58,26 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       setSearchQuery(undefined);
     }
   }, [initialSearchQuery]);
+  
+  // Initialize filters from URL query parameters (for links from product details page)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Parse nutriScores from URL
+    const nutriScoresParam = urlParams.get('nutriScores');
+    if (nutriScoresParam) {
+      const grades = nutriScoresParam.split(',').filter(g => ['A', 'B', 'C', 'D', 'E'].includes(g)) as NutriScoreGrade[];
+      if (grades.length > 0) {
+        setFilters(prev => ({ ...prev, nutriScores: grades }));
+      }
+    }
+    
+    // Parse sortBy from URL
+    const sortByParam = urlParams.get('sortBy');
+    if (sortByParam && ['name', 'nutriScore', 'sugar', 'fat', 'protein', 'salt'].includes(sortByParam)) {
+      setSortOption(sortByParam as SortOption);
+    }
+  }, []);
 
   // Reset page when category changes
   useEffect(() => {
