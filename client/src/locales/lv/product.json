@@ -38,5 +38,9 @@
   "petition": {
     "text": "Balsojiet, ja vēlaties redzēt šo marķējumu uz visiem produktiem."
   },
-  "ingredients": "Sastāvdaļas"
+  "ingredients": "Sastāvdaļas",
+  "alternatives": {
+    "button": "Meklēt labākas alternatīvas",
+    "noAlternatives": "Šajā kategorijā nav veselīgāku produktu. Varat meklēt alternatīvas citās kategorijās."
+  }
 }

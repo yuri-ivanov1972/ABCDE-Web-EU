@@ -38,5 +38,9 @@
   "petition": {
     "text": "Vote if you want to see this labeling on all products."
   },
-  "ingredients": "Ingredients"
+  "ingredients": "Ingredients",
+  "alternatives": {
+    "button": "Look for better options",
+    "noAlternatives": "There are no healthier products in this category. You can look for alternatives in other categories."
+  }
 }
