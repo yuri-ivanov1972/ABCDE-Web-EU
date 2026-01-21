@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath, checkHealthierProducts } from '@/api';
 import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink, Search } from 'lucide-react';
 import LangLink from '@/components/routing/LangLink';
-import { trackPetitionClick } from '@/lib/analytics';
+import { trackPetitionClick, trackHealthierAlternativesClick } from '@/lib/analytics';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -293,6 +293,17 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                       <LangLink
                         href={`/category/${product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
+                        onClick={() => {
+                          trackHealthierAlternativesClick({
+                            productId: productId,
+                            productName: product.name || '',
+                            currentGrade: product.nutrition?.nutriScoreGrade || '',
+                            categoryId: product.categoryId || 0,
+                            betterGrades: healthierProductsData.betterGrades,
+                            alternativesCount: healthierProductsData.count || 0,
+                            language: i18n.language || 'unknown',
+                          });
+                        }}
                       >
                         <Search className="h-4 w-4" />
                         {t('product:alternatives.button')}
