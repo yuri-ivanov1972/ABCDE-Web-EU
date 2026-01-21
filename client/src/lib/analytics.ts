@@ -107,3 +107,27 @@ export function trackScanFailure(params: {
     language: params.language || 'unknown',
   });
 }
+
+/**
+ * Track when user clicks "Look for better options" button on product details page
+ */
+export function trackHealthierAlternativesClick(params: {
+  productId: number;
+  productName: string;
+  currentGrade: string;
+  categoryId: number;
+  betterGrades: string[];
+  alternativesCount: number;
+  language: string;
+}) {
+  pushToDataLayer({
+    event: 'healthier_alternatives_click',
+    product_id: params.productId,
+    product_name: params.productName,
+    current_nutri_score: params.currentGrade,
+    category_id: params.categoryId,
+    better_grades: params.betterGrades.join(','),
+    alternatives_count: params.alternativesCount,
+    language: params.language,
+  });
+}
