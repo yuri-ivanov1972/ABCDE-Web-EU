@@ -33,6 +33,30 @@ const getProductsQuerySchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Robots.txt for SEO - block ?store= query parameters to avoid duplicate content
+  app.get("/robots.txt", (_req: Request, res: Response) => {
+    const robotsTxt = `User-agent: *
+Allow: /
+
+# Block query parameter variations to avoid duplicate content
+Disallow: /*?store=
+Disallow: /*&store=
+
+# Sitemap location
+Sitemap: https://abcde.lv/sitemap.xml
+`;
+    res.header('Content-Type', 'text/plain');
+    res.send(robotsTxt);
+  });
+
+  // Redirect non-language-prefixed URLs to /lv/ (default language) for SEO
+  // This ensures Google sees /lv/product/123 as canonical, not /product/123
+  app.get(['/product/:id', '/category/:id', '/about-nutriscore', '/about-project', '/scan'], (req: Request, res: Response) => {
+    const originalUrl = req.originalUrl;
+    const redirectUrl = `/lv${originalUrl}`;
+    res.redirect(301, redirectUrl);
+  });
+
   // API routes - all prefixed with /api
 
   // Debug route to check database connectivity
