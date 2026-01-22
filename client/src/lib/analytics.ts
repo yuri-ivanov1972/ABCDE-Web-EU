@@ -23,6 +23,24 @@ function pushToDataLayer(data: Record<string, any>) {
 }
 
 /**
+ * Track virtual pageview for SPA navigation
+ * This is essential for GTM to track page changes in Single Page Applications
+ */
+export function trackPageView(params: {
+  pagePath: string;
+  pageTitle?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'virtual_pageview',
+    page_path: params.pagePath,
+    page_title: params.pageTitle || document.title,
+    page_location: window.location.href,
+    language: params.language || 'unknown',
+  });
+}
+
+/**
  * Track when a product is successfully scanned via OCR
  */
 export function trackProductScanned(params: {
