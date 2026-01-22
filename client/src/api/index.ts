@@ -55,8 +55,12 @@ export interface HealthierProductsResponse {
   count: number;
 }
 
-export const checkHealthierProducts = async (categoryId: number, currentGrade: string): Promise<HealthierProductsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/has-healthier-products?currentGrade=${currentGrade}`);
+export const checkHealthierProducts = async (categoryId: number, currentGrade: string, store?: string): Promise<HealthierProductsResponse> => {
+  let url = `${API_BASE_URL}/categories/${categoryId}/has-healthier-products?currentGrade=${currentGrade}`;
+  if (store) {
+    url += `&store=${store}`;
+  }
+  const response = await fetch(url);
   
   if (!response.ok) {
     throw new Error(`Failed to check healthier products: ${response.status}`);
