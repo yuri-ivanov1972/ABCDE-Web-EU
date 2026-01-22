@@ -8,11 +8,15 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { getLanguageFromPath, getPathWithoutLanguage } from "@/i18n";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [hasActiveFilters, setHasActiveFilters] = useState(false);
+
+  // Track page views for GTM (SPA navigation)
+  usePageTracking();
 
   // Extract current category ID from URL (considering language prefix)
   const [location] = useLocation();
