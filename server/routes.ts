@@ -49,15 +49,9 @@ Sitemap: https://abcde.lv/sitemap.xml
     res.send(robotsTxt);
   });
 
-  // Redirect non-language-prefixed URLs to /lv/ (default language) for SEO
-  // This ensures Google sees /lv/product/123 as canonical, not /product/123
-  app.get(['/product/:id', '/category/:id', '/about-nutriscore', '/about-project', '/scan'], (req: Request, res: Response) => {
-    const originalUrl = req.originalUrl;
-    const redirectUrl = `/lv${originalUrl}`;
-    res.redirect(301, redirectUrl);
-  });
-
   // API routes - all prefixed with /api
+  // Note: Non-language-prefixed SPA path redirects are handled in server/index.ts
+  // as a catch-all middleware before Vite serves HTML
 
   // Debug route to check database connectivity
   app.get("/api/debug/db-status", async (_req: Request, res: Response) => {

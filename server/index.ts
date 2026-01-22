@@ -60,6 +60,44 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Catch-all redirect for non-language-prefixed SPA paths to /lv/ (default language) for SEO
+  // This ensures Googlebot sees proper 301 redirects for all pages without language prefix
+  // Must be placed BEFORE Vite middleware which serves HTML for all remaining routes
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const urlPath = req.path;
+    
+    // Skip paths that should not be redirected
+    if (
+      urlPath.startsWith('/lv') ||
+      urlPath.startsWith('/en') ||
+      urlPath.startsWith('/api') ||
+      urlPath.startsWith('/@') ||  // Vite internal paths
+      urlPath.startsWith('/src') || // Vite source files in dev
+      urlPath.startsWith('/node_modules') ||
+      urlPath === '/robots.txt' ||
+      urlPath === '/sitemap.xml' ||
+      urlPath.includes('.') // Static files with extensions (favicon.ico, etc.)
+    ) {
+      return next();
+    }
+    
+    // Only redirect GET/HEAD requests that accept HTML (browsers, crawlers)
+    // This avoids redirecting POST/PUT/DELETE requests, health checks, or other tooling
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return next();
+    }
+    
+    const acceptsHtml = req.accepts(['html', 'json']) === 'html';
+    if (!acceptsHtml && req.headers.accept && !req.headers.accept.includes('*/*')) {
+      return next();
+    }
+    
+    // Redirect any non-prefixed SPA path to /lv/...
+    const queryString = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
+    const redirectUrl = `/lv${urlPath === '/' ? '' : urlPath}${queryString}`;
+    return res.redirect(301, redirectUrl);
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
