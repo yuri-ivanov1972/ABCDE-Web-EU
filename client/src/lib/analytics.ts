@@ -30,6 +30,7 @@ export function trackProductScanned(params: {
   productName: string;
   nutriScore?: string;
   confidence?: number;
+  store?: string;
   language?: string;
 }) {
   pushToDataLayer({
@@ -38,6 +39,7 @@ export function trackProductScanned(params: {
     product_name: params.productName,
     nutri_score: params.nutriScore || 'unknown',
     scan_confidence: params.confidence || 0,
+    store: params.store || 'unknown',
     language: params.language || 'unknown',
   });
 }
@@ -49,6 +51,7 @@ export function trackProductViewAfterScan(params: {
   productId: number;
   productName: string;
   nutriScore?: string;
+  store?: string;
   language?: string;
 }) {
   pushToDataLayer({
@@ -56,6 +59,7 @@ export function trackProductViewAfterScan(params: {
     product_id: params.productId,
     product_name: params.productName,
     nutri_score: params.nutriScore || 'unknown',
+    store: params.store || 'unknown',
     language: params.language || 'unknown',
   });
 }

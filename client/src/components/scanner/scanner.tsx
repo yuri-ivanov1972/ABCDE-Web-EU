@@ -320,6 +320,7 @@ export function Scanner({ onCapture }: ScannerProps) {
           productName: data.product.name,
           nutriScore: data.product.nutriScoreGrade || undefined,
           confidence: data.product.confidence || undefined,
+          store: data.product.store || undefined,
           language: i18n.language,
         });
       } else {
@@ -478,6 +479,7 @@ export function Scanner({ onCapture }: ScannerProps) {
                     productId: scanResult.product!.productId,
                     productName: scanResult.product!.name,
                     nutriScore: scanResult.product!.nutriScoreGrade || undefined,
+                    store: scanResult.product!.store || undefined,
                     language: i18n.language,
                   });
                 }}
