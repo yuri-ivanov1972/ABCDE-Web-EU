@@ -124,7 +124,7 @@ export function trackHealthierAlternativesClick(params: {
     event: 'healthier_alternatives_click',
     product_id: params.productId,
     product_name: params.productName,
-    current_nutri_score: params.currentGrade,
+    nutri_score: params.currentGrade,
     category_id: params.categoryId,
     better_grades: params.betterGrades.join(','),
     alternatives_count: params.alternativesCount,
