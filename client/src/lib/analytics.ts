@@ -118,6 +118,7 @@ export function trackHealthierAlternativesClick(params: {
   categoryId: number;
   betterGrades: string[];
   alternativesCount: number;
+  store: string;
   language: string;
 }) {
   pushToDataLayer({
@@ -128,6 +129,7 @@ export function trackHealthierAlternativesClick(params: {
     category_id: params.categoryId,
     better_grades: params.betterGrades.join(','),
     alternatives_count: params.alternativesCount,
+    store: params.store,
     language: params.language,
   });
 }

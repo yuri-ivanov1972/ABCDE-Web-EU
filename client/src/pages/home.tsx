@@ -77,6 +77,12 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     if (sortByParam && ['name', 'nutriScore', 'sugar', 'fat', 'protein', 'salt'].includes(sortByParam)) {
       setSortOption(sortByParam as SortOption);
     }
+    
+    // Parse store from URL
+    const storeParam = urlParams.get('store');
+    if (storeParam && ['rimi', 'maxima'].includes(storeParam)) {
+      setSelectedStore(storeParam as Store);
+    }
   }, []);
 
   // Reset page when category changes

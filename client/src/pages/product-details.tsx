@@ -138,11 +138,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
 
   // Check for healthier products in the same category (only for C, D, E grades)
   const nutriScoreGrade = product?.nutrition?.nutriScoreGrade;
+  const productStore = product?.store;
   const shouldCheckAlternatives = !!(nutriScoreGrade && ['C', 'D', 'E'].includes(nutriScoreGrade));
   
   const { data: healthierProductsData } = useQuery({
-    queryKey: ['/api/categories', product?.categoryId, 'has-healthier-products', nutriScoreGrade],
-    queryFn: () => checkHealthierProducts(product!.categoryId, nutriScoreGrade!),
+    queryKey: ['/api/categories', product?.categoryId, 'has-healthier-products', nutriScoreGrade, productStore],
+    queryFn: () => checkHealthierProducts(product!.categoryId, nutriScoreGrade!, productStore),
     enabled: !!product?.categoryId && shouldCheckAlternatives
   });
 
@@ -291,7 +292,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   <div className="mt-4">
                     {healthierProductsData.hasHealthierProducts ? (
                       <LangLink
-                        href={`/category/${product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}`}
+                        href={`/category/${product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}${productStore ? `&store=${productStore}` : ''}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
                         onClick={() => {
                           trackHealthierAlternativesClick({
@@ -301,6 +302,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                             categoryId: product.categoryId || 0,
                             betterGrades: healthierProductsData.betterGrades,
                             alternativesCount: healthierProductsData.count || 0,
+                            store: productStore || 'unknown',
                             language: i18n.language || 'unknown',
                           });
                         }}
