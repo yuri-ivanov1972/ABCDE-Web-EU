@@ -85,10 +85,10 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     }
   }, []);
 
-  // Reset page when category changes
+  // Reset page when category or search query changes
   useEffect(() => {
     setPage(1);
-  }, [categoryId]);
+  }, [categoryId, searchQuery]);
   
   // Get current category if categoryId is provided
   const { data: category } = useQuery({
