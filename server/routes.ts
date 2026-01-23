@@ -229,8 +229,16 @@ Sitemap: https://abcde.lv/sitemap.xml
       const currentGrade = req.query.currentGrade as string;
       const store = req.query.store as string | undefined;
       
+      // Excluded category IDs (Gatavots Rimi and its subcategory)
+      const excludedCategoryIds = [5, 40];
+      
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      // Return 0 for excluded categories
+      if (excludedCategoryIds.includes(categoryId)) {
+        return res.json({ hasHealthierProducts: false, betterGrades: [], count: 0 });
       }
       
       if (!currentGrade || !['C', 'D', 'E'].includes(currentGrade)) {
@@ -949,20 +957,24 @@ Sitemap: https://abcde.lv/sitemap.xml
         { path: '/scan', priority: '0.7', changefreq: 'monthly' }
       ];
       
-      // Get all categories
+      // Get all categories, excluding hidden ones
+      const excludedCategoryIds = [5, 40];
       const categoriesResult = await rimiDb.execute(sql`
-        SELECT category_id FROM normalized_categories ORDER BY category_id
+        SELECT category_id FROM normalized_categories 
+        WHERE category_id NOT IN (${sql.join(excludedCategoryIds.map(id => sql`${id}`), sql`, `)})
+        ORDER BY category_id
       `);
       const categories = Array.isArray(categoriesResult) ? categoriesResult : 
         (categoriesResult && typeof categoriesResult === 'object' && 'rows' in categoriesResult) ? 
           (categoriesResult as any).rows : [];
       
-      // Get all product IDs from Rimi that have Nutri-Score
+      // Get all product IDs from Rimi that have Nutri-Score, excluding hidden categories
       const rimiProductsResult = await rimiDb.execute(sql`
         SELECT DISTINCT p.product_id 
         FROM products p
         JOIN nutritionfacts nf ON p.product_id = nf.product_id
         WHERE nf.nutri_score_grade IS NOT NULL
+        AND p.category_id NOT IN (${sql.join(excludedCategoryIds.map(id => sql`${id}`), sql`, `)})
         ORDER BY p.product_id
       `);
       const rimiProducts = Array.isArray(rimiProductsResult) ? rimiProductsResult : 

@@ -8,6 +8,9 @@ import { rimiDb, maximaDb, scansDb, rimiPool, maximaPool, scansPool } from "./db
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 
+// Categories to exclude from display (Gatavots Rimi and its subcategory)
+export const EXCLUDED_CATEGORY_IDS = [5, 40];
+
 /**
  * Utility function to retry database operations with exponential backoff
  * @param operation Function that returns a promise to be retried
@@ -295,24 +298,29 @@ export class DatabaseStorage implements IStorage {
     // We'll show all categories but mark which ones have products
     console.log("Getting categories...");
     
-    // Prepare the query based on level
-    let query = rimiDb
-      .select()
-      .from(categories);
+    // Build where condition based on level, always excluding hidden categories
+    const excludeCondition = sql`${categories.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`;
     
     if (level !== undefined) {
-      query = query.where(eq(categories.level, level)) as any;
-    }
-    
-    // Execute the query with the order by clause
-    if (level !== undefined) {
-      return await query.orderBy(categories.nameEn);
+      return await rimiDb
+        .select()
+        .from(categories)
+        .where(and(eq(categories.level, level), excludeCondition))
+        .orderBy(categories.nameEn);
     } else {
-      return await query.orderBy(categories.level, categories.nameEn);
+      return await rimiDb
+        .select()
+        .from(categories)
+        .where(excludeCondition)
+        .orderBy(categories.level, categories.nameEn);
     }
   }
   
   async getCategoryById(id: number): Promise<Category | undefined> {
+    // Return undefined for excluded categories
+    if (EXCLUDED_CATEGORY_IDS.includes(id)) {
+      return undefined;
+    }
     const [category] = await rimiDb
       .select()
       .from(categories)
@@ -329,11 +337,14 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getSubcategories(parentId: number): Promise<Category[]> {
-    // Return all subcategories
+    // Return all subcategories, excluding hidden categories
     return await rimiDb
       .select()
       .from(categories)
-      .where(eq(categories.parentCategoryId, parentId))
+      .where(and(
+        eq(categories.parentCategoryId, parentId),
+        sql`${categories.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`
+      ))
       .orderBy(categories.nameEn);
   }
   
@@ -632,12 +643,21 @@ export class DatabaseStorage implements IStorage {
             FROM product_price_history pph2 
             WHERE pph2.product_id = pph.product_id
           )
-        )`
+        )`,
+        // Exclude hidden categories
+        sql`${products.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`
       ];
       
       // Add category filter if specified
-      if (allCategoriesToInclude.length > 0) {
-        whereConditions.push(inArray(products.categoryId, allCategoriesToInclude));
+      if (categoryId) {
+        // Filter out excluded categories from the list
+        const filteredCategories = allCategoriesToInclude.filter(id => !EXCLUDED_CATEGORY_IDS.includes(id));
+        if (filteredCategories.length > 0) {
+          whereConditions.push(inArray(products.categoryId, filteredCategories));
+        } else {
+          // If user explicitly requested an excluded category, return 0 results
+          return { products: [], totalCount: 0 };
+        }
       }
       
       // Add nutritional filters
@@ -1197,7 +1217,9 @@ export class DatabaseStorage implements IStorage {
             FROM product_price_history pph2 
             WHERE pph2.product_id = pph.product_id
           )
-        )`
+        )`,
+        // Exclude hidden categories
+        sql`${products.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`
       ];
       
       if (nutriScores && nutriScores.length > 0) {
