@@ -1295,19 +1295,20 @@ export class DatabaseStorage implements IStorage {
         orderByClause = asc(products.name);
       }
       
-      // Step 5: Execute main search query with JOIN, WHERE, ORDER BY, and pagination
+      // Step 5: Prepare for merged search across both databases
       const offset = (page - 1) * pageSize;
       
       // Combine all WHERE conditions
       const whereConditions = [...searchConditions, ...nutritionConditions];
       
-      // Main search query: LEFT JOIN with nutritionFacts, apply all filters, sorting, and pagination
-      const searchQuery = await withRetry(async () => {
-        console.log(`Executing main search query with ${whereConditions.length} conditions`);
-        
+      // Step 6: Search all products from both databases, merge, sort, then paginate
+      // For search, we need to fetch ALL results from both databases, merge, sort, then paginate
+      // This is necessary because we can't correctly paginate across two separate databases
+      
+      // First, get ALL Rimi search results (without pagination)
+      const allRimiQuery = await withRetry(async () => {
         let query = rimiDb
           .select({
-            // Product fields
             productId: products.productId,
             sku: products.sku,
             name: products.name,
@@ -1318,7 +1319,6 @@ export class DatabaseStorage implements IStorage {
             quantityUnit: products.quantityUnit,
             createdAt: products.createdAt,
             updatedAt: products.updatedAt,
-            // Nutrition facts fields
             nutritionId: nutritionFacts.nutritionId,
             ingredientsText: nutritionFacts.ingredientsText,
             energyKcal: nutritionFacts.energyKcal,
@@ -1341,86 +1341,34 @@ export class DatabaseStorage implements IStorage {
           query = query.where(and(...whereConditions)) as any;
         }
         
-        return query
-          .orderBy(orderByClause)
-          .limit(pageSize)
-          .offset(offset);
+        return query;
       });
       
-      console.log(`Search query returned ${searchQuery.length} products`);
+      // Fetch Rimi photos and categories
+      const rimiProductIds = allRimiQuery.map(p => p.productId);
+      let rimiPhotosMap: Record<number, ProductPhoto[]> = {};
+      let rimiCategoryMap: Record<number, Category> = {};
       
-      // Step 6: Get total count of filtered search results (not paginated)
-      const totalCountQuery = await withRetry(async () => {
-        console.log(`Executing search count query with ${whereConditions.length} conditions`);
-        
-        let countQuery = rimiDb
-          .select({ count: sql<number>`count(*)` })
-          .from(products)
-          .leftJoin(nutritionFacts, eq(products.productId, nutritionFacts.productId));
-        
-        if (whereConditions.length > 0) {
-          countQuery = countQuery.where(and(...whereConditions)) as any;
-        }
-        
-        return countQuery;
-      });
-      
-      const totalCount = totalCountQuery[0]?.count || 0;
-      console.log(`Total filtered search results count: ${totalCount}`);
-      
-      // Step 7: Fetch additional details (photos and categories) in batch
-      const productIds = searchQuery.map(p => p.productId);
-      
-      let photosMap: Record<number, ProductPhoto[]> = {};
-      let categoryMap: Record<number, Category> = {};
-      
-      if (productIds.length > 0) {
-        // Fetch photos and categories in parallel
-        const [allPhotos, allCategories] = await Promise.all([
-          rimiDb
-            .select()
-            .from(productPhotos)
-            .where(inArray(productPhotos.productId, productIds)),
-            
-          rimiDb
-            .select()
-            .from(categories)
-            .where(inArray(categories.categoryId, searchQuery.map(p => p.categoryId)))
+      if (rimiProductIds.length > 0) {
+        const [rimiPhotos, rimiCategories] = await Promise.all([
+          rimiDb.select().from(productPhotos).where(inArray(productPhotos.productId, rimiProductIds)),
+          rimiDb.select().from(categories).where(inArray(categories.categoryId, allRimiQuery.map(p => p.categoryId)))
         ]);
         
-        // Group photos by product ID
-        photosMap = allPhotos.reduce((map, photo) => {
-          if (!map[photo.productId]) {
-            map[photo.productId] = [];
-          }
+        rimiPhotosMap = rimiPhotos.reduce((map, photo) => {
+          if (!map[photo.productId]) map[photo.productId] = [];
           map[photo.productId].push(photo);
           return map;
         }, {} as Record<number, ProductPhoto[]>);
         
-        // Create category map
-        categoryMap = allCategories.reduce((map, cat) => {
-          map[cat.categoryId] = cat;
+        rimiCategoryMap = rimiCategories.reduce((map, c) => {
+          map[c.categoryId] = c;
           return map;
         }, {} as Record<number, Category>);
       }
       
-      // Step 8: Construct final products with details
-      const productsWithDetails: ProductWithDetails[] = searchQuery.map(row => {
-        // Extract product data
-        const product: Product = {
-          productId: row.productId,
-          sku: row.sku,
-          name: row.name,
-          name_norm: row.nameNorm,
-          categoryId: row.categoryId,
-          rimiUrl: row.rimiUrl,
-          quantityValue: row.quantityValue,
-          quantityUnit: row.quantityUnit,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt
-        };
-        
-        // Extract nutrition data if available
+      // Convert Rimi results to ProductWithDetails
+      let allProducts: ProductWithDetails[] = allRimiQuery.map(row => {
         const nutrition: NutritionFacts | undefined = row.nutritionId ? {
           nutritionId: row.nutritionId,
           productId: row.productId,
@@ -1440,29 +1388,34 @@ export class DatabaseStorage implements IStorage {
         } : undefined;
         
         return {
-          ...product,
+          productId: row.productId,
+          sku: row.sku,
+          name: row.name,
+          name_norm: row.nameNorm,
+          categoryId: row.categoryId,
+          rimiUrl: row.rimiUrl,
+          quantityValue: row.quantityValue,
+          quantityUnit: row.quantityUnit,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
           nutrition,
-          photos: photosMap[product.productId] || [],
-          category: categoryMap[product.categoryId],
+          photos: rimiPhotosMap[row.productId] || [],
+          category: rimiCategoryMap[row.categoryId],
           store: 'rimi' as Store,
-          externalUrl: product.rimiUrl
+          externalUrl: row.rimiUrl
         };
       });
       
-      // Step 9: Also search Maxima products and merge results
-      let allProducts = productsWithDetails;
-      let finalTotalCount = Number(totalCount);
-      
+      // Search Maxima products if available
       if (maximaDb) {
         try {
           // Build Maxima search conditions
           const maximaSearchConditions = [
-            isNotNull(maximaProducts.rimiCategoryCode),  // Only products with rimi_category_code
+            isNotNull(maximaProducts.rimiCategoryCode),
             or(
               sql`${maximaProducts.name} ILIKE ${exactMatchPattern}`,
               sql`${maximaProducts.name_norm} LIKE ${searchPattern}`
             ),
-            // Only show products that are currently available
             sql`EXISTS (
               SELECT 1 FROM product_price_history pph 
               WHERE pph.product_id = ${maximaProducts.productId}
@@ -1475,14 +1428,13 @@ export class DatabaseStorage implements IStorage {
             )`
           ];
           
-          // Add Nutri-Score filter for Maxima
           const maximaNutritionConditions = [isNotNull(nutritionFacts.nutriScoreGrade)];
           if (nutriScores && nutriScores.length > 0) {
             maximaNutritionConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
           }
           
-          // Query Maxima products with INNER JOIN to only get products with Nutri-Score
-          const maximaSearchQuery = await maximaDb
+          // Get ALL Maxima search results (without pagination)
+          const allMaximaQuery = await maximaDb
             .select({
               productId: maximaProducts.productId,
               sku: maximaProducts.sku,
@@ -1494,102 +1446,140 @@ export class DatabaseStorage implements IStorage {
               quantityUnit: maximaProducts.quantityUnit,
               createdAt: maximaProducts.createdAt,
               updatedAt: maximaProducts.updatedAt,
+              nutritionId: nutritionFacts.nutritionId,
+              ingredientsText: nutritionFacts.ingredientsText,
+              energyKcal: nutritionFacts.energyKcal,
+              energyKj: nutritionFacts.energyKj,
+              fatTotal: nutritionFacts.fatTotal,
+              fatSaturated: nutritionFacts.fatSaturated,
+              carbsTotal: nutritionFacts.carbsTotal,
+              carbsSugars: nutritionFacts.carbsSugars,
+              protein: nutritionFacts.protein,
+              salt: nutritionFacts.salt,
+              fiber: nutritionFacts.fiber,
               nutriScoreGrade: nutritionFacts.nutriScoreGrade,
+              nutriScorePoints: nutritionFacts.nutriScorePoints,
+              dataSourceDate: nutritionFacts.dataSourceDate
             })
-            .from(maximaProducts)
-            .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
-            .where(and(...maximaSearchConditions, ...maximaNutritionConditions))
-            .orderBy(sortBy === 'name' 
-              ? (sortOrder === 'asc' ? asc(maximaProducts.name) : desc(maximaProducts.name))
-              : (sortOrder === 'asc' ? asc(nutritionFacts.nutriScoreGrade) : desc(nutritionFacts.nutriScoreGrade)))
-            .limit(pageSize)
-            .offset(offset);
-          
-          // Get Maxima count
-          const maximaCountQuery = await maximaDb
-            .select({ count: sql<number>`count(*)` })
             .from(maximaProducts)
             .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
             .where(and(...maximaSearchConditions, ...maximaNutritionConditions));
           
-          const maximaCount = Number(maximaCountQuery[0]?.count) || 0;
-          
-          // Get nutrition and photos for Maxima products
-          const maximaProductIds = maximaSearchQuery.map(p => p.productId);
+          // Fetch Maxima photos and categories
+          const maximaProductIds = allMaximaQuery.map(p => p.productId);
           let maximaPhotosMap: Record<number, ProductPhoto[]> = {};
-          let maximaNutritionMap: Record<number, NutritionFacts> = {};
           let maximaCategoryMap: Record<number, Category> = {};
           
           if (maximaProductIds.length > 0) {
-            const [maximaPhotos, maximaNutrition] = await Promise.all([
-              maximaDb.select().from(productPhotos).where(inArray(productPhotos.productId, maximaProductIds)),
-              maximaDb.select().from(nutritionFacts).where(inArray(nutritionFacts.productId, maximaProductIds))
-            ]);
-            
+            const maximaPhotos = await maximaDb.select().from(productPhotos).where(inArray(productPhotos.productId, maximaProductIds));
             maximaPhotosMap = maximaPhotos.reduce((map, photo) => {
               if (!map[photo.productId]) map[photo.productId] = [];
               map[photo.productId].push(photo);
               return map;
             }, {} as Record<number, ProductPhoto[]>);
             
-            maximaNutritionMap = maximaNutrition.reduce((map, n) => {
-              map[n.productId] = n;
-              return map;
-            }, {} as Record<number, NutritionFacts>);
-            
-            // Get categories from Rimi DB
-            const categoryIds = maximaSearchQuery.map(p => p.categoryId).filter(id => id !== null) as number[];
+            const categoryIds = allMaximaQuery.map(p => p.categoryId).filter(id => id !== null) as number[];
             if (categoryIds.length > 0) {
               const cats = await rimiDb.select().from(categories).where(inArray(categories.categoryId, categoryIds));
               maximaCategoryMap = cats.reduce((map, c) => { map[c.categoryId] = c; return map; }, {} as Record<number, Category>);
             }
           }
           
-          // Convert Maxima products to ProductWithDetails
-          const maximaProducts_: ProductWithDetails[] = maximaSearchQuery.map(row => ({
-            productId: row.productId,
-            sku: row.sku,
-            name: row.name,
-            name_norm: row.nameNorm,
-            categoryId: row.categoryId || 0,
-            rimiUrl: null,
-            quantityValue: row.quantityValue,
-            quantityUnit: row.quantityUnit,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt,
-            nutrition: maximaNutritionMap[row.productId],
-            photos: maximaPhotosMap[row.productId] || [],
-            category: row.categoryId ? maximaCategoryMap[row.categoryId] : undefined,
-            store: 'maxima' as Store,
-            externalUrl: row.barboraUrl
-          }));
-          
-          // Merge results
-          allProducts = [...productsWithDetails, ...maximaProducts_];
-          finalTotalCount = Number(totalCount) + maximaCount;
-          
-          // Sort merged results by name
-          allProducts.sort((a, b) => {
-            let comparison = a.name.localeCompare(b.name, 'lv');
-            return sortOrder === 'desc' ? -comparison : comparison;
+          // Convert Maxima results to ProductWithDetails
+          const maximaProductsList: ProductWithDetails[] = allMaximaQuery.map(row => {
+            const nutrition: NutritionFacts | undefined = row.nutritionId ? {
+              nutritionId: row.nutritionId,
+              productId: row.productId,
+              ingredientsText: row.ingredientsText,
+              energyKcal: row.energyKcal,
+              energyKj: row.energyKj,
+              fatTotal: row.fatTotal,
+              fatSaturated: row.fatSaturated,
+              carbsTotal: row.carbsTotal,
+              carbsSugars: row.carbsSugars,
+              protein: row.protein,
+              salt: row.salt,
+              fiber: row.fiber,
+              nutriScoreGrade: row.nutriScoreGrade,
+              nutriScorePoints: row.nutriScorePoints,
+              dataSourceDate: row.dataSourceDate
+            } : undefined;
+            
+            return {
+              productId: row.productId,
+              sku: row.sku,
+              name: row.name,
+              name_norm: row.nameNorm,
+              categoryId: row.categoryId || 0,
+              rimiUrl: null,
+              quantityValue: row.quantityValue,
+              quantityUnit: row.quantityUnit,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              nutrition,
+              photos: maximaPhotosMap[row.productId] || [],
+              category: row.categoryId ? maximaCategoryMap[row.categoryId] : undefined,
+              store: 'maxima' as Store,
+              externalUrl: row.barboraUrl
+            };
           });
           
-          // Limit to pageSize
-          allProducts = allProducts.slice(0, pageSize);
-          
-          console.log(`Added ${maximaProducts_.length} Maxima products to search results`);
+          // Merge all products
+          allProducts = [...allProducts, ...maximaProductsList];
+          console.log(`Added ${maximaProductsList.length} Maxima products to search results`);
         } catch (err) {
           console.error('Error searching Maxima products:', err);
         }
       }
       
-      // Enrich products with ingredient card data (both stores)
+      // Sort merged results based on sortBy parameter
+      allProducts.sort((a, b) => {
+        let comparison = 0;
+        
+        if (sortBy === 'name') {
+          comparison = a.name.localeCompare(b.name, 'lv');
+        } else if (sortBy === 'nutriScore') {
+          const gradeA = a.nutrition?.nutriScoreGrade || 'Z';
+          const gradeB = b.nutrition?.nutriScoreGrade || 'Z';
+          comparison = gradeA.localeCompare(gradeB);
+        } else if (sortBy === 'sugar') {
+          const sugarA = a.nutrition?.carbsSugars == null ? 999 : Number(a.nutrition.carbsSugars);
+          const sugarB = b.nutrition?.carbsSugars == null ? 999 : Number(b.nutrition.carbsSugars);
+          comparison = sugarA - sugarB;
+        } else if (sortBy === 'fat') {
+          const fatA = a.nutrition?.fatTotal == null ? 999 : Number(a.nutrition.fatTotal);
+          const fatB = b.nutrition?.fatTotal == null ? 999 : Number(b.nutrition.fatTotal);
+          comparison = fatA - fatB;
+        } else if (sortBy === 'protein') {
+          const proteinA = a.nutrition?.protein == null ? -1 : Number(a.nutrition.protein);
+          const proteinB = b.nutrition?.protein == null ? -1 : Number(b.nutrition.protein);
+          comparison = proteinA - proteinB;
+        } else if (sortBy === 'salt') {
+          const saltA = a.nutrition?.salt == null ? 999 : Number(a.nutrition.salt);
+          const saltB = b.nutrition?.salt == null ? 999 : Number(b.nutrition.salt);
+          comparison = saltA - saltB;
+        } else {
+          comparison = a.name.localeCompare(b.name, 'lv');
+        }
+        
+        return sortOrder === 'desc' ? -comparison : comparison;
+      });
+      
+      // Get total count from merged results
+      const finalTotalCount = allProducts.length;
+      
+      // Apply pagination to merged and sorted results
+      const paginatedProducts = allProducts.slice(offset, offset + pageSize);
+      
+      console.log(`Search merged ${allProducts.length} total products, returning page ${page} with ${paginatedProducts.length} items`);
+      
+      // Enrich paginated products with ingredient card data (both stores)
       const ingredientCardsMap = await this.fetchIngredientCardsForProducts(
-        allProducts.map(p => ({ sku: p.sku, store: p.store }))
+        paginatedProducts.map(p => ({ sku: p.sku, store: p.store }))
       );
       
       // Attach ingredient cards to products
-      const enrichedProducts = allProducts.map(p => ({
+      const enrichedProducts = paginatedProducts.map(p => ({
         ...p,
         ingredientCard: ingredientCardsMap.get(p.sku)
       }));
