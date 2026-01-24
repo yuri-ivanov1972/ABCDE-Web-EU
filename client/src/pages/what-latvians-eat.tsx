@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet';
-import { getLanguageFromPath } from '@/i18n';
-import { useLocation } from 'wouter';
+import { Helmet } from 'react-helmet-async';
 
 interface NutriScoreDistribution {
   grade: string;
@@ -26,8 +24,7 @@ const GRADE_COLORS: Record<string, string> = {
 
 const WhatLatviansEat = () => {
   const { t, i18n } = useTranslation(['stats', 'common']);
-  const [location] = useLocation();
-  const currentLang = getLanguageFromPath(location);
+  const currentLang = i18n.language?.split('-')[0] || 'lv';
   
   const { data, isLoading, error } = useQuery<StatsResponse>({
     queryKey: ['/api/stats/nutri-score-distribution']
@@ -36,6 +33,7 @@ const WhatLatviansEat = () => {
   const baseUrl = 'https://abcde.lv';
   const lvPath = '/ko-ed-latvija';
   const enPath = '/what-latvians-eat';
+  const currentPath = currentLang === 'en' ? enPath : lvPath;
 
   if (isLoading) {
     return (
@@ -106,7 +104,7 @@ const WhatLatviansEat = () => {
       <Helmet>
         <title>{t('stats:title')} | ABCDE.lv</title>
         <meta name="description" content={t('stats:description')} />
-        <link rel="canonical" href={`${baseUrl}/${currentLang}${currentLang === 'lv' ? lvPath : enPath}`} />
+        <link rel="canonical" href={`${baseUrl}/${currentLang}${currentPath}`} />
         <link rel="alternate" hrefLang="lv" href={`${baseUrl}/lv${lvPath}`} />
         <link rel="alternate" hrefLang="en" href={`${baseUrl}/en${enPath}`} />
         <link rel="alternate" hrefLang="x-default" href={`${baseUrl}/lv${lvPath}`} />
