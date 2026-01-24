@@ -5,6 +5,10 @@
     "label": "Veikals",
     "all": "Visi"
   },
+  "madeInLatvia": {
+    "label": "Ražots Latvijā",
+    "remove": "Noņemt filtru 'Ražots Latvijā'"
+  },
   "nutriScore": {
     "label": "Nutri-Score",
     "remove": "Noņemt Nutri-Score filtru"

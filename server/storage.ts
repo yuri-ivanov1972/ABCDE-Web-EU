@@ -88,6 +88,7 @@ export type GetProductsOptions = {
   sortBy?: 'name' | 'nutriScore' | 'sugar' | 'fat' | 'protein' | 'salt';
   sortOrder?: 'asc' | 'desc';
   store?: Store;  // Filter by store: 'rimi', 'maxima', or undefined for both
+  madeInLatvia?: boolean;  // Filter to show only products made in Latvia
 };
 
 // Combined product type with related data
@@ -583,7 +584,8 @@ export class DatabaseStorage implements IStorage {
       saltMax,
       sortBy = 'name',
       sortOrder = 'asc',
-      store
+      store,
+      madeInLatvia
     } = options;
     
     console.log(`GET products with options`, JSON.stringify(options));
@@ -691,6 +693,11 @@ export class DatabaseStorage implements IStorage {
       }
       if (saltMax !== undefined) {
         whereConditions.push(sql`${nutritionFacts.salt} <= ${saltMax}`);
+      }
+      
+      // Add madeInLatvia filter
+      if (madeInLatvia) {
+        whereConditions.push(sql`${products}.country_of_origin = 'Latvija'`);
       }
       
       // Step 3: Build ORDER BY clause
@@ -1191,7 +1198,8 @@ export class DatabaseStorage implements IStorage {
       saltMin,
       saltMax,
       sortBy = 'name',
-      sortOrder = 'asc'
+      sortOrder = 'asc',
+      madeInLatvia
     } = options;
     
     console.log(`SEARCH products with query "${query}" and options`, JSON.stringify(options));
@@ -1252,6 +1260,11 @@ export class DatabaseStorage implements IStorage {
       }
       if (saltMax !== undefined) {
         nutritionConditions.push(sql`${nutritionFacts.salt} <= ${saltMax}`);
+      }
+      
+      // Add madeInLatvia filter
+      if (madeInLatvia) {
+        nutritionConditions.push(sql`${products}.country_of_origin = 'Latvija'`);
       }
       
       // Step 3: Build search conditions

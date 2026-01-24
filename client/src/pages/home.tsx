@@ -108,7 +108,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       sortBy: sortOption,
       sortOrder,
       search: searchQuery,
-      store: selectedStore
+      store: selectedStore,
+      madeInLatvia: filters.madeInLatvia
     })
   });
   
@@ -118,7 +119,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const totalPages = calculatedPages;
   
   // Check if there are any active filters
-  const hasActiveFilters = filters.nutriScores.length > 0;
+  const hasActiveFilters = filters.nutriScores.length > 0 || !!filters.madeInLatvia;
   
   // Report active filters state to parent
   useEffect(() => {
@@ -169,10 +170,18 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     refetch();
   };
   
+  // Handle remove madeInLatvia filter
+  const handleRemoveMadeInLatviaFilter = () => {
+    setFilters({ ...filters, madeInLatvia: false });
+    setPage(1);
+    refetch();
+  };
+  
   // Clear all filters
   const handleClearAllFilters = () => {
     setFilters({
-      nutriScores: []
+      nutriScores: [],
+      madeInLatvia: false
     });
     setPage(1);
     console.log('Cleared all filters');
@@ -180,7 +189,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   };
   
   // Handle mobile filters applied
-  const handleMobileFiltersApply = (nutriScores: NutriScoreGrade[]) => {
+  const handleMobileFiltersApply = (nutriScores: NutriScoreGrade[], madeInLatvia?: boolean) => {
     // Close mobile filters panel
     if (onCloseMobileFilters) {
       onCloseMobileFilters();
@@ -188,7 +197,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     
     // Apply the filter values to the main filters state
     const newFilters: Filters = {
-      nutriScores: nutriScores
+      nutriScores: nutriScores,
+      madeInLatvia: madeInLatvia
     };
     
     // Update filters state and trigger refetch

@@ -91,6 +91,7 @@ export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface Filters {
   nutriScores: NutriScoreGrade[];
+  madeInLatvia?: boolean;
 }
 
 export interface ProductsResponse {

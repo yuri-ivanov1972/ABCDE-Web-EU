@@ -29,6 +29,7 @@ const getProductsQuerySchema = z.object({
   sortBy: z.enum(['name', 'nutriScore', 'sugar', 'fat', 'protein', 'salt']).optional().default('name'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
   search: z.string().optional(),
+  madeInLatvia: z.string().optional().transform(val => val === 'true'),
   store: z.enum(['rimi', 'maxima']).optional()
 });
 
@@ -365,7 +366,8 @@ Sitemap: https://abcde.lv/sitemap.xml
         saltMax,
         sortBy,
         sortOrder,
-        store
+        store,
+        madeInLatvia
       } = getProductsQuerySchema.parse(req.query);
       
       // Cast nutriScores to the correct type (A, B, C, D, E)
@@ -389,7 +391,8 @@ Sitemap: https://abcde.lv/sitemap.xml
         saltMax,
         sortBy,
         sortOrder,
-        store
+        store,
+        madeInLatvia
       };
       
       // If search query is provided, use search endpoint

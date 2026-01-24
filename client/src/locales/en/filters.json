@@ -5,6 +5,10 @@
     "label": "Store",
     "all": "All"
   },
+  "madeInLatvia": {
+    "label": "Made in Latvia",
+    "remove": "Remove 'Made in Latvia' filter"
+  },
   "nutriScore": {
     "label": "Nutri-Score",
     "remove": "Remove Nutri-Score filter"

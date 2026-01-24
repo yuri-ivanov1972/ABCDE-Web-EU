@@ -12,7 +12,7 @@ interface MobileMenuProps {
   categoryId?: number;
   selectedStore?: Store;
   onStoreChange?: (store?: Store) => void;
-  onApplyFilters?: (nutriScores: NutriScoreGrade[]) => void;
+  onApplyFilters?: (nutriScores: NutriScoreGrade[], madeInLatvia?: boolean) => void;
 }
 
 // Mobile category component
@@ -97,6 +97,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedStore, onStoreChange, onApplyFilters }) => {
   const { t } = useTranslation(['filters', 'categories', 'common']);
   const [selectedNutriScores, setSelectedNutriScores] = useState<NutriScoreGrade[]>([]);
+  const [madeInLatvia, setMadeInLatvia] = useState(false);
 
   // Fetch main categories
   const { data: categories = [] } = useQuery({
@@ -114,8 +115,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
 
   const handleApplyFilters = () => {
     if (onApplyFilters) {
-      onApplyFilters(selectedNutriScores);
-      console.log('Applied filters:', { nutriScores: selectedNutriScores });
+      onApplyFilters(selectedNutriScores, madeInLatvia);
+      console.log('Applied filters:', { nutriScores: selectedNutriScores, madeInLatvia });
     }
   };
 
@@ -174,6 +175,19 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, categoryId, selectedSto
               size="small"
             />
           </div>
+        </div>
+        
+        {/* Mobile Made in Latvia Filter */}
+        <div className="mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={madeInLatvia}
+              onChange={(e) => setMadeInLatvia(e.target.checked)}
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <span className="text-sm font-medium text-gray-700">{t('filters:madeInLatvia.label')}</span>
+          </label>
         </div>
 
         {/* Apply Filters Button */}

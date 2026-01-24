@@ -219,6 +219,19 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
           />
         </div>
         
+        {/* Made in Latvia Filter */}
+        <div className="mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={filters.madeInLatvia || false}
+              onChange={(e) => onUpdateFilters({ ...filters, madeInLatvia: e.target.checked })}
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <span className="text-sm font-medium text-gray-700">{t('filters:madeInLatvia.label')}</span>
+          </label>
+        </div>
+        
         {/* Apply Filters Button */}
         <button 
           className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mt-2"

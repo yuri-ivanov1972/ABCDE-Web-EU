@@ -79,6 +79,7 @@ export const getProducts = async (options: {
   sortOrder?: SortOrder;
   search?: string;
   store?: Store;
+  madeInLatvia?: boolean;
 }): Promise<ProductsResponse> => {
   const { 
     categoryId,
@@ -88,7 +89,8 @@ export const getProducts = async (options: {
     sortBy = 'name',
     sortOrder = 'asc',
     search,
-    store
+    store,
+    madeInLatvia
   } = options;
   
   const params = new URLSearchParams();
@@ -113,6 +115,10 @@ export const getProducts = async (options: {
   
   if (store) {
     params.append('store', store);
+  }
+  
+  if (madeInLatvia) {
+    params.append('madeInLatvia', 'true');
   }
   
   const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
