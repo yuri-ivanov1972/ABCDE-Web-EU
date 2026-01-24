@@ -9,6 +9,7 @@ const ProductSearch = lazy(() => import('@/pages/product-search'));
 const ScanPage = lazy(() => import('@/pages/scan'));
 const AboutNutriScore = lazy(() => import('@/pages/about-nutriscore'));
 const AboutProject = lazy(() => import('@/pages/about-project'));
+const WhatLatviansEat = lazy(() => import('@/pages/what-latvians-eat'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 const Debug = lazy(() => import('@/pages/debug'));
 
@@ -174,6 +175,36 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         }}
       </Route>
       
+      {/* What Latvians Eat stats page - LV path */}
+      <Route path="/:lang/ko-ed-latvija">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/ko-ed-latvija`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <WhatLatviansEat />
+            </Suspense>
+          );
+        }}
+      </Route>
+      
+      {/* What Latvians Eat stats page - EN path */}
+      <Route path="/:lang/what-latvians-eat">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/what-latvians-eat`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <WhatLatviansEat />
+            </Suspense>
+          );
+        }}
+      </Route>
+      
       {/* Debug route with language prefix */}
       <Route path="/:lang/debug">
         {(params) => {
@@ -231,6 +262,14 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
       
       <Route path="/about-project">
         <Redirect to={`/${DEFAULT_LANGUAGE}/about-project`} replace />
+      </Route>
+      
+      <Route path="/ko-ed-latvija">
+        <Redirect to={`/${DEFAULT_LANGUAGE}/ko-ed-latvija`} replace />
+      </Route>
+      
+      <Route path="/what-latvians-eat">
+        <Redirect to={`/${DEFAULT_LANGUAGE}/what-latvians-eat`} replace />
       </Route>
       
       <Route path="/debug">

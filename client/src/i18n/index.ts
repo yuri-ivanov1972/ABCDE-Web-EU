@@ -23,7 +23,8 @@ export const NAMESPACES = [
   'scan',
   'ingredients',
   'aboutNutriScore',
-  'aboutProject'
+  'aboutProject',
+  'stats'
 ] as const;
 
 // Load namespaces needed for home page initially (most commonly visited)

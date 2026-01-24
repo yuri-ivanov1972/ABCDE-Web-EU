@@ -889,6 +889,98 @@ Sitemap: https://abcde.lv/sitemap.xml
     }
   });
 
+  // Nutri-Score distribution stats with weekly caching
+  let nutriScoreStatsCache: { data: any; timestamp: number } | null = null;
+  const STATS_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+  app.get("/api/stats/nutri-score-distribution", async (_req: Request, res: Response) => {
+    try {
+      // Check if cache is still valid
+      const now = Date.now();
+      if (nutriScoreStatsCache && (now - nutriScoreStatsCache.timestamp) < STATS_CACHE_DURATION) {
+        return res.json(nutriScoreStatsCache.data);
+      }
+
+      // Query Rimi database for Nutri-Score distribution
+      const rimiStatsResult = await rimiDb.execute(sql`
+        SELECT 
+          nf.nutri_score_grade as grade,
+          COUNT(*) as count
+        FROM products p
+        JOIN nutritionfacts nf ON p.product_id = nf.product_id
+        WHERE nf.nutri_score_grade IS NOT NULL
+        AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
+        AND p.category_id NOT IN (5, 40)
+        GROUP BY nf.nutri_score_grade
+        ORDER BY nf.nutri_score_grade
+      `);
+
+      const rimiStats = Array.isArray(rimiStatsResult) ? rimiStatsResult :
+        (rimiStatsResult && typeof rimiStatsResult === 'object' && 'rows' in rimiStatsResult) ?
+          (rimiStatsResult as any).rows : [];
+
+      // Query Maxima database for Nutri-Score distribution
+      let maximaStats: any[] = [];
+      if (maximaDb) {
+        const maximaStatsResult = await maximaDb.execute(sql`
+          SELECT 
+            nf.nutri_score_grade as grade,
+            COUNT(*) as count
+          FROM products p
+          JOIN nutritionfacts nf ON p.product_id = nf.product_id
+          WHERE nf.nutri_score_grade IS NOT NULL
+          AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
+          GROUP BY nf.nutri_score_grade
+          ORDER BY nf.nutri_score_grade
+        `);
+        maximaStats = Array.isArray(maximaStatsResult) ? maximaStatsResult :
+          (maximaStatsResult && typeof maximaStatsResult === 'object' && 'rows' in maximaStatsResult) ?
+            (maximaStatsResult as any).rows : [];
+      }
+
+      // Combine stats from both stores
+      const combinedStats: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+      
+      for (const row of rimiStats) {
+        const grade = (row as any).grade?.toUpperCase();
+        if (grade && combinedStats.hasOwnProperty(grade)) {
+          combinedStats[grade] += Number((row as any).count) || 0;
+        }
+      }
+      
+      for (const row of maximaStats) {
+        const grade = (row as any).grade?.toUpperCase();
+        if (grade && combinedStats.hasOwnProperty(grade)) {
+          combinedStats[grade] += Number((row as any).count) || 0;
+        }
+      }
+
+      const totalProducts = Object.values(combinedStats).reduce((sum, count) => sum + count, 0);
+
+      const responseData = {
+        distribution: Object.entries(combinedStats).map(([grade, count]) => ({
+          grade,
+          count,
+          percentage: totalProducts > 0 ? Math.round((count / totalProducts) * 1000) / 10 : 0
+        })),
+        totalProducts,
+        lastUpdated: new Date().toISOString(),
+        cacheExpiresAt: new Date(now + STATS_CACHE_DURATION).toISOString()
+      };
+
+      // Cache the result
+      nutriScoreStatsCache = { data: responseData, timestamp: now };
+
+      res.json(responseData);
+    } catch (error) {
+      console.error("Error fetching Nutri-Score stats:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to fetch statistics" 
+      });
+    }
+  });
+
   // Stream scan photo directly from storage using secure token
   app.get("/api/scan/photo/:token", async (req: Request, res: Response) => {
     try {
@@ -950,9 +1042,17 @@ Sitemap: https://abcde.lv/sitemap.xml
       const currentDate = new Date().toISOString().split('T')[0];
       
       // Static pages with their priorities and change frequencies
-      const staticPages = [
+      // Some pages have language-specific paths (pathLv/pathEn), others use same path for all languages
+      const staticPages: Array<{
+        path?: string;
+        pathLv?: string;
+        pathEn?: string;
+        priority: string;
+        changefreq: string;
+      }> = [
         { path: '/', priority: '1.0', changefreq: 'daily' },
         { path: '/about-nutriscore', priority: '0.8', changefreq: 'monthly' },
+        { pathLv: '/ko-ed-latvija', pathEn: '/what-latvians-eat', priority: '0.7', changefreq: 'weekly' },
         { path: '/about-project', priority: '0.6', changefreq: 'monthly' },
         { path: '/scan', priority: '0.7', changefreq: 'monthly' }
       ];
@@ -1006,15 +1106,25 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       // Add static pages with hreflang alternates
       for (const page of staticPages) {
+        // Determine paths for each language
+        const getPathForLang = (lang: string) => {
+          if (page.path !== undefined) {
+            return page.path === '/' ? '' : page.path;
+          }
+          return lang === 'lv' ? page.pathLv : page.pathEn;
+        };
+        
         for (const lang of languages) {
+          const pagePath = getPathForLang(lang);
           xml += '  <url>\n';
-          xml += `    <loc>${baseUrl}/${lang}${page.path === '/' ? '' : page.path}</loc>\n`;
+          xml += `    <loc>${baseUrl}/${lang}${pagePath}</loc>\n`;
           xml += `    <lastmod>${currentDate}</lastmod>\n`;
           xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
           xml += `    <priority>${page.priority}</priority>\n`;
-          // Add hreflang alternates
+          // Add hreflang alternates (each pointing to correct language-specific path)
           for (const altLang of languages) {
-            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}${page.path === '/' ? '' : page.path}" />\n`;
+            const altPath = getPathForLang(altLang);
+            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}${altPath}" />\n`;
           }
           xml += '  </url>\n';
         }

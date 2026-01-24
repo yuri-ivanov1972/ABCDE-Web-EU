@@ -1,0 +1,13 @@
+{
+  "title": "What Do Latvians Eat?",
+  "description": "Nutri-Score distribution for all products in Rimi and Maxima stores",
+  "totalProducts": "Total products",
+  "lastUpdated": "Last updated",
+  "chartTitle": "Product Distribution by Nutri-Score",
+  "grade": "Grade",
+  "count": "Count",
+  "percentage": "Percentage",
+  "healthyProducts": "Healthy products (A-B)",
+  "unhealthyProducts": "Less healthy products (D-E)",
+  "moderateProducts": "Moderately healthy products (C)"
+}
