@@ -1,5 +1,5 @@
 {
-  "title": "What Do Eat in Latvia?",
+  "title": "What Do They Eat in Latvia?",
   "description": "Nutri-Score distribution for all products in Rimi and Maxima stores",
   "totalProducts": "Total products",
   "lastUpdated": "Last updated",
@@ -9,5 +9,7 @@
   "percentage": "Percentage",
   "healthyProducts": "Healthy products (A-B)",
   "unhealthyProducts": "Less healthy products (D-E)",
-  "moderateProducts": "Moderately healthy products (C)"
+  "moderateProducts": "Moderately healthy products (C)",
+  "latvianTitle": "What's Made in Latvia?",
+  "latvianDescription": "Nutri-Score distribution for Latvian-made products in Rimi and Maxima stores"
 }

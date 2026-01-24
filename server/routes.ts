@@ -893,6 +893,78 @@ Sitemap: https://abcde.lv/sitemap.xml
   let nutriScoreStatsCache: { data: any; timestamp: number } | null = null;
   const STATS_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
+  // Helper function to query Nutri-Score distribution
+  async function queryNutriScoreDistribution(countryFilter?: string) {
+    const countryCondition = countryFilter ? sql`AND p.country_of_origin = ${countryFilter}` : sql``;
+    
+    // Query Rimi database
+    const rimiStatsResult = await rimiDb.execute(sql`
+      SELECT 
+        nf.nutri_score_grade as grade,
+        COUNT(*) as count
+      FROM products p
+      JOIN nutritionfacts nf ON p.product_id = nf.product_id
+      WHERE nf.nutri_score_grade IS NOT NULL
+      AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
+      AND p.category_id NOT IN (5, 40)
+      ${countryCondition}
+      GROUP BY nf.nutri_score_grade
+      ORDER BY nf.nutri_score_grade
+    `);
+
+    const rimiStats = Array.isArray(rimiStatsResult) ? rimiStatsResult :
+      (rimiStatsResult && typeof rimiStatsResult === 'object' && 'rows' in rimiStatsResult) ?
+        (rimiStatsResult as any).rows : [];
+
+    // Query Maxima database
+    let maximaStats: any[] = [];
+    if (maximaDb) {
+      const maximaStatsResult = await maximaDb.execute(sql`
+        SELECT 
+          nf.nutri_score_grade as grade,
+          COUNT(*) as count
+        FROM products p
+        JOIN nutritionfacts nf ON p.product_id = nf.product_id
+        WHERE nf.nutri_score_grade IS NOT NULL
+        AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
+        ${countryCondition}
+        GROUP BY nf.nutri_score_grade
+        ORDER BY nf.nutri_score_grade
+      `);
+      maximaStats = Array.isArray(maximaStatsResult) ? maximaStatsResult :
+        (maximaStatsResult && typeof maximaStatsResult === 'object' && 'rows' in maximaStatsResult) ?
+          (maximaStatsResult as any).rows : [];
+    }
+
+    // Combine stats from both stores
+    const combinedStats: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+    
+    for (const row of rimiStats) {
+      const grade = (row as any).grade?.toUpperCase();
+      if (grade && combinedStats.hasOwnProperty(grade)) {
+        combinedStats[grade] += Number((row as any).count) || 0;
+      }
+    }
+    
+    for (const row of maximaStats) {
+      const grade = (row as any).grade?.toUpperCase();
+      if (grade && combinedStats.hasOwnProperty(grade)) {
+        combinedStats[grade] += Number((row as any).count) || 0;
+      }
+    }
+
+    const totalProducts = Object.values(combinedStats).reduce((sum, count) => sum + count, 0);
+
+    return {
+      distribution: Object.entries(combinedStats).map(([grade, count]) => ({
+        grade,
+        count,
+        percentage: totalProducts > 0 ? Math.round((count / totalProducts) * 1000) / 10 : 0
+      })),
+      totalProducts
+    };
+  }
+
   app.get("/api/stats/nutri-score-distribution", async (_req: Request, res: Response) => {
     try {
       // Check if cache is still valid
@@ -901,69 +973,19 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.json(nutriScoreStatsCache.data);
       }
 
-      // Query Rimi database for Nutri-Score distribution
-      const rimiStatsResult = await rimiDb.execute(sql`
-        SELECT 
-          nf.nutri_score_grade as grade,
-          COUNT(*) as count
-        FROM products p
-        JOIN nutritionfacts nf ON p.product_id = nf.product_id
-        WHERE nf.nutri_score_grade IS NOT NULL
-        AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
-        AND p.category_id NOT IN (5, 40)
-        GROUP BY nf.nutri_score_grade
-        ORDER BY nf.nutri_score_grade
-      `);
-
-      const rimiStats = Array.isArray(rimiStatsResult) ? rimiStatsResult :
-        (rimiStatsResult && typeof rimiStatsResult === 'object' && 'rows' in rimiStatsResult) ?
-          (rimiStatsResult as any).rows : [];
-
-      // Query Maxima database for Nutri-Score distribution
-      let maximaStats: any[] = [];
-      if (maximaDb) {
-        const maximaStatsResult = await maximaDb.execute(sql`
-          SELECT 
-            nf.nutri_score_grade as grade,
-            COUNT(*) as count
-          FROM products p
-          JOIN nutritionfacts nf ON p.product_id = nf.product_id
-          WHERE nf.nutri_score_grade IS NOT NULL
-          AND nf.nutri_score_grade IN ('A', 'B', 'C', 'D', 'E')
-          GROUP BY nf.nutri_score_grade
-          ORDER BY nf.nutri_score_grade
-        `);
-        maximaStats = Array.isArray(maximaStatsResult) ? maximaStatsResult :
-          (maximaStatsResult && typeof maximaStatsResult === 'object' && 'rows' in maximaStatsResult) ?
-            (maximaStatsResult as any).rows : [];
-      }
-
-      // Combine stats from both stores
-      const combinedStats: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, E: 0 };
-      
-      for (const row of rimiStats) {
-        const grade = (row as any).grade?.toUpperCase();
-        if (grade && combinedStats.hasOwnProperty(grade)) {
-          combinedStats[grade] += Number((row as any).count) || 0;
-        }
-      }
-      
-      for (const row of maximaStats) {
-        const grade = (row as any).grade?.toUpperCase();
-        if (grade && combinedStats.hasOwnProperty(grade)) {
-          combinedStats[grade] += Number((row as any).count) || 0;
-        }
-      }
-
-      const totalProducts = Object.values(combinedStats).reduce((sum, count) => sum + count, 0);
+      // Query all products and Latvian-made products in parallel
+      const [allProducts, latvianProducts] = await Promise.all([
+        queryNutriScoreDistribution(),
+        queryNutriScoreDistribution('Latvija')
+      ]);
 
       const responseData = {
-        distribution: Object.entries(combinedStats).map(([grade, count]) => ({
-          grade,
-          count,
-          percentage: totalProducts > 0 ? Math.round((count / totalProducts) * 1000) / 10 : 0
-        })),
-        totalProducts,
+        distribution: allProducts.distribution,
+        totalProducts: allProducts.totalProducts,
+        latvianProducts: {
+          distribution: latvianProducts.distribution,
+          totalProducts: latvianProducts.totalProducts
+        },
         lastUpdated: new Date().toISOString(),
         cacheExpiresAt: new Date(now + STATS_CACHE_DURATION).toISOString()
       };

@@ -9,5 +9,7 @@
   "percentage": "Procenti",
   "healthyProducts": "Veselīgi produkti (A-B)",
   "unhealthyProducts": "Mazāk veselīgi produkti (D-E)",
-  "moderateProducts": "Vidēji veselīgi produkti (C)"
+  "moderateProducts": "Vidēji veselīgi produkti (C)",
+  "latvianTitle": "Ko ražo Latvijā?",
+  "latvianDescription": "Nutri-Score sadalījums Latvijas ražotiem produktiem Rimi un Maxima veikalos"
 }
