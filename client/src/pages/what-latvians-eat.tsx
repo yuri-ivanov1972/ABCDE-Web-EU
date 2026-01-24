@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
@@ -198,6 +199,10 @@ const StatsBlock = ({
 const WhatLatviansEat = () => {
   const { t, i18n } = useTranslation(['stats', 'common']);
   const currentLang = i18n.language?.split('-')[0] || 'lv';
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   const { data, isLoading, error } = useQuery<StatsResponse>({
     queryKey: ['/api/stats/nutri-score-distribution']
