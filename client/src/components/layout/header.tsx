@@ -66,6 +66,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
             <LangLink href="/about-nutriscore" className="text-sm text-gray-700 hover:text-primary font-medium">
               {t('common:footer.aboutNutriScore')}
             </LangLink>
+            <LangLink href={i18n.language === 'en' ? '/what-latvians-eat' : '/ko-ed-latvija'} className="text-sm text-gray-700 hover:text-primary font-medium">
+              {t('common:footer.whatLatviansEat')}
+            </LangLink>
             <LangLink href="/about-project" className="text-sm text-gray-700 hover:text-primary font-medium">
               {t('common:footer.aboutProject')}
             </LangLink>
