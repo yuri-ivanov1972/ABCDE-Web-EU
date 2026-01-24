@@ -401,7 +401,8 @@ export class DatabaseStorage implements IStorage {
     sortBy: string,
     sortOrder: string,
     limit: number,
-    offset: number
+    offset: number,
+    madeInLatvia?: boolean
   ): Promise<{ products: ProductWithDetails[], count: number }> {
     if (!maximaDb) {
       return { products: [], count: 0 };
@@ -432,6 +433,11 @@ export class DatabaseStorage implements IStorage {
       // Add Nutri-Score filter
       if (nutriScores && nutriScores.length > 0) {
         whereConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
+      }
+      
+      // Add madeInLatvia filter for Maxima
+      if (madeInLatvia) {
+        whereConditions.push(sql`${maximaProducts.countryOfOrigin} = 'Latvija'`);
       }
 
       // Build ORDER BY clause for Maxima (now includes nutrition data via INNER JOIN)
@@ -898,7 +904,7 @@ export class DatabaseStorage implements IStorage {
         // If store is 'maxima', we should not include Rimi products
         if (store === 'maxima') {
           const maximaResult = await this.getMaximaProducts(
-            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, pageSize, offset
+            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, pageSize, offset, madeInLatvia
           );
           allProducts = maximaResult.products;
           finalTotalCount = maximaResult.count;
@@ -908,7 +914,7 @@ export class DatabaseStorage implements IStorage {
           const combinedLimit = offset + pageSize;
           
           const maximaResult = await this.getMaximaProducts(
-            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, combinedLimit, 0
+            allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, combinedLimit, 0, madeInLatvia
           );
           
           // Merge and sort the combined results
