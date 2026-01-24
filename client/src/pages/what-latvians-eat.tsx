@@ -47,12 +47,14 @@ const StatsBlock = ({
   title, 
   description, 
   stats, 
-  t 
+  t,
+  showTitle = true
 }: { 
   title: string; 
   description: string; 
   stats: StatsSection; 
   t: (key: string) => string;
+  showTitle?: boolean;
 }) => {
   const { distribution, totalProducts } = stats;
   
@@ -85,7 +87,7 @@ const StatsBlock = ({
 
   return (
     <section className="mb-12">
-      <h2 className="text-2xl font-bold text-center mb-2">{title}</h2>
+      {showTitle && <h2 className="text-2xl font-bold text-center mb-2">{title}</h2>}
       <p className="text-center text-muted-foreground mb-6">{description}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -245,6 +247,7 @@ const WhatLatviansEat = () => {
           description={t('stats:description')}
           stats={{ distribution: data.distribution, totalProducts: data.totalProducts }}
           t={t}
+          showTitle={false}
         />
 
         <StatsBlock
