@@ -204,7 +204,7 @@ export default function AboutNutriScore() {
                 <AccordionContent className="text-gray-700 space-y-4 pb-4">
                   <p>{t('sections.countries.p1')}</p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {['france', 'belgium', 'germany', 'spain', 'netherlands', 'luxembourg', 'switzerland', 'portugal'].map((country) => (
+                    {['france', 'belgium', 'germany', 'spain', 'netherlands', 'luxembourg', 'switzerland'].map((country) => (
                       <div key={country} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                         <span className="text-green-600">✓</span>
                         <span>{t(`sections.countries.${country}`)}</span>
