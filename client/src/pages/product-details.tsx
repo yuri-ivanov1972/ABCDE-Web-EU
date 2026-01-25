@@ -270,10 +270,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
           <div className="md:w-1/2 p-6 md:p-8">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
 
-            {quantityFormatted && (
-              <p className="text-gray-600 mb-4">{quantityFormatted}</p>
-            )}
-
             {product.nutrition?.nutriScoreGrade && (
               <div className="mb-6">
                 <div className="flex items-start gap-4">
