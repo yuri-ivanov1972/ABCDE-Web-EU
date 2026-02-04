@@ -120,8 +120,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
           </form>
 
           {/* Right side: Petition Link and Actions */}
-          {/* Fixed min-width on mobile to prevent layout shift when filter button is hidden */}
-          <div className="flex flex-col items-end gap-2 shrink-0 min-w-[10rem] md:min-w-0">
+          <div className="flex flex-col items-end gap-2 shrink-0">
             {/* Petition Link */}
             <a 
               href={t('header:petition.url')}
@@ -142,8 +141,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
             </a>
 
             {/* Language Switcher + Mobile Filter Toggle */}
-            {/* Fixed min-width container on mobile to prevent layout shift when filter button is hidden */}
-            <div className="flex items-center gap-2 min-w-[5.5rem] md:min-w-0 justify-end">
+            <div className="flex items-center gap-2">
               {/* Language Switcher - Desktop */}
               <div className="hidden md:block">
                 <LanguageSwitcher />
@@ -154,19 +152,20 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
                 <LanguageSwitcher compact={true} />
               </div>
               
-              {/* Mobile Filter Toggle - Icon only */}
-              {onToggleMobileFilters && (
-                <button
-                  onClick={onToggleMobileFilters}
-                  className="md:hidden relative h-9 w-9 flex items-center justify-center text-gray-600 hover:text-primary transition-colors border border-gray-300 rounded-md"
-                  aria-label={t('header:filters.toggle')}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {hasActiveFilters && (
-                    <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full"></span>
-                  )}
-                </button>
-              )}
+              {/* Mobile Filter Toggle - Always rendered to prevent layout shift, invisible when not needed */}
+              <button
+                onClick={onToggleMobileFilters || undefined}
+                className={`md:hidden relative h-9 w-9 flex items-center justify-center text-gray-600 hover:text-primary transition-colors border border-gray-300 rounded-md ${
+                  !onToggleMobileFilters ? 'invisible' : ''
+                }`}
+                aria-label={t('header:filters.toggle')}
+                disabled={!onToggleMobileFilters}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                {hasActiveFilters && onToggleMobileFilters && (
+                  <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full"></span>
+                )}
+              </button>
             </div>
           </div>
         </div>
