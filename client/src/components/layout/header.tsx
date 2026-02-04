@@ -120,7 +120,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
           </form>
 
           {/* Right side: Petition Link and Actions */}
-          <div className="flex flex-col items-end gap-2 shrink-0">
+          {/* Fixed min-width on mobile to prevent layout shift when filter button is hidden */}
+          <div className="flex flex-col items-end gap-2 shrink-0 min-w-[10rem] md:min-w-0">
             {/* Petition Link */}
             <a 
               href={t('header:petition.url')}
