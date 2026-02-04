@@ -141,7 +141,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
             </a>
 
             {/* Language Switcher + Mobile Filter Toggle */}
-            <div className="flex items-center gap-2">
+            {/* Fixed min-width container on mobile to prevent layout shift when filter button is hidden */}
+            <div className="flex items-center gap-2 min-w-[5.5rem] md:min-w-0 justify-end">
               {/* Language Switcher - Desktop */}
               <div className="hidden md:block">
                 <LanguageSwitcher />
