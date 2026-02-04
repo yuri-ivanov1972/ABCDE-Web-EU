@@ -258,10 +258,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="md:flex">
           {/* Product Image */}
-          <div className="md:w-1/2 bg-gray-100 relative">
+          <div className="md:w-1/2 bg-gray-100 relative aspect-[3/2] md:aspect-auto">
             <img 
               src={mainPhoto?.photoUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
               alt={mainPhoto?.altText || product.name}
+              width={600}
+              height={400}
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-contain md:max-h-[500px]"
             />
           </div>
@@ -276,6 +280,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   <img 
                     src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                     alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
+                    width={80}
+                    height={43}
                     className="h-16 w-auto flex-shrink-0"
                   />
                   <p className="text-sm text-gray-600 mt-1">

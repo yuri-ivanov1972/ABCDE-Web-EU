@@ -39,17 +39,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <LangLink href={linkUrl} className="block">
-        <div className="relative">
+        <div className="relative aspect-[3/2]">
           <img 
             src={mainPhoto?.photoUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`}
             alt={mainPhoto?.altText || name}
-            className="w-full h-40 object-cover"
+            width={300}
+            height={200}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover"
           />
           {nutrition?.nutriScoreGrade && (
             <div className="absolute bottom-2 left-2 z-10">
               <img 
                 src={nutriScoreImages[nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                 alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
+                width={55}
+                height={30}
                 className="h-11 md:h-10 w-auto"
               />
             </div>
@@ -115,7 +121,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 export const ProductCardSkeleton: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <Skeleton className="w-full h-40" />
+      <Skeleton className="w-full aspect-[3/2]" />
       <div className="p-3">
         <Skeleton className="h-6 w-3/4 mb-1" />
         <Skeleton className="h-4 w-1/3 mb-4" />

@@ -95,11 +95,15 @@ const ProductSearch: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Product Photo */}
               {product.photos && product.photos.length > 0 && (
-                <div className="w-full md:w-1/3 flex-shrink-0">
+                <div className="w-full md:w-1/3 flex-shrink-0 aspect-[3/2]">
                   <img 
                     src={product.photos[0].photoUrl} 
-                    alt={product.photos[0].altText || product.name} 
-                    className="rounded-md w-full h-auto object-cover"
+                    alt={product.photos[0].altText || product.name}
+                    width={300}
+                    height={200}
+                    loading="lazy"
+                    decoding="async"
+                    className="rounded-md w-full h-full object-cover"
                   />
                 </div>
               )}
