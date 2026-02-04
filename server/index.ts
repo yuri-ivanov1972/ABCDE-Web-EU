@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags } from "./seo";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -132,6 +133,86 @@ app.use((req, res, next) => {
     const queryString = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
     const redirectUrl = `/lv${urlPath === '/' ? '' : urlPath}${queryString}`;
     return res.redirect(301, redirectUrl);
+  });
+
+  // Server-side 404 detection for product and category pages
+  // Returns real HTTP 404 status to prevent Google "Soft 404" errors
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    const urlPath = req.path;
+    
+    // Only check HTML page requests (not API, assets, etc.)
+    if (req.method !== 'GET' || urlPath.startsWith('/api') || urlPath.includes('.')) {
+      return next();
+    }
+    
+    // Helper to serve proper 404 page
+    const serve404 = (lang: string) => {
+      const isLv = lang === 'lv';
+      const title = isLv ? 'Lapa nav atrasta' : 'Page Not Found';
+      const message = isLv ? 'Atvainojiet, šī lapa neeksistē.' : 'Sorry, this page does not exist.';
+      const backHome = isLv ? 'Atpakaļ uz sākumu' : 'Back to Home';
+      
+      res.status(404).set({ 'Content-Type': 'text/html' }).send(`<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>${title} - ABCDE.lv</title>
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f9fafb; }
+    .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+    h1 { color: #111827; margin: 0 0 1rem; }
+    p { color: #6b7280; margin: 0 0 1.5rem; }
+    a { display: inline-block; background: #16a34a; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; }
+    a:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>404</h1>
+    <p>${message}</p>
+    <a href="/${lang}">${backHome}</a>
+  </div>
+</body>
+</html>`);
+    };
+    
+    // Match product pages: /lv/product/:id or /en/product/:id
+    const productMatch = urlPath.match(/^\/(lv|en)\/product\/(\d+)$/);
+    if (productMatch) {
+      const lang = productMatch[1];
+      const productId = parseInt(productMatch[2], 10);
+      try {
+        const product = await storage.getProductById(productId);
+        if (!product) {
+          log(`404: Product ${productId} not found`);
+          return serve404(lang);
+        }
+      } catch (err) {
+        console.error('Error checking product existence:', err);
+      }
+      return next();
+    }
+    
+    // Match category pages: /lv/category/:id or /en/category/:id
+    const categoryMatch = urlPath.match(/^\/(lv|en)\/category\/(\d+)$/);
+    if (categoryMatch) {
+      const lang = categoryMatch[1];
+      const categoryId = parseInt(categoryMatch[2], 10);
+      try {
+        const category = await storage.getCategoryById(categoryId);
+        if (!category) {
+          log(`404: Category ${categoryId} not found`);
+          return serve404(lang);
+        }
+      } catch (err) {
+        console.error('Error checking category existence:', err);
+      }
+      return next();
+    }
+    
+    next();
   });
 
   // importantly only setup vite in development and after
