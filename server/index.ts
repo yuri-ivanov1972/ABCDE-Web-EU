@@ -1,10 +1,46 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { injectSeoTags } from "./seo";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// SEO: Inject canonical and hreflang tags into HTML responses
+// This runs server-side so Google sees these tags immediately without JS execution
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const originalSend = res.send;
+  const originalEnd = res.end;
+  
+  const injectIfHtml = (body: any): any => {
+    const contentType = res.get('Content-Type') || '';
+    const isHtml = contentType.includes('text/html') || 
+                   (typeof body === 'string' && body.includes('<!DOCTYPE html>'));
+    
+    if (isHtml && typeof body === 'string') {
+      const urlPath = req.originalUrl || req.path;
+      if (!urlPath.startsWith('/api') && !urlPath.includes('.')) {
+        return injectSeoTags(body, urlPath);
+      }
+    }
+    return body;
+  };
+  
+  res.send = function(body: any): Response {
+    return originalSend.call(this, injectIfHtml(body));
+  };
+  
+  // Vite uses res.end() instead of res.send()
+  (res as any).end = function(chunk?: any, encoding?: any, callback?: any): Response {
+    if (typeof chunk === 'string') {
+      chunk = injectIfHtml(chunk);
+    }
+    return originalEnd.call(this, chunk, encoding, callback);
+  };
+  
+  next();
+});
 
 // 301 Redirect www to non-www for SEO canonicalization
 app.use((req, res, next) => {

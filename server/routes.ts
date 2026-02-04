@@ -40,8 +40,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 Allow: /
 
 # Block query parameter variations to avoid duplicate content
+# These create duplicate pages with different filters/pagination
 Disallow: /*?store=
 Disallow: /*&store=
+Disallow: /*?page=
+Disallow: /*&page=
+Disallow: /*?nutriScores=
+Disallow: /*&nutriScores=
+Disallow: /*?sortBy=
+Disallow: /*&sortBy=
+Disallow: /*?sortOrder=
+Disallow: /*&sortOrder=
+Disallow: /*?madeInLatvia=
+Disallow: /*&madeInLatvia=
+Disallow: /*?sugarMin=
+Disallow: /*&sugarMin=
+Disallow: /*?sugarMax=
+Disallow: /*&sugarMax=
+Disallow: /*?fatMin=
+Disallow: /*&fatMin=
+Disallow: /*?fatMax=
+Disallow: /*&fatMax=
+Disallow: /*?proteinMin=
+Disallow: /*&proteinMin=
+Disallow: /*?proteinMax=
+Disallow: /*&proteinMax=
+Disallow: /*?saltMin=
+Disallow: /*&saltMin=
+Disallow: /*?saltMax=
+Disallow: /*&saltMax=
+Disallow: /*?search=
+Disallow: /*&search=
+Disallow: /*?pageSize=
+Disallow: /*&pageSize=
 
 # Sitemap location
 Sitemap: https://abcde.lv/sitemap.xml
