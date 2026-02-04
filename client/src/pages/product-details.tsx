@@ -280,8 +280,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   <img 
                     src={nutriScoreImages[product.nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                     alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
-                    width={80}
-                    height={43}
+                    width={150}
+                    height={81}
                     className="h-16 w-auto flex-shrink-0"
                   />
                   <p className="text-sm text-gray-600 mt-1">

@@ -54,8 +54,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <img 
                 src={nutriScoreImages[nutrition.nutriScoreGrade as keyof typeof nutriScoreImages]} 
                 alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
-                width={55}
-                height={30}
+                width={150}
+                height={81}
                 className="h-11 md:h-10 w-auto"
               />
             </div>

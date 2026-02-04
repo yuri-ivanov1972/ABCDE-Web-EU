@@ -442,8 +442,8 @@ export function Scanner({ onCapture }: ScannerProps) {
                     <img 
                       src={nutriScoreImages[scanResult.product.nutriScoreGrade.toUpperCase() as keyof typeof nutriScoreImages]} 
                       alt={`Nutri-Score ${scanResult.product.nutriScoreGrade}`}
-                      width={80}
-                      height={43}
+                      width={150}
+                      height={81}
                       className="h-16 w-auto"
                     />
                   </div>
