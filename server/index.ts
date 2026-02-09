@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { injectSeoTags } from "./seo";
+import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
 import { storage } from "./storage";
 
 const app = express();
@@ -22,7 +22,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     if (isHtml && typeof body === 'string') {
       const urlPath = req.originalUrl || req.path;
       if (!urlPath.startsWith('/api') && !urlPath.includes('.')) {
-        return injectSeoTags(body, urlPath);
+        const pageData: { product?: ProductSeoData; category?: CategorySeoData } = {};
+        if (res.locals.seoProduct) pageData.product = res.locals.seoProduct;
+        if (res.locals.seoCategory) pageData.category = res.locals.seoCategory;
+        return injectSeoTags(body, urlPath, pageData);
       }
     }
     return body;
@@ -178,7 +181,6 @@ app.use((req, res, next) => {
 </html>`);
     };
     
-    // Match product pages: /lv/product/:id or /en/product/:id
     const productMatch = urlPath.match(/^\/(lv|en)\/product\/(\d+)$/);
     if (productMatch) {
       const lang = productMatch[1];
@@ -189,13 +191,24 @@ app.use((req, res, next) => {
           log(`404: Product ${productId} not found`);
           return serve404(lang);
         }
+        res.locals.seoProduct = {
+          name: product.name,
+          nutriScoreGrade: product.nutrition?.nutriScoreGrade || null,
+          energyKcal: product.nutrition?.energyKcal || null,
+          categoryNameLv: product.category?.nameLv || null,
+          categoryNameEn: product.category?.nameEn || null,
+          store: product.store || 'rimi',
+          photoUrl: product.photos?.[0]?.photoUrl || null,
+          quantityValue: product.quantityValue || null,
+          quantityUnit: product.quantityUnit || null,
+          productId: product.productId,
+        } as ProductSeoData;
       } catch (err) {
         console.error('Error checking product existence:', err);
       }
       return next();
     }
     
-    // Match category pages: /lv/category/:id or /en/category/:id
     const categoryMatch = urlPath.match(/^\/(lv|en)\/category\/(\d+)$/);
     if (categoryMatch) {
       const lang = categoryMatch[1];
@@ -206,6 +219,12 @@ app.use((req, res, next) => {
           log(`404: Category ${categoryId} not found`);
           return serve404(lang);
         }
+        res.locals.seoCategory = {
+          nameLv: category.nameLv,
+          nameEn: category.nameEn,
+          categoryId: category.categoryId,
+          level: category.level,
+        } as CategorySeoData;
       } catch (err) {
         console.error('Error checking category existence:', err);
       }
