@@ -81,7 +81,7 @@ export function generateProductMetadata(product: ProductSeoData, lang: string): 
 
   const titleParts = [product.name];
   if (nutriScore) titleParts.push(nutriScore);
-  titleParts.push('ABCDE.lv');
+  titleParts.push(isLv ? 'Pirkt veselīgāk | ABCDE.lv' : 'Buy healthier | ABCDE.lv');
   const title = titleParts.join(' | ');
 
   const descParts = [product.name];

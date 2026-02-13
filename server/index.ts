@@ -50,11 +50,22 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use((req, res, next) => {
   const host = req.headers.host || '';
   if (host.startsWith('www.')) {
-    // Only allow https or http protocols to prevent open redirect vulnerability
     const forwardedProto = req.headers['x-forwarded-proto'];
     const protocol = (forwardedProto === 'https' || forwardedProto === 'http') ? forwardedProto : 'https';
     const newHost = host.replace(/^www\./, '');
     return res.redirect(301, `${protocol}://${newHost}${req.originalUrl}`);
+  }
+  next();
+});
+
+// 301 Redirect trailing slashes to prevent duplicate content
+app.use((req, res, next) => {
+  const fullUrl = req.originalUrl || req.url;
+  const qIndex = fullUrl.indexOf('?');
+  const pathname = qIndex >= 0 ? fullUrl.substring(0, qIndex) : fullUrl;
+  const query = qIndex >= 0 ? fullUrl.substring(qIndex) : '';
+  if (pathname.length > 1 && pathname.endsWith('/') && !pathname.startsWith('/api') && !pathname.startsWith('/@') && !pathname.startsWith('/src') && !pathname.startsWith('/node_modules')) {
+    return res.redirect(301, pathname.slice(0, -1) + query);
   }
   next();
 });
