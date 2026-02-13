@@ -923,6 +923,91 @@ Sitemap: https://abcde.lv/sitemap.xml
     }
   });
 
+  // Mobile API: Match products from raw OCR text (no image upload needed)
+  const mobileMatchTextSchema = z.object({
+    textSegments: z.array(z.string()).min(1, "At least one text segment is required"),
+    language: z.string().optional().default('lv'),
+  });
+
+  app.post("/api/mobile/match-text", async (req: Request, res: Response) => {
+    try {
+      const result = mobileMatchTextSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid request data",
+          errors: result.error.errors
+        });
+      }
+
+      const { textSegments, language } = result.data;
+      console.log(`Mobile match-text: received ${textSegments.length} segments`);
+
+      const matchedProduct = await findMatchingProduct(textSegments);
+
+      if (!matchedProduct) {
+        return res.json({
+          success: false,
+          message: "No matching product found",
+          product: null
+        });
+      }
+
+      const productDetails = await storage.getProductById(matchedProduct.productId, matchedProduct.store);
+
+      if (!productDetails) {
+        return res.json({
+          success: false,
+          message: "Product details not found",
+          product: null
+        });
+      }
+
+      const isLv = language === 'lv';
+
+      res.json({
+        success: true,
+        message: `Product found: ${productDetails.name}`,
+        product: {
+          productId: productDetails.productId,
+          name: productDetails.name,
+          sku: productDetails.sku,
+          store: productDetails.store || 'rimi',
+          externalUrl: productDetails.externalUrl,
+          quantityValue: productDetails.quantityValue,
+          quantityUnit: productDetails.quantityUnit,
+          categoryName: isLv ? productDetails.category?.nameLv : productDetails.category?.nameEn,
+          nutriScoreGrade: productDetails.nutrition?.nutriScoreGrade || null,
+          energyKcal: productDetails.nutrition?.energyKcal || null,
+          energyKj: productDetails.nutrition?.energyKj || null,
+          fatTotal: productDetails.nutrition?.fatTotal || null,
+          fatSaturated: productDetails.nutrition?.fatSaturated || null,
+          carbsTotal: productDetails.nutrition?.carbsTotal || null,
+          carbsSugars: productDetails.nutrition?.carbsSugars || null,
+          protein: productDetails.nutrition?.protein || null,
+          salt: productDetails.nutrition?.salt || null,
+          fiber: productDetails.nutrition?.fiber || null,
+          photoUrl: productDetails.photos?.[0]?.photoUrl || null,
+          ingredientsText: productDetails.nutrition?.ingredientsText || null,
+          ingredientCard: productDetails.ingredientCard ? {
+            naturalCount: productDetails.ingredientCard.naturalCount,
+            processedCount: productDetails.ingredientCard.processedCount,
+            avoidCount: productDetails.ingredientCard.avoidCount,
+            limitCount: productDetails.ingredientCard.limitCount,
+            cautionCount: productDetails.ingredientCard.cautionCount,
+          } : null,
+        }
+      });
+    } catch (error) {
+      console.error("Error processing mobile match-text:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to match product from text" 
+      });
+    }
+  });
+
   // Nutri-Score distribution stats with weekly caching
   let nutriScoreStatsCache: { data: any; timestamp: number } | null = null;
   const STATS_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds

@@ -8,6 +8,17 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// CORS for mobile API endpoints (Expo Go and React Native apps)
+app.use('/api/mobile', (req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // SEO: Inject canonical and hreflang tags into HTML responses
 // This runs server-side so Google sees these tags immediately without JS execution
 app.use((req: Request, res: Response, next: NextFunction) => {
