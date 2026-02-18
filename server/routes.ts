@@ -1008,6 +1008,64 @@ Sitemap: https://abcde.lv/sitemap.xml
     }
   });
 
+  // Mobile API: Get product details by store and product ID
+  app.get("/api/mobile/product/:store/:id", async (req: Request, res: Response) => {
+    try {
+      const { store, id } = req.params;
+
+      if (store !== 'rimi' && store !== 'maxima') {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid store. Must be 'rimi' or 'maxima'."
+        });
+      }
+
+      const productId = parseInt(id, 10);
+      if (isNaN(productId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid product ID."
+        });
+      }
+
+      const product = await storage.getProductById(productId, store);
+
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found."
+        });
+      }
+
+      res.json({
+        success: true,
+        product: {
+          productId: product.productId,
+          name: product.name,
+          quantityValue: product.quantityValue,
+          quantityUnit: product.quantityUnit,
+          categoryName: product.category?.nameLv || null,
+          ingredientsText: product.nutrition?.ingredientsText || null,
+          energyKj: product.nutrition?.energyKj || null,
+          energyKcal: product.nutrition?.energyKcal || null,
+          fatTotal: product.nutrition?.fatTotal || null,
+          fatSaturated: product.nutrition?.fatSaturated || null,
+          carbsTotal: product.nutrition?.carbsTotal || null,
+          carbsSugars: product.nutrition?.carbsSugars || null,
+          fiber: product.nutrition?.fiber || null,
+          protein: product.nutrition?.protein || null,
+          salt: product.nutrition?.salt || null,
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching mobile product:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch product details."
+      });
+    }
+  });
+
   // Nutri-Score distribution stats with weekly caching
   let nutriScoreStatsCache: { data: any; timestamp: number } | null = null;
   const STATS_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
