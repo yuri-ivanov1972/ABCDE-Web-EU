@@ -1,4 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
+import fs from "fs";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
@@ -262,7 +264,15 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    const distPath = path.resolve(import.meta.dirname, "public");
+    if (!fs.existsSync(distPath)) {
+      throw new Error(`Could not find the build directory: ${distPath}, make sure to build the client first`);
+    }
+    app.use(express.static(distPath));
+    const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+    app.use("*", (_req, res) => {
+      res.status(200).set({ "Content-Type": "text/html" }).send(indexHtml);
+    });
   }
 
   // ALWAYS serve the app on port 5000

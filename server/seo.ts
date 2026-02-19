@@ -55,8 +55,8 @@ function generateCanonicalAndHreflang(urlPath: string): string {
   const { lang, cleanPath } = parseUrlPath(urlPath);
 
   const canonicalUrl = cleanPath === '/'
-    ? `${BASE_URL}/${lang}`
-    : `${BASE_URL}/${lang}${cleanPath}`;
+    ? `${BASE_URL}/${DEFAULT_LANG}`
+    : `${BASE_URL}/${DEFAULT_LANG}${cleanPath}`;
 
   const hreflangTags = SUPPORTED_LANGUAGES.map(l => {
     const url = cleanPath === '/'
@@ -223,6 +223,8 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
   }
 
   let result = html;
+
+  result = result.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`);
 
   if (metadata.title) {
     result = result.replace(
