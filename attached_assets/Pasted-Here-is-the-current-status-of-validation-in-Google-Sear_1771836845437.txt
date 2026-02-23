@@ -1,0 +1,85 @@
+Here is the current status of validation in Google Search Console:
+
+1) New Product snippets structured data issues detected for abcde.lv
+To the owner of abcde.lv:
+
+Search Console has identified that your site is affected by 1 Product snippets structured data issue(s). The following issues were found on your site.
+
+Top critical issues*
+Either "offers", "review", or "aggregateRating" should be specified
+
+*Critical issues prevent your page or feature from appearing in Search results.
+
+We recommend that you fix these issues when possible to enable the best experience and coverage in Google Search.
+
+Examples
+URL	Item name	Last crawled
+https://abcde.lv/lv/product/5407
+Maizes raugs presētais 100g	Feb 23, 2026
+https://abcde.lv/lv/product/9440
+Avenes Valentine, 170g	Feb 23, 2026
+https://abcde.lv/lv/product/9388
+Cūkas pavēdere Rimi atdzesēta fas. Kg	Feb 23, 2026
+https://abcde.lv/lv/product/8992
+Piena šokolāde Karl Fazer 95g	Feb 22, 2026
+https://abcde.lv/lv/product/75
+Vafeļu plāksnes tortēm Vecais Beķeris Trīs krāsu 90g	Feb 22, 2026
+https://abcde.lv/lv/product/5321
+Vītināta putasu zivs (salmiņi) Beer Club classic 36g	Feb 22, 2026
+https://abcde.lv/en/product/507
+Biezpiens Rimi Smart 0,5% 180g	Feb 22, 2026
+https://abcde.lv/lv/product/10179
+Sendvičcepumi ar vaniļas garšas pildījumu sver.	Feb 22, 2026
+https://abcde.lv/lv/product/10183
+Ātri pagatavojamas nūdeles NONGSHIM Īpaši asas 131g	Feb 22, 2026
+https://abcde.lv/lv/product/434
+Sausbaranciņas pilngraudu ar sēklām 220g	Feb 21, 2026
+
+
+2) Some fixes failed for Page indexing issues on site abcde.lv
+You requested that Google validate your fix for: Page indexing issues on your property, abcde.lv. The fix requested was for the following issue: 'Duplicate without user-selected canonical'.
+
+Some of your pages are still affected by this issue.
+
+Monitor validation progress and to learn how to fix remaining pages.
+
+Examples of failed pages:
+URL	Last crawled
+https://abcde.lv/en/product/5769	Feb 20, 2026
+https://abcde.lv/en/product/1356	Feb 20, 2026
+https://abcde.lv/en/product/1778	Feb 20, 2026
+https://abcde.lv/en/product/7064	Feb 20, 2026
+https://abcde.lv/en/product/2719	Feb 19, 2026
+https://abcde.lv/en/product/3868	Feb 19, 2026
+https://abcde.lv/en/product/8165	Feb 19, 2026
+https://abcde.lv/en/product/5364	Feb 19, 2026
+https://abcde.lv/en/product/9386	Feb 19, 2026
+https://abcde.lv/en/product/4953	Feb 19, 2026
+
+3) Some fixes failed for Page indexing issues for pages in sitemap /sitemap.xml on site abcde.lv
+You requested that Google validate your fix for: Page indexing issues on your property, abcde.lv. The fix requested was for the following issue: 'Duplicate, Google chose different canonical than user'.
+
+Some of your pages are still affected by this issue.
+
+Monitor validation progress and to learn how to fix remaining pages.
+
+Examples of failed pages
+URL	Last crawled
+https://abcde.lv/lv/product/9236	Feb 20, 2026
+https://abcde.lv/lv/product/2508	Feb 20, 2026
+https://abcde.lv/lv/product/1738	Feb 20, 2026
+
+4) Some fixes failed for Page indexing issues on site abcde.lv
+You requested that Google validate your fix for: Page indexing issues on your property, abcde.lv. The fix requested was for the following issue: 'Page with redirect'.
+
+Some of your pages are still affected by this issue.
+
+Monitor validation progress and to learn how to fix remaining pages.
+
+Examples of failed pages
+
+URL	Last crawled
+https://www.abcde.lv/product/2081	Feb 21, 2026
+https://abcde.lv/product/4010	Feb 20, 2026
+https://abcde.lv/category/1	Feb 20, 2026
+https://abcde.lv/category/143	Feb 19, 2026
