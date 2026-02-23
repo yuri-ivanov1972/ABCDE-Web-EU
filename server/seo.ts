@@ -99,29 +99,30 @@ export function generateProductMetadata(product: ProductSeoData, lang: string): 
 
   const jsonLd: any = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
+    '@type': 'WebPage',
     name: product.name,
     description: description,
     url: `${BASE_URL}/${lang}/product/${product.productId}`,
   };
 
   if (product.photoUrl) {
-    jsonLd.image = product.photoUrl;
-  }
-
-  if (product.nutriScoreGrade) {
-    jsonLd.additionalProperty = [{
-      '@type': 'PropertyValue',
-      name: 'Nutri-Score',
-      value: product.nutriScoreGrade,
-    }];
-  }
-
-  if (product.energyKcal != null) {
-    jsonLd.nutrition = {
-      '@type': 'NutritionInformation',
-      calories: `${product.energyKcal} kcal`,
+    jsonLd.primaryImageOfPage = {
+      '@type': 'ImageObject',
+      url: product.photoUrl,
     };
+  }
+
+  if (product.nutriScoreGrade || product.energyKcal != null) {
+    const mainEntity: any = {
+      '@type': 'NutritionInformation',
+    };
+    if (product.energyKcal != null) {
+      mainEntity.calories = `${product.energyKcal} kcal`;
+    }
+    if (product.nutriScoreGrade) {
+      mainEntity.name = `Nutri-Score ${product.nutriScoreGrade}`;
+    }
+    jsonLd.mainEntity = mainEntity;
   }
 
   return { title, description, jsonLd };
