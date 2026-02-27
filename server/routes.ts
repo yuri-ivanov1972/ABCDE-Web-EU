@@ -1045,6 +1045,7 @@ Sitemap: https://abcde.lv/sitemap.xml
           quantityValue: product.quantityValue,
           quantityUnit: product.quantityUnit,
           categoryName: product.category?.nameLv || null,
+          photoUrl: product.photos?.[0]?.photoUrl || null,
           ingredientsText: product.nutrition?.ingredientsText || null,
           energyKj: product.nutrition?.energyKj || null,
           energyKcal: product.nutrition?.energyKcal || null,
