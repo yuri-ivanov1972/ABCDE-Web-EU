@@ -102,7 +102,7 @@ export function generateProductMetadata(product: ProductSeoData, lang: string): 
     '@type': 'WebPage',
     name: product.name,
     description: description,
-    url: `${BASE_URL}/${lang}/product/${product.productId}`,
+    url: `${BASE_URL}/${DEFAULT_LANG}/product/${product.productId}`,
   };
 
   if (product.photoUrl) {
@@ -145,7 +145,7 @@ export function generateCategoryMetadata(category: CategorySeoData, lang: string
     '@type': 'CollectionPage',
     name: categoryName,
     description: description,
-    url: `${BASE_URL}/${lang}/category/${category.categoryId}`,
+    url: `${BASE_URL}/${DEFAULT_LANG}/category/${category.categoryId}`,
   };
 
   return { title, description, jsonLd };
@@ -241,7 +241,13 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     );
   }
 
-  let extraTags = canonicalAndHreflang;
+  const canonicalUrl = cleanPath === '/'
+    ? `${BASE_URL}/${DEFAULT_LANG}`
+    : `${BASE_URL}/${DEFAULT_LANG}${cleanPath}`;
+
+  const ogTags = `<meta property="og:url" content="${canonicalUrl}" />\n    <meta property="og:type" content="website" />`;
+
+  let extraTags = canonicalAndHreflang + `\n    ${ogTags}`;
 
   if (metadata.jsonLd) {
     extraTags += `\n    <script type="application/ld+json">${JSON.stringify(metadata.jsonLd)}</script>`;

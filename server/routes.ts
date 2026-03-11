@@ -1304,62 +1304,54 @@ Sitemap: https://abcde.lv/sitemap.xml
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ';
       xml += 'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n';
       
-      // Add static pages with hreflang alternates
+      // Add static pages — only /lv/ as primary <loc>, /en/ and x-default as alternates only
       for (const page of staticPages) {
-        // Determine paths for each language
         const getPathForLang = (lang: string) => {
           if (page.path !== undefined) {
             return page.path === '/' ? '' : page.path;
           }
           return lang === 'lv' ? page.pathLv : page.pathEn;
         };
-        
-        for (const lang of languages) {
-          const pagePath = getPathForLang(lang);
-          xml += '  <url>\n';
-          xml += `    <loc>${baseUrl}/${lang}${pagePath}</loc>\n`;
-          xml += `    <lastmod>${currentDate}</lastmod>\n`;
-          xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
-          xml += `    <priority>${page.priority}</priority>\n`;
-          // Add hreflang alternates (each pointing to correct language-specific path)
-          for (const altLang of languages) {
-            const altPath = getPathForLang(altLang);
-            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}${altPath}" />\n`;
-          }
-          xml += '  </url>\n';
-        }
+
+        const lvPath = getPathForLang('lv');
+        const enPath = getPathForLang('en');
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/lv${lvPath}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
+        xml += `    <priority>${page.priority}</priority>\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv${lvPath}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en${enPath}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv${lvPath}" />\n`;
+        xml += '  </url>\n';
       }
-      
-      // Add category pages with hreflang alternates
+
+      // Add category pages — only /lv/ as primary <loc>
       for (const category of categories) {
         const categoryId = (category as any).category_id;
-        for (const lang of languages) {
-          xml += '  <url>\n';
-          xml += `    <loc>${baseUrl}/${lang}/category/${categoryId}</loc>\n`;
-          xml += `    <lastmod>${currentDate}</lastmod>\n`;
-          xml += '    <changefreq>weekly</changefreq>\n';
-          xml += '    <priority>0.6</priority>\n';
-          for (const altLang of languages) {
-            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}/category/${categoryId}" />\n`;
-          }
-          xml += '  </url>\n';
-        }
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/lv/category/${categoryId}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += '    <changefreq>weekly</changefreq>\n';
+        xml += '    <priority>0.6</priority>\n';
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/category/${categoryId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/category/${categoryId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/category/${categoryId}" />\n`;
+        xml += '  </url>\n';
       }
-      
-      // Add product pages with hreflang alternates (both Rimi and Maxima)
+
+      // Add product pages — only /lv/ as primary <loc> (both Rimi and Maxima)
       for (const product of allProducts) {
         const productId = (product as any).product_id;
-        for (const lang of languages) {
-          xml += '  <url>\n';
-          xml += `    <loc>${baseUrl}/${lang}/product/${productId}</loc>\n`;
-          xml += `    <lastmod>${currentDate}</lastmod>\n`;
-          xml += '    <changefreq>weekly</changefreq>\n';
-          xml += '    <priority>0.5</priority>\n';
-          for (const altLang of languages) {
-            xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${baseUrl}/${altLang}/product/${productId}" />\n`;
-          }
-          xml += '  </url>\n';
-        }
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/lv/product/${productId}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += '    <changefreq>weekly</changefreq>\n';
+        xml += '    <priority>0.5</priority>\n';
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/product/${productId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/product/${productId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/product/${productId}" />\n`;
+        xml += '  </url>\n';
       }
       
       xml += '</urlset>';
