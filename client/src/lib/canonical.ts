@@ -2,15 +2,14 @@ const BASE_URL = 'https://abcde.lv';
 const DEFAULT_LANG = 'lv';
 const SUPPORTED_LANGUAGES = ['lv', 'en'];
 
-export const getCanonicalUrl = (path: string, lang: string = DEFAULT_LANG): string => {
+export const getCanonicalUrl = (path: string, _lang: string = DEFAULT_LANG): string => {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const langPrefix = SUPPORTED_LANGUAGES.includes(lang) ? `/${lang}` : `/${DEFAULT_LANG}`;
-  
+
   if (cleanPath === '/') {
-    return `${BASE_URL}${langPrefix}`;
+    return `${BASE_URL}/${DEFAULT_LANG}`;
   }
-  
-  return `${BASE_URL}${langPrefix}${cleanPath}`;
+
+  return `${BASE_URL}/${DEFAULT_LANG}${cleanPath}`;
 };
 
 export const getHreflangUrls = (path: string): { lang: string; url: string }[] => {

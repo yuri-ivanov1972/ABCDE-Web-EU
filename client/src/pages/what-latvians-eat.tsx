@@ -238,7 +238,7 @@ const WhatLatviansEat = () => {
       <Helmet>
         <title>{t('stats:title')} | ABCDE.lv</title>
         <meta name="description" content={t('stats:description')} />
-        <link rel="canonical" href={`${baseUrl}/${currentLang}${currentPath}`} />
+        <link rel="canonical" href={`${baseUrl}/lv${lvPath}`} />
         <link rel="alternate" hrefLang="lv" href={`${baseUrl}/lv${lvPath}`} />
         <link rel="alternate" hrefLang="en" href={`${baseUrl}/en${enPath}`} />
         <link rel="alternate" hrefLang="x-default" href={`${baseUrl}/lv${lvPath}`} />
