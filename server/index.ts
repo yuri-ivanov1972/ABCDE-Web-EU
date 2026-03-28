@@ -35,6 +35,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     if (isHtml && typeof body === 'string') {
       const urlPath = req.originalUrl || req.path;
       if (!urlPath.startsWith('/api') && !urlPath.includes('.')) {
+        res.set('Cache-Control', 'public, max-age=300');
         const pageData: { product?: ProductSeoData; category?: CategorySeoData } = {};
         if (res.locals.seoProduct) pageData.product = res.locals.seoProduct;
         if (res.locals.seoCategory) pageData.category = res.locals.seoCategory;

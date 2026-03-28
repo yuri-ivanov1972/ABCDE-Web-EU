@@ -206,6 +206,37 @@ export function generateStaticPageMetadata(cleanPath: string, lang: string): Pag
   }
 }
 
+function generateBodyContent(pageData: { product?: ProductSeoData; category?: CategorySeoData }, lang: string): string {
+  const isLv = lang === 'lv';
+
+  if (pageData.product) {
+    const p = pageData.product;
+    const storeName = p.store === 'maxima' ? 'Maxima' : 'Rimi';
+    const categoryName = isLv ? p.categoryNameLv : p.categoryNameEn;
+    const nutriScore = p.nutriScoreGrade ? `Nutri-Score ${p.nutriScoreGrade}` : '';
+
+    const rows: string[] = [];
+    if (nutriScore) rows.push(`<p>${escapeHtml(nutriScore)}</p>`);
+    if (p.energyKcal != null) rows.push(`<p>${isLv ? 'Enerģētiskā vērtība' : 'Energy'}: ${p.energyKcal} kcal</p>`);
+    if (categoryName) rows.push(`<p>${isLv ? 'Kategorija' : 'Category'}: ${escapeHtml(categoryName)}</p>`);
+    rows.push(`<p>${isLv ? 'Veikals' : 'Store'}: ${storeName}</p>`);
+    if (p.quantityValue && p.quantityUnit) rows.push(`<p>${isLv ? 'Daudzums' : 'Quantity'}: ${escapeHtml(p.quantityValue)} ${escapeHtml(p.quantityUnit)}</p>`);
+
+    return `<div id="seo-prerender"><h1>${escapeHtml(p.name)}</h1>${rows.join('')}</div><script>var e=document.getElementById('seo-prerender');if(e)e.remove();</script>`;
+  }
+
+  if (pageData.category) {
+    const c = pageData.category;
+    const categoryName = isLv ? c.nameLv : c.nameEn;
+    const desc = isLv
+      ? `${categoryName} — produktu saraksts ar Nutri-Score vērtējumiem.`
+      : `${categoryName} — product list with Nutri-Score ratings.`;
+    return `<div id="seo-prerender"><h1>${escapeHtml(categoryName)}</h1><p>${escapeHtml(desc)}</p></div><script>var e=document.getElementById('seo-prerender');if(e)e.remove();</script>`;
+  }
+
+  return '';
+}
+
 export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }): string {
   if (!html.includes('<!DOCTYPE html>') && !html.includes('<html')) {
     return html;
@@ -257,6 +288,13 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     result = result.replace('</title>', `</title>\n    ${extraTags}`);
   } else {
     result = result.replace('</head>', `${extraTags}\n  </head>`);
+  }
+
+  if (pageData && (pageData.product || pageData.category)) {
+    const bodyContent = generateBodyContent(pageData as { product?: ProductSeoData; category?: CategorySeoData }, lang);
+    if (bodyContent && result.includes('</body>')) {
+      result = result.replace('</body>', `${bodyContent}\n</body>`);
+    }
   }
 
   return result;
