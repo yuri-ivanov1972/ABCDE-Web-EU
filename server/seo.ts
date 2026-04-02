@@ -222,7 +222,7 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
     rows.push(`<p>${isLv ? 'Veikals' : 'Store'}: ${storeName}</p>`);
     if (p.quantityValue && p.quantityUnit) rows.push(`<p>${isLv ? 'Daudzums' : 'Quantity'}: ${escapeHtml(p.quantityValue)} ${escapeHtml(p.quantityUnit)}</p>`);
 
-    return `<div id="seo-prerender"><h1>${escapeHtml(p.name)}</h1>${rows.join('')}</div><script>var e=document.getElementById('seo-prerender');if(e)e.remove();</script>`;
+    return `<div id="seo-prerender"><h1>${escapeHtml(p.name)}</h1>${rows.join('')}</div>`;
   }
 
   if (pageData.category) {
@@ -231,7 +231,7 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
     const desc = isLv
       ? `${categoryName} — produktu saraksts ar Nutri-Score vērtējumiem.`
       : `${categoryName} — product list with Nutri-Score ratings.`;
-    return `<div id="seo-prerender"><h1>${escapeHtml(categoryName)}</h1><p>${escapeHtml(desc)}</p></div><script>var e=document.getElementById('seo-prerender');if(e)e.remove();</script>`;
+    return `<div id="seo-prerender"><h1>${escapeHtml(categoryName)}</h1><p>${escapeHtml(desc)}</p></div>`;
   }
 
   return '';
@@ -290,10 +290,16 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     result = result.replace('</head>', `${extraTags}\n  </head>`);
   }
 
+  if (lang === 'en') {
+    if (result.includes('</title>')) {
+      result = result.replace('</title>', `</title>\n    <meta name="robots" content="noindex, follow" />`);
+    }
+  }
+
   if (pageData && (pageData.product || pageData.category)) {
     const bodyContent = generateBodyContent(pageData as { product?: ProductSeoData; category?: CategorySeoData }, lang);
-    if (bodyContent && result.includes('</body>')) {
-      result = result.replace('</body>', `${bodyContent}\n</body>`);
+    if (bodyContent && result.includes('<div id="root"></div>')) {
+      result = result.replace('<div id="root"></div>', `<div id="root">${bodyContent}</div>`);
     }
   }
 
