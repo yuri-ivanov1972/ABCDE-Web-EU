@@ -296,6 +296,14 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     }
   }
 
+  if (pageData?.product?.photoUrl) {
+    const rawUrl = pageData.product.photoUrl;
+    const preloadUrl = rawUrl.includes('cloudinary.com')
+      ? rawUrl.replace(/\bw_auto\b/g, 'w_600')
+      : rawUrl;
+    result = result.replace('</head>', `  <link rel="preload" as="image" href="${preloadUrl}" fetchpriority="high" />\n  </head>`);
+  }
+
   if (pageData && (pageData.product || pageData.category)) {
     const bodyContent = generateBodyContent(pageData as { product?: ProductSeoData; category?: CategorySeoData }, lang);
     if (bodyContent && result.includes('<div id="root"></div>')) {
