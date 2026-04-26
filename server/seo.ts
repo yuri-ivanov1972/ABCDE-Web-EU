@@ -301,7 +301,7 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     const preloadUrl = rawUrl.includes('cloudinary.com')
       ? rawUrl.replace(/\bw_auto\b/g, 'w_600')
       : rawUrl;
-    result = result.replace('</head>', `  <link rel="preload" as="image" href="${preloadUrl}" fetchpriority="high" />\n  </head>`);
+    result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" fetchpriority="high" />\n  </head>`);
   }
 
   if (pageData && (pageData.product || pageData.category)) {
