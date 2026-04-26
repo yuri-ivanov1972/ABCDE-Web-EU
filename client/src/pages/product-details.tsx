@@ -152,6 +152,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     window.scrollTo(0, 0);
   }, [productId]);
 
+  // Selected gallery photo (null = fall back to mainPhoto)
+  const [selectedPhoto, setSelectedPhoto] = useState<{ photoUrl?: string | null; altText?: string | null; isPrimary?: boolean | null } | null>(null);
+
+  // Reset selected photo when product changes
+  useEffect(() => {
+    setSelectedPhoto(null);
+  }, [productId]);
+
   // Now handle early returns after all hooks are called
   if (!id || isNaN(productId) || productId <= 0) {
     return <NotFound />;
@@ -258,32 +266,72 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="md:flex">
           {/* Product Image */}
-          <div className="md:w-1/2 bg-gray-100 relative aspect-[3/2] md:aspect-auto">
-            {(() => {
-              const rawUrl = mainPhoto?.photoUrl;
-              const isCloudinary = rawUrl?.includes('cloudinary.com');
-              const src = rawUrl
-                ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_600') : rawUrl)
-                : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`;
-              const srcSet = isCloudinary && rawUrl
-                ? [300, 600, 900]
-                    .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
-                    .join(', ')
-                : undefined;
-              return (
-                <img
-                  src={src}
-                  srcSet={srcSet}
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  alt={mainPhoto?.altText || product.name}
-                  width={600}
-                  height={400}
-                  fetchPriority="high"
-                  decoding="async"
-                  className="w-full h-full object-contain md:max-h-[500px]"
-                />
-              );
-            })()}
+          <div className="md:w-1/2 flex flex-col">
+            <div className="bg-gray-100 relative aspect-[3/2] md:aspect-auto md:flex-1">
+              {(() => {
+                const rawUrl = (selectedPhoto ?? mainPhoto)?.photoUrl;
+                const isCloudinary = rawUrl?.includes('cloudinary.com');
+                const src = rawUrl
+                  ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_600') : rawUrl)
+                  : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`;
+                const srcSet = isCloudinary && rawUrl
+                  ? [300, 600, 900]
+                      .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
+                      .join(', ')
+                  : undefined;
+                return (
+                  <img
+                    src={src}
+                    srcSet={srcSet}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    alt={(selectedPhoto ?? mainPhoto)?.altText || product.name}
+                    width={600}
+                    height={400}
+                    fetchPriority="high"
+                    decoding="async"
+                    className="w-full h-full object-contain md:max-h-[500px]"
+                  />
+                );
+              })()}
+            </div>
+
+            {/* Thumbnail strip */}
+            {product.photos && product.photos.length > 1 && (
+              <div className="flex gap-2 p-2 bg-gray-50 overflow-x-auto">
+                {product.photos.map((photo, index) => {
+                  const rawUrl = photo.photoUrl;
+                  const isCloudinary = rawUrl?.includes('cloudinary.com');
+                  const thumbSrc = rawUrl
+                    ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_150').replace(/\bw_\d+\b/g, 'w_150') : rawUrl)
+                    : undefined;
+                  const thumbSrcSet = isCloudinary && rawUrl
+                    ? [80, 150, 300]
+                        .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
+                        .join(', ')
+                    : undefined;
+                  const isActive = (selectedPhoto ?? mainPhoto)?.photoUrl === photo.photoUrl;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedPhoto(photo)}
+                      className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded border-2 overflow-hidden bg-white transition-colors ${isActive ? 'border-primary' : 'border-transparent hover:border-gray-300'}`}
+                      aria-label={photo.altText || `${product.name} photo ${index + 1}`}
+                    >
+                      <img
+                        src={thumbSrc}
+                        srcSet={thumbSrcSet}
+                        sizes="(min-width: 768px) 80px, 64px"
+                        alt={photo.altText || `${product.name} photo ${index + 1}`}
+                        width={150}
+                        height={150}
+                        decoding="async"
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Product Details */}
