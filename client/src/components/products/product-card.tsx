@@ -19,7 +19,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { productId, name, quantityValue, quantityUnit, nutrition, photos } = product;
   
   const mainPhoto = photos?.find(p => p.isPrimary) || photos?.[0];
-  
+
+  const rawPhotoUrl = mainPhoto?.photoUrl;
+  const isCloudinary = rawPhotoUrl?.includes('cloudinary.com');
+  const cardSrc = rawPhotoUrl
+    ? (isCloudinary ? rawPhotoUrl.replace(/\bw_auto\b/g, 'w_300').replace(/\bw_\d+\b/g, 'w_300') : rawPhotoUrl)
+    : `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`;
+  const cardSrcSet = isCloudinary && rawPhotoUrl
+    ? [150, 300, 450]
+        .map(w => `${rawPhotoUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
+        .join(', ')
+    : undefined;
+
   const quantityFormatted = quantityValue && quantityUnit 
     ? `${quantityValue}${quantityUnit}`
     : '';
@@ -41,7 +52,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <LangLink href={linkUrl} className="block">
         <div className="relative aspect-[3/2]">
           <img 
-            src={mainPhoto?.photoUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`}
+            src={cardSrc}
+            srcSet={cardSrcSet}
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
             alt={mainPhoto?.altText || name}
             width={300}
             height={200}
