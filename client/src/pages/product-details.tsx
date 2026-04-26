@@ -260,7 +260,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
           {/* Product Image */}
           <div className="md:w-1/2 bg-gray-100 relative aspect-[3/2] md:aspect-auto">
             <img 
-              src={mainPhoto?.photoUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
+              src={mainPhoto?.photoUrl
+                ? (mainPhoto.photoUrl.includes('cloudinary.com')
+                    ? mainPhoto.photoUrl.replace(/\bw_auto\b/g, 'w_600')
+                    : mainPhoto.photoUrl)
+                : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
               alt={mainPhoto?.altText || product.name}
               width={600}
               height={400}
