@@ -259,19 +259,31 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
         <div className="md:flex">
           {/* Product Image */}
           <div className="md:w-1/2 bg-gray-100 relative aspect-[3/2] md:aspect-auto">
-            <img 
-              src={mainPhoto?.photoUrl
-                ? (mainPhoto.photoUrl.includes('cloudinary.com')
-                    ? mainPhoto.photoUrl.replace(/\bw_auto\b/g, 'w_600')
-                    : mainPhoto.photoUrl)
-                : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`} 
-              alt={mainPhoto?.altText || product.name}
-              width={600}
-              height={400}
-              fetchPriority="high"
-              decoding="async"
-              className="w-full h-full object-contain md:max-h-[500px]"
-            />
+            {(() => {
+              const rawUrl = mainPhoto?.photoUrl;
+              const isCloudinary = rawUrl?.includes('cloudinary.com');
+              const src = rawUrl
+                ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_600') : rawUrl)
+                : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`;
+              const srcSet = isCloudinary && rawUrl
+                ? [300, 600, 900]
+                    .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
+                    .join(', ')
+                : undefined;
+              return (
+                <img
+                  src={src}
+                  srcSet={srcSet}
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  alt={mainPhoto?.altText || product.name}
+                  width={600}
+                  height={400}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="w-full h-full object-contain md:max-h-[500px]"
+                />
+              );
+            })()}
           </div>
 
           {/* Product Details */}

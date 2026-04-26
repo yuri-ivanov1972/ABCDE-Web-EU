@@ -298,10 +298,14 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
 
   if (pageData?.product?.photoUrl) {
     const rawUrl = pageData.product.photoUrl;
-    const preloadUrl = rawUrl.includes('cloudinary.com')
-      ? rawUrl.replace(/\bw_auto\b/g, 'w_600')
-      : rawUrl;
-    result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" fetchpriority="high" />\n  </head>`);
+    if (rawUrl.includes('cloudinary.com')) {
+      const makeSrc = (w: number) => rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
+      const preloadUrl = makeSrc(900);
+      const srcset = [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', ');
+      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />\n  </head>`);
+    } else {
+      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(rawUrl)}" fetchpriority="high" />\n  </head>`);
+    }
   }
 
   if (pageData && (pageData.product || pageData.category)) {
