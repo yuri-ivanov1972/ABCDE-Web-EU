@@ -1,6 +1,6 @@
 import {
-  users, categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory,
-  type User, type InsertUser, type Category, type Product, type NutritionFacts, type ProductPhoto,
+  categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory,
+  type Category, type Product, type NutritionFacts, type ProductPhoto,
 } from "./remote-schema";
 import {
   scans,
@@ -45,11 +45,6 @@ async function withRetry<T>(operation: () => Promise<T>, maxRetries = 3): Promis
 
 // Storage interface
 export interface IStorage {
-  // Original template methods
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  
   // Category methods
   getCategories(level?: number): Promise<Category[]>;
   getCategoryById(id: number): Promise<Category | undefined>;
@@ -277,25 +272,6 @@ export class DatabaseStorage implements IStorage {
     return combinedMap;
   }
 
-  // Original template methods
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await rimiDb.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await rimiDb.select().from(users).where(eq(users.username, username));
-    return user;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await rimiDb
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
-  }
-  
   // Category methods
   async getCategories(level?: number): Promise<Category[]> {
     // We'll show all categories but mark which ones have products
@@ -1684,31 +1660,6 @@ export class DatabaseStorage implements IStorage {
 
 // Create memory storage for fallback if needed
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  currentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.currentId = 1;
-  }
-
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
-  }
-  
   // Stub methods for categories and products
   async getCategories(): Promise<Category[]> {
     return [];

@@ -3,7 +3,6 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export type {
-  User, InsertUser,
   Category, InsertCategory,
   Product, InsertProduct,
   MaximaProduct,
