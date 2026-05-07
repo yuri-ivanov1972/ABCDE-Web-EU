@@ -1,8 +1,10 @@
-import { 
-  users, type User, type InsertUser,
-  categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory, scans,
-  type Category, type Product, type NutritionFacts, type ProductPhoto, type Scan, type InsertScan, type Store,
-  type ProductIngredientCard, type IngredientItem
+import {
+  users, categories, products, maximaProducts, nutritionFacts, productPhotos, productPriceHistory,
+  type User, type InsertUser, type Category, type Product, type NutritionFacts, type ProductPhoto,
+} from "./remote-schema";
+import {
+  scans,
+  type Scan, type InsertScan, type Store, type ProductIngredientCard, type IngredientItem,
 } from "@shared/schema";
 import { rimiDb, maximaDb, scansDb, rimiPool, maximaPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";

@@ -1,7 +1,8 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
-import * as schema from "@shared/schema";
+import * as scansSchema from "@shared/schema";
+import * as remoteSchema from "./remote-schema";
 
 // Configure Neon to use WebSockets with improved settings
 neonConfig.webSocketConstructor = ws;
@@ -81,11 +82,11 @@ scansPool.on('error', (err) => {
 
 // Create drizzle clients
 // rimiDb is used for categories, products, nutrition facts, and product photos
-export const rimiDb = drizzle({ client: rimiPool, schema });
+export const rimiDb = drizzle({ client: rimiPool, schema: remoteSchema });
 // maximaDb is used for Maxima products (optional)
-export const maximaDb = maximaPool ? drizzle({ client: maximaPool, schema }) : null;
+export const maximaDb = maximaPool ? drizzle({ client: maximaPool, schema: remoteSchema }) : null;
 // scansDb is used for local scan data
-export const scansDb = drizzle({ client: scansPool, schema });
+export const scansDb = drizzle({ client: scansPool, schema: scansSchema });
 
 const dbList = ['rimi (remote)', maximaDb ? 'maxima (remote)' : null, 'scans (local)'].filter(Boolean).join(', ');
 console.log(`Database connections established: ${dbList}`);
