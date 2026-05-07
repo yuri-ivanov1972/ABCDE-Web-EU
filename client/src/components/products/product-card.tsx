@@ -12,9 +12,10 @@ import smallE from '@assets/RVB_E_1768766381067.png';
 
 interface ProductCardProps {
   product: ProductWithDetails;
+  priority?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
   const { t } = useTranslation('common');
   const { productId, name, quantityValue, quantityUnit, nutrition, photos } = product;
   
@@ -58,7 +59,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={mainPhoto?.altText || name}
             width={300}
             height={200}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
             className="w-full h-full object-cover"
           />

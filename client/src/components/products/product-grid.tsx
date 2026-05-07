@@ -7,7 +7,15 @@ interface ProductGridProps {
   isLoading: boolean;
 }
 
+function getAboveFoldCount(): number {
+  if (typeof window === 'undefined') return 4;
+  if (window.innerWidth >= 1024) return 4;
+  if (window.innerWidth >= 768) return 3;
+  return 2;
+}
+
 const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
+  const priorityCount = getAboveFoldCount();
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -31,8 +39,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-      {products.map((product) => (
-        <ProductCard key={product.productId} product={product} />
+      {products.map((product, index) => (
+        <ProductCard key={product.productId} product={product} priority={index < priorityCount} />
       ))}
     </div>
   );
