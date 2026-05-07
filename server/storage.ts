@@ -54,7 +54,7 @@ export interface IStorage {
   
   // Product methods
   getProducts(options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }>;
-  getProductById(id: number): Promise<ProductWithDetails | undefined>;
+  getProductById(id: number, store?: Store): Promise<ProductWithDetails | undefined>;
   getProductBySku(sku: string): Promise<ProductWithDetails | undefined>;
   getProductByRimiUrl(rimiUrl: string): Promise<ProductWithDetails | undefined>;
   searchProducts(query: string, options: GetProductsOptions): Promise<{ products: ProductWithDetails[], totalCount: number }>;
@@ -99,15 +99,6 @@ export type ProductWithDetails = Product & {
 };
 
 export class DatabaseStorage implements IStorage {
-  // Helper method to get category ID from Rimi category code (for Maxima products)
-  private async getCategoryIdByRimiCode(rimiCategoryCode: number): Promise<number | null> {
-    const [category] = await rimiDb
-      .select({ categoryId: categories.categoryId })
-      .from(categories)
-      .where(eq(categories.categoryId, rimiCategoryCode));
-    return category?.categoryId || null;
-  }
-
   // Helper to build ingredient card map from query results
   private buildIngredientCardsFromRows(rows: any[]): Map<string, ProductIngredientCard> {
     const ingredientsBySku = new Map<string, IngredientItem[]>();
@@ -234,23 +225,6 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching Maxima ingredient cards:', error);
       return new Map();
-    }
-  }
-
-  // Combined method to fetch ingredient cards for both stores
-  private async fetchIngredientCardsBySku(skus: string[], store?: Store): Promise<Map<string, ProductIngredientCard>> {
-    if (skus.length === 0) {
-      return new Map();
-    }
-    
-    if (store === 'rimi') {
-      return this.fetchRimiIngredientCardsBySku(skus);
-    } else if (store === 'maxima') {
-      return this.fetchMaximaIngredientCardsBySku(skus);
-    } else {
-      // Fetch from both stores - this shouldn't normally be called with mixed SKUs
-      // but handle it just in case
-      return this.fetchRimiIngredientCardsBySku(skus);
     }
   }
 

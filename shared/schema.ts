@@ -55,14 +55,3 @@ export type ProductIngredientCard = {
   limitCount: number;
   cautionCount: number;
 };
-
-import type { Product, NutritionFacts, ProductPhoto, Category } from "../server/remote-schema";
-
-export type ProductWithDetails = Product & {
-  nutrition?: NutritionFacts;
-  photos?: ProductPhoto[];
-  category?: Category;
-  store?: Store;
-  externalUrl?: string | null;
-  ingredientCard?: ProductIngredientCard;
-};
