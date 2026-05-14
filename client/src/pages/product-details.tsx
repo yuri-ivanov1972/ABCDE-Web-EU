@@ -220,12 +220,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   };
 
   const currentLang = i18n.language?.split('-')[0] || 'lv';
-  const hreflangUrls = getHreflangUrls(`/product/${productId}`);
+  const productUrlSlug = product.slug || String(productId);
+  const currentCategory = categoryPath?.[categoryPath.length - 1];
+  const categoryUrlSlug = currentCategory?.slug || (product.categoryId ? String(product.categoryId) : null);
+  const hreflangUrls = getHreflangUrls(`/product/${productUrlSlug}`);
 
   return (
     <>
       <Helmet>
-        <link rel="canonical" href={getCanonicalUrl(`/product/${productId}`, currentLang)} />
+        <link rel="canonical" href={getCanonicalUrl(`/product/${productUrlSlug}`, currentLang)} />
         {hreflangUrls.map(({ lang, url }) => (
           <link key={lang} rel="alternate" hrefLang={lang} href={url} />
         ))}
@@ -234,7 +237,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
         {/* Back link */}
         <div className="mb-6">
           <Link 
-            href={product.categoryId ? `/${lang}/category/${product.categoryId}` : `/${lang}`} 
+            href={categoryUrlSlug ? `/${lang}/category/${categoryUrlSlug}` : `/${lang}`} 
             className="text-primary hover:text-primary/90 font-medium flex items-center"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -257,7 +260,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
                   </span>
                 ) : (
-                  <Link href={`/${lang}/category/${category.categoryId}`} className="hover:text-primary">
+                  <Link href={`/${lang}/category/${category.slug || category.categoryId}`} className="hover:text-primary">
                     {i18n.language.startsWith('en') ? (category.nameEn || category.nameLv) : category.nameLv}
                   </Link>
                 )}
@@ -362,7 +365,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   <div className="mt-4">
                     {healthierProductsData.hasHealthierProducts ? (
                       <LangLink
-                        href={`/category/${product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}${productStore ? `&store=${productStore}` : ''}`}
+                        href={`/category/${categoryUrlSlug || product.categoryId}?sortBy=nutriScore&nutriScores=${healthierProductsData.betterGrades.join(',')}${productStore ? `&store=${productStore}` : ''}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
                         onClick={() => {
                           trackHealthierAlternativesClick({

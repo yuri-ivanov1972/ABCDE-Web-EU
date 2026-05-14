@@ -253,7 +253,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     );
   }
 
-  const canonicalPath = categoryId ? `/category/${categoryId}` : '/';
+  const canonicalPath = category?.slug ? `/category/${category.slug}` : (categoryId ? `/category/${categoryId}` : '/');
   const currentLang = i18n.language?.split('-')[0] || 'lv';
   const hreflangUrls = getHreflangUrls(canonicalPath);
 
