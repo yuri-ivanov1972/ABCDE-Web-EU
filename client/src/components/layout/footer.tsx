@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
           {/* Pages column */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">
-              {isEn ? 'About' : 'Par projektu'}
+              {t('footer.pagesHeading')}
             </h3>
             <ul className="space-y-2">
               <li>
