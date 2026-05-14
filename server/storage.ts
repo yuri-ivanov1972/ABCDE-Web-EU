@@ -10,6 +10,7 @@ import { rimiDb, maximaDb, scansDb, rimiPool, maximaPool, scansPool } from "./db
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
 import { productsCache, PRODUCTS_TTL_MS } from "./cache";
+import { categorySlug, productSlug } from "./utils/slugify";
 
 // Categories to exclude from display (Gatavots Rimi and its subcategory)
 export const EXCLUDED_CATEGORY_IDS = [5, 40];
@@ -97,6 +98,7 @@ export type ProductWithDetails = Product & {
   store?: Store;
   externalUrl?: string | null;
   ingredientCard?: ProductIngredientCard;
+  slug?: string;
 };
 
 export class DatabaseStorage implements IStorage {
@@ -256,17 +258,19 @@ export class DatabaseStorage implements IStorage {
     const excludeCondition = sql`${categories.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`;
     
     if (level !== undefined) {
-      return await rimiDb
+      const rows = await rimiDb
         .select()
         .from(categories)
         .where(and(eq(categories.level, level), excludeCondition))
         .orderBy(categories.nameEn);
+      return rows.map(c => ({ ...c, slug: categorySlug(c.nameLv, c.categoryId) }));
     } else {
-      return await rimiDb
+      const rows = await rimiDb
         .select()
         .from(categories)
         .where(excludeCondition)
         .orderBy(categories.level, categories.nameEn);
+      return rows.map(c => ({ ...c, slug: categorySlug(c.nameLv, c.categoryId) }));
     }
   }
   
@@ -279,7 +283,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(categories)
       .where(eq(categories.categoryId, id));
-    return category;
+    return category ? { ...category, slug: categorySlug(category.nameLv, category.categoryId) } : undefined;
   }
   
   async getCategoryByCode(code: string): Promise<Category | undefined> {
@@ -287,12 +291,12 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(categories)
       .where(eq(categories.rimiCategoryCode, code));
-    return category;
+    return category ? { ...category, slug: categorySlug(category.nameLv, category.categoryId) } : undefined;
   }
   
   async getSubcategories(parentId: number): Promise<Category[]> {
     // Return all subcategories, excluding hidden categories
-    return await rimiDb
+    const rows = await rimiDb
       .select()
       .from(categories)
       .where(and(
@@ -300,6 +304,7 @@ export class DatabaseStorage implements IStorage {
         sql`${categories.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`
       ))
       .orderBy(categories.nameEn);
+    return rows.map(c => ({ ...c, slug: categorySlug(c.nameLv, c.categoryId) }));
   }
   
   async getCategoryPath(categoryId: number): Promise<Category[]> {
@@ -339,7 +344,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       // The path should be in order from root to leaf
-      return categoryPath.reverse();
+      return categoryPath.reverse().map(c => ({ ...c, slug: categorySlug(c.nameLv, c.categoryId) }));
     } catch (error) {
       console.error("Error in getCategoryPath:", error);
       return [];
@@ -516,7 +521,8 @@ export class DatabaseStorage implements IStorage {
         photos: photosMap[row.productId] || [],
         category: row.categoryId ? categoryMap[row.categoryId] : undefined,
         store: 'maxima' as Store,
-        externalUrl: row.barboraUrl
+        externalUrl: row.barboraUrl,
+        slug: productSlug(row.name, row.productId)
       }));
 
       return { products: productsWithDetails, count };
@@ -858,7 +864,8 @@ export class DatabaseStorage implements IStorage {
           photos: photosMap[product.productId] || [],
           category: categoryMap[product.categoryId],
           store: 'rimi' as Store,
-          externalUrl: row.rimiUrl
+          externalUrl: row.rimiUrl,
+          slug: productSlug(product.name, product.productId)
         };
       });
       
@@ -1004,7 +1011,8 @@ export class DatabaseStorage implements IStorage {
         category,
         store: 'rimi' as Store,
         externalUrl: product.rimiUrl,
-        ingredientCard: ingredientCardsMap.get(product.sku)
+        ingredientCard: ingredientCardsMap.get(product.sku),
+        slug: productSlug(product.name, product.productId)
       };
     }
     
@@ -1063,7 +1071,8 @@ export class DatabaseStorage implements IStorage {
       category: category || undefined,
       store: 'maxima' as Store,
       externalUrl: maximaProduct.barboraUrl,
-      ingredientCard: ingredientCardsMap.get(maximaProduct.sku)
+      ingredientCard: ingredientCardsMap.get(maximaProduct.sku),
+      slug: productSlug(maximaProduct.name, maximaProduct.productId)
     };
   }
   
@@ -1109,7 +1118,8 @@ export class DatabaseStorage implements IStorage {
       category,
       store: 'rimi' as Store,
       externalUrl: product.rimiUrl,
-      ingredientCard: ingredientCardsMap.get(sku)
+      ingredientCard: ingredientCardsMap.get(sku),
+      slug: productSlug(product.name, product.productId)
     };
   }
 
@@ -1155,7 +1165,8 @@ export class DatabaseStorage implements IStorage {
       category,
       store: 'rimi' as Store,
       externalUrl: product.rimiUrl,
-      ingredientCard: ingredientCardsMap.get(product.sku)
+      ingredientCard: ingredientCardsMap.get(product.sku),
+      slug: productSlug(product.name, product.productId)
     };
   }
   
@@ -1390,7 +1401,8 @@ export class DatabaseStorage implements IStorage {
           photos: rimiPhotosMap[row.productId] || [],
           category: rimiCategoryMap[row.categoryId],
           store: 'rimi' as Store,
-          externalUrl: row.rimiUrl
+          externalUrl: row.rimiUrl,
+          slug: productSlug(row.name, row.productId)
         };
       });
       
@@ -1508,7 +1520,8 @@ export class DatabaseStorage implements IStorage {
               photos: maximaPhotosMap[row.productId] || [],
               category: row.categoryId ? maximaCategoryMap[row.categoryId] : undefined,
               store: 'maxima' as Store,
-              externalUrl: row.barboraUrl
+              externalUrl: row.barboraUrl,
+              slug: productSlug(row.name, row.productId)
             };
           });
           

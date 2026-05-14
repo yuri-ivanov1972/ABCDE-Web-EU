@@ -66,7 +66,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     <li>
       <div className="flex items-center">
         <LangLink 
-          href={`/category/${category.categoryId}`}
+          href={`/category/${category.slug || category.categoryId}`}
           onClick={handleCategoryClick}
           className={`flex-grow block px-3 py-1.5 rounded-md ${
             isSelected

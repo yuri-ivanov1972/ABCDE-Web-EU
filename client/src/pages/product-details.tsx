@@ -117,7 +117,11 @@ const NutritionFactsCollapsible: React.FC<NutritionFactsCollapsibleProps> = ({ n
 const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   const { t, ready, i18n } = useTranslation(['product', 'common', 'header']);
   
-  const productId = Number(id);
+  const productId = id ? (() => {
+    if (/^\d+$/.test(id)) return parseInt(id, 10);
+    const m = id.match(/-(\d+)$/);
+    return m ? parseInt(m[1], 10) : NaN;
+  })() : NaN;
   
   const urlParams = new URLSearchParams(window.location.search);
   const store = urlParams.get('store') as 'rimi' | 'maxima' | undefined;

@@ -79,9 +79,14 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           if (!SUPPORTED_LANGUAGES.includes(language)) {
             return <Redirect to={`/${DEFAULT_LANGUAGE}/category/${params?.id}`} replace />;
           }
+          const slug = params?.id || '';
+          const parsedCategoryId = /^\d+$/.test(slug) ? Number(slug) : (() => {
+            const m = slug.match(/-(\d+)$/);
+            return m ? Number(m[1]) : undefined;
+          })();
           return (
             <Suspense fallback={<PageLoader />}>
-              <Home categoryId={Number(params?.id)} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} onCloseMobileFilters={onCloseMobileFilters} onActiveFiltersChange={onActiveFiltersChange} {...params} />
+              <Home categoryId={parsedCategoryId} initialSearchQuery={searchQuery} isMobileFiltersOpen={isMobileFiltersOpen} onCloseMobileFilters={onCloseMobileFilters} onActiveFiltersChange={onActiveFiltersChange} {...params} />
             </Suspense>
           );
         }}

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { sql } from "drizzle-orm";
 import { rimiDb, maximaDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
+import { categorySlug, productSlug, extractIdFromSlug } from "./utils/slugify";
 import { ObjectStorageService } from "./objectStorage";
 
 // Define API route schemas
@@ -216,9 +217,9 @@ Sitemap: https://abcde.lv/sitemap.xml
   
   app.get("/api/categories/:id", async (req: Request, res: Response) => {
     try {
-      const categoryId = parseInt(req.params.id, 10);
+      const categoryId = extractIdFromSlug(req.params.id);
       
-      if (isNaN(categoryId)) {
+      if (!categoryId) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
       
@@ -237,9 +238,9 @@ Sitemap: https://abcde.lv/sitemap.xml
   
   app.get("/api/categories/:id/path", async (req: Request, res: Response) => {
     try {
-      const categoryId = parseInt(req.params.id, 10);
+      const categoryId = extractIdFromSlug(req.params.id);
       
-      if (isNaN(categoryId)) {
+      if (!categoryId) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
       
@@ -259,14 +260,14 @@ Sitemap: https://abcde.lv/sitemap.xml
   // Check if healthier products exist in a category
   app.get("/api/categories/:id/has-healthier-products", async (req: Request, res: Response) => {
     try {
-      const categoryId = parseInt(req.params.id, 10);
+      const categoryId = extractIdFromSlug(req.params.id);
       const currentGrade = req.query.currentGrade as string;
       const store = req.query.store as string | undefined;
       
       // Excluded category IDs (Gatavots Rimi and its subcategory)
       const excludedCategoryIds = [5, 40];
       
-      if (isNaN(categoryId)) {
+      if (!categoryId) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
       
@@ -454,10 +455,10 @@ Sitemap: https://abcde.lv/sitemap.xml
   
   app.get("/api/products/:id", async (req: Request, res: Response) => {
     try {
-      const productId = parseInt(req.params.id, 10);
+      const productId = extractIdFromSlug(req.params.id);
       const store = req.query.store as 'rimi' | 'maxima' | undefined;
       
-      if (isNaN(productId)) {
+      if (!productId) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
       
@@ -1263,7 +1264,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       // Get all categories, excluding hidden ones
       const excludedCategoryIds = [5, 40];
       const categoriesResult = await rimiDb.execute(sql`
-        SELECT category_id FROM normalized_categories 
+        SELECT category_id, name_lv FROM normalized_categories 
         WHERE category_id NOT IN (${sql.join(excludedCategoryIds.map(id => sql`${id}`), sql`, `)})
         ORDER BY category_id
       `);
@@ -1273,7 +1274,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       // Get all product IDs from Rimi that have Nutri-Score, excluding hidden categories
       const rimiProductsResult = await rimiDb.execute(sql`
-        SELECT DISTINCT p.product_id 
+        SELECT DISTINCT ON (p.product_id) p.product_id, p.name
         FROM products p
         JOIN nutritionfacts nf ON p.product_id = nf.product_id
         WHERE nf.nutri_score_grade IS NOT NULL
@@ -1288,7 +1289,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       let maximaProducts: any[] = [];
       if (maximaDb) {
         const maximaProductsResult = await maximaDb.execute(sql`
-          SELECT DISTINCT p.product_id 
+          SELECT DISTINCT ON (p.product_id) p.product_id, p.name
           FROM products p
           JOIN nutritionfacts nf ON p.product_id = nf.product_id
           WHERE nf.nutri_score_grade IS NOT NULL
@@ -1332,28 +1333,32 @@ Sitemap: https://abcde.lv/sitemap.xml
       // Add category pages — only /lv/ as primary <loc>
       for (const category of categories) {
         const categoryId = (category as any).category_id;
+        const catNameLv = (category as any).name_lv || '';
+        const catSlug = categorySlug(catNameLv, categoryId);
         xml += '  <url>\n';
-        xml += `    <loc>${baseUrl}/lv/category/${categoryId}</loc>\n`;
+        xml += `    <loc>${baseUrl}/lv/category/${catSlug}</loc>\n`;
         xml += `    <lastmod>${currentDate}</lastmod>\n`;
         xml += '    <changefreq>weekly</changefreq>\n';
         xml += '    <priority>0.6</priority>\n';
-        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/category/${categoryId}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/category/${categoryId}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/category/${categoryId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/category/${catSlug}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/category/${catSlug}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/category/${catSlug}" />\n`;
         xml += '  </url>\n';
       }
 
       // Add product pages — only /lv/ as primary <loc> (both Rimi and Maxima)
       for (const product of allProducts) {
         const productId = (product as any).product_id;
+        const productName = (product as any).name || '';
+        const pSlug = productSlug(productName, productId);
         xml += '  <url>\n';
-        xml += `    <loc>${baseUrl}/lv/product/${productId}</loc>\n`;
+        xml += `    <loc>${baseUrl}/lv/product/${pSlug}</loc>\n`;
         xml += `    <lastmod>${currentDate}</lastmod>\n`;
         xml += '    <changefreq>weekly</changefreq>\n';
         xml += '    <priority>0.5</priority>\n';
-        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/product/${productId}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/product/${productId}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/product/${productId}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/product/${pSlug}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/product/${pSlug}" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/product/${pSlug}" />\n`;
         xml += '  </url>\n';
       }
       

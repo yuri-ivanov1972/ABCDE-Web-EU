@@ -22,9 +22,14 @@ function App() {
   const [location] = useLocation();
   const pathWithoutLang = getPathWithoutLanguage(location);
   
-  // Check if URL is like /category/123 (after removing language prefix)
-  const categoryIdMatch = /^\/category\/(\d+)$/.exec(pathWithoutLang);
-  const currentCategoryId = categoryIdMatch ? Number(categoryIdMatch[1]) : undefined;
+  // Check if URL is a category page (slug or numeric), extract numeric ID
+  const categorySlugMatch = /^\/category\/([a-z0-9-]+)$/i.exec(pathWithoutLang);
+  const currentCategoryId = categorySlugMatch ? (() => {
+    const seg = categorySlugMatch[1];
+    if (/^\d+$/.test(seg)) return Number(seg);
+    const m = seg.match(/-(\d+)$/);
+    return m ? Number(m[1]) : undefined;
+  })() : undefined;
 
   const handleSearch = (query: string) => {
     // Additional normalization at the app level

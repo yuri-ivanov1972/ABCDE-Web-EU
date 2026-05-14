@@ -6,6 +6,7 @@ export interface Category {
   nameEn: string;
   parentCategoryId: number | null;
   level: number;
+  slug?: string;
 }
 
 // Product types
@@ -84,6 +85,7 @@ export interface ProductWithDetails extends Product {
   store?: Store;
   externalUrl?: string | null;
   ingredientCard?: ProductIngredientCard;
+  slug?: string;
 }
 
 // Filter types

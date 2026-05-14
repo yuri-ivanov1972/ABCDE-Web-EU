@@ -5,6 +5,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
 import { storage } from "./storage";
+import { extractIdFromSlug } from "./utils/slugify";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -84,6 +85,26 @@ app.use((req, res, next) => {
   next();
 });
 
+// 301 redirect: /product/:id → /lv/product/:id  and  /category/:id → /lv/category/:id
+// Must be BEFORE Vite/registerRoutes so Vite doesn't serve index.html first
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const urlPath = req.path;
+  const qs = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
+
+  const noLangProduct = urlPath.match(/^\/product\/(.+)$/);
+  if (noLangProduct) {
+    return res.redirect(301, `/lv/product/${noLangProduct[1]}${qs}`);
+  }
+
+  const noLangCategory = urlPath.match(/^\/category\/(.+)$/);
+  if (noLangCategory) {
+    return res.redirect(301, `/lv/category/${noLangCategory[1]}${qs}`);
+  }
+
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -123,6 +144,40 @@ app.use((req, res, next) => {
 
     res.status(status).json({ message });
     throw err;
+  });
+
+  // 301 redirect: /:lang/product/123 → /:lang/product/name-123 (old numeric URLs → slug URLs)
+  // 301 redirect: /:lang/category/123 → /:lang/category/name-123
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    const urlPath = req.path;
+
+    const productNumeric = urlPath.match(/^\/(lv|en)\/product\/(\d+)$/);
+    if (productNumeric) {
+      const [, lang, rawId] = productNumeric;
+      try {
+        const product = await storage.getProductById(parseInt(rawId, 10));
+        if (product?.slug) {
+          const qs = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
+          return res.redirect(301, `/${lang}/product/${product.slug}${qs}`);
+        }
+      } catch { /* fall through to next middleware */ }
+      return next();
+    }
+
+    const categoryNumeric = urlPath.match(/^\/(lv|en)\/category\/(\d+)$/);
+    if (categoryNumeric) {
+      const [, lang, rawId] = categoryNumeric;
+      try {
+        const category = await storage.getCategoryById(parseInt(rawId, 10));
+        if (category?.slug) {
+          return res.redirect(301, `/${lang}/category/${category.slug}`);
+        }
+      } catch { /* fall through to next middleware */ }
+      return next();
+    }
+
+    next();
   });
 
   // Catch-all redirect for non-language-prefixed SPA paths to /lv/ (default language) for SEO
@@ -206,10 +261,10 @@ app.use((req, res, next) => {
 </html>`);
     };
     
-    const productMatch = urlPath.match(/^\/(lv|en)\/product\/(\d+)$/);
+    const productMatch = urlPath.match(/^\/(lv|en)\/product\/([a-z0-9][a-z0-9-]*-\d+|\d+)$/i);
     if (productMatch) {
       const lang = productMatch[1];
-      const productId = parseInt(productMatch[2], 10);
+      const productId = extractIdFromSlug(productMatch[2])!;
       try {
         const product = await storage.getProductById(productId);
         if (!product) {
@@ -234,10 +289,10 @@ app.use((req, res, next) => {
       return next();
     }
     
-    const categoryMatch = urlPath.match(/^\/(lv|en)\/category\/(\d+)$/);
+    const categoryMatch = urlPath.match(/^\/(lv|en)\/category\/([a-z0-9][a-z0-9-]*-\d+|\d+)$/i);
     if (categoryMatch) {
       const lang = categoryMatch[1];
-      const categoryId = parseInt(categoryMatch[2], 10);
+      const categoryId = extractIdFromSlug(categoryMatch[2])!;
       try {
         const category = await storage.getCategoryById(categoryId);
         if (!category) {

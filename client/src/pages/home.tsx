@@ -30,10 +30,15 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   
   // Get the current path without language prefix to check if we're on a category page
   const pathWithoutLang = getPathWithoutLanguage(location);
-  const isCategoryRoute = /^\/category\/\d+$/.test(pathWithoutLang);
+  const isCategoryRoute = /^\/category\/[a-z0-9-]+$/i.test(pathWithoutLang);
   
-  // Only use URL category ID if we're actually on a category route
-  const urlCategoryId = isCategoryRoute && params.id ? parseInt(params.id, 10) : undefined;
+  // Only use URL category ID if we're actually on a category route (parse from slug or numeric)
+  const urlCategoryId = isCategoryRoute && params.id ? (() => {
+    const s = params.id;
+    if (/^\d+$/.test(s)) return parseInt(s, 10);
+    const m = s.match(/-(\d+)$/);
+    return m ? parseInt(m[1], 10) : undefined;
+  })() : undefined;
   const categoryId = propCategoryId || urlCategoryId;
   
   // States

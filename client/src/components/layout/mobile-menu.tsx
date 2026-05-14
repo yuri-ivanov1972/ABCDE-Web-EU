@@ -50,7 +50,7 @@ const MobileCategoryItem: React.FC<MobileCategoryItemProps> = ({
     <li className="mb-2">
       <div className="flex items-center">
         <LangLink 
-          href={`/category/${category.categoryId}`}
+          href={`/category/${category.slug || category.categoryId}`}
           className={`flex-grow flex items-center justify-between px-2 py-1.5 rounded ${
             isSelected 
               ? 'bg-primary text-white font-medium' 
