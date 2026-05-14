@@ -1264,7 +1264,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       // Get all categories, excluding hidden ones
       const excludedCategoryIds = [5, 40];
       const categoriesResult = await rimiDb.execute(sql`
-        SELECT category_id, name_lv FROM normalized_categories 
+        SELECT category_id, name_lv, level FROM normalized_categories 
         WHERE category_id NOT IN (${sql.join(excludedCategoryIds.map(id => sql`${id}`), sql`, `)})
         ORDER BY category_id
       `);
@@ -1334,12 +1334,14 @@ Sitemap: https://abcde.lv/sitemap.xml
       for (const category of categories) {
         const categoryId = (category as any).category_id;
         const catNameLv = (category as any).name_lv || '';
+        const catLevel = (category as any).level;
+        const catPriority = catLevel === 1 ? '0.8' : '0.6';
         const catSlug = categorySlug(catNameLv, categoryId);
         xml += '  <url>\n';
         xml += `    <loc>${baseUrl}/lv/category/${catSlug}</loc>\n`;
         xml += `    <lastmod>${currentDate}</lastmod>\n`;
         xml += '    <changefreq>weekly</changefreq>\n';
-        xml += '    <priority>0.6</priority>\n';
+        xml += `    <priority>${catPriority}</priority>\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/category/${catSlug}" />\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/category/${catSlug}" />\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/category/${catSlug}" />\n`;
