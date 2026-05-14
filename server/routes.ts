@@ -201,10 +201,12 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       if (parentId) {
         const categories = await storage.getSubcategories(parentId);
+        res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
         return res.json(categories);
       }
       
       const categories = await storage.getCategories(level);
+      res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
       res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -442,6 +444,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         },
         sort: {sortBy, sortOrder}
       })} returned ${result.products.length} products, total: ${result.totalCount}`);
+      res.set('Cache-Control', 'public, max-age=180, stale-while-revalidate=60');
       res.json(result);
     } catch (error) {
       console.error("Error fetching products:", error);

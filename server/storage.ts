@@ -9,6 +9,7 @@ import {
 import { rimiDb, maximaDb, scansDb, rimiPool, maximaPool, scansPool } from "./db";
 import { eq, like, and, or, gte, lte, inArray, desc, asc, sql, isNotNull } from "drizzle-orm";
 import { normalizeLvText, createSearchPattern } from "./utils/textNormalization";
+import { productsCache, PRODUCTS_TTL_MS } from "./cache";
 
 // Categories to exclude from display (Gatavots Rimi and its subcategory)
 export const EXCLUDED_CATEGORY_IDS = [5, 40];
@@ -549,6 +550,27 @@ export class DatabaseStorage implements IStorage {
     console.log(`GET products with options`, JSON.stringify(options));
     
     try {
+      // Cache lookup — return instantly for identical queries within TTL
+      const cacheKey = JSON.stringify({
+        categoryId: options.categoryId,
+        page: options.page ?? 1,
+        pageSize: options.pageSize ?? 12,
+        nutriScores: options.nutriScores,
+        sugarMin: options.sugarMin, sugarMax: options.sugarMax,
+        fatMin: options.fatMin, fatMax: options.fatMax,
+        proteinMin: options.proteinMin, proteinMax: options.proteinMax,
+        saltMin: options.saltMin, saltMax: options.saltMax,
+        sortBy: options.sortBy ?? 'name',
+        sortOrder: options.sortOrder ?? 'asc',
+        store: options.store,
+        madeInLatvia: options.madeInLatvia,
+      });
+      const cached = productsCache.get(cacheKey);
+      if (cached) {
+        console.log(`GET products cache HIT for key length ${cacheKey.length}`);
+        return cached;
+      }
+
       // Step 1: Build category list to include (keep this logic as it's necessary for hierarchical categories)
       let allCategoriesToInclude: number[] = [];
       
@@ -573,16 +595,13 @@ export class DatabaseStorage implements IStorage {
             
             allCategoriesToInclude.push(...subcategories.map(c => c.categoryId));
             
-            // If level 1, go one level deeper
-            if (currentCategory.level === 1) {
-              for (const subcat of subcategories) {
-                const subsubcategories = await rimiDb
-                  .select()
-                  .from(categories)
-                  .where(eq(categories.parentCategoryId, subcat.categoryId));
-                
-                allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
-              }
+            // If level 1, go one level deeper — single batch query instead of N+1 loop
+            if (currentCategory.level === 1 && subcategories.length > 0) {
+              const subsubcategories = await rimiDb
+                .select()
+                .from(categories)
+                .where(inArray(categories.parentCategoryId, subcategories.map(s => s.categoryId)));
+              allCategoriesToInclude.push(...subsubcategories.map(c => c.categoryId));
             }
           }
           
@@ -593,16 +612,16 @@ export class DatabaseStorage implements IStorage {
       // Step 2: Build WHERE conditions for nutritional filters
       let whereConditions: any[] = [
         isNotNull(nutritionFacts.nutriScoreGrade),  // Only show products with Nutri-Score
-        // Only show products that are currently available (latest price history record has is_available = true)
-        sql`EXISTS (
-          SELECT 1 FROM product_price_history pph 
-          WHERE pph.product_id = ${products.productId}
-          AND pph.is_available = true
-          AND pph.recorded_at = (
-            SELECT MAX(pph2.recorded_at) 
-            FROM product_price_history pph2 
-            WHERE pph2.product_id = pph.product_id
-          )
+        // Only show currently-available products.
+        // Non-correlated DISTINCT ON subquery runs once and returns a set of IDs —
+        // far cheaper than the old correlated EXISTS with a nested MAX per row.
+        sql`${products.productId} IN (
+          SELECT product_id FROM (
+            SELECT DISTINCT ON (product_id) product_id, is_available
+            FROM product_price_history
+            ORDER BY product_id, recorded_at DESC
+          ) latest
+          WHERE latest.is_available = true
         )`,
         // Exclude hidden categories
         sql`${products.categoryId} NOT IN (${sql.join(EXCLUDED_CATEGORY_IDS.map(id => sql`${id}`), sql`, `)})`
@@ -935,12 +954,10 @@ export class DatabaseStorage implements IStorage {
         ingredientCard: ingredientCardsMap.get(p.sku)
       }));
       
-      console.log(`GET products with options ${JSON.stringify(options)} returned ${enrichedProducts.length} products, total: ${finalTotalCount}`);
-      
-      return {
-        products: enrichedProducts,
-        totalCount: finalTotalCount
-      };
+      const result = { products: enrichedProducts, totalCount: finalTotalCount };
+      productsCache.set(cacheKey, result, PRODUCTS_TTL_MS);
+      console.log(`GET products with options ${JSON.stringify(options)} returned ${enrichedProducts.length} products, total: ${finalTotalCount} (stored in cache)`);
+      return result;
       
     } catch (error) {
       console.error('Error in getProducts:', error);
