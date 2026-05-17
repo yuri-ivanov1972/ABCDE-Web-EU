@@ -6,6 +6,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
 import { storage } from "./storage";
 import { extractIdFromSlug } from "./utils/slugify";
+import { warmCache } from "./imageProxy";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -137,6 +138,27 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Pre-warm Barbora image cache — runs in background, doesn't delay server startup
+  (async () => {
+    try {
+      const { products: firstPage } = await storage.getProducts({
+        sortBy: "nutriScore",
+        sortOrder: "asc",
+        page: 1,
+        pageSize: 24,
+      });
+      const barboraUrls = firstPage
+        .flatMap((p) => p.photos ?? [])
+        .map((ph) => ph.photoUrl)
+        .filter((u): u is string => typeof u === "string" && u.includes("cdn.barbora.lv"));
+      if (barboraUrls.length > 0) {
+        await warmCache(barboraUrls, 300);
+      }
+    } catch (err: any) {
+      console.warn("[imageProxy] warmup failed:", err?.message);
+    }
+  })();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
