@@ -7,6 +7,7 @@ import { rimiDb, maximaDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
 import { categorySlug, productSlug, extractIdFromSlug } from "./utils/slugify";
 import { ObjectStorageService } from "./objectStorage";
+import { handleImageProxy } from "./imageProxy";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -35,6 +36,9 @@ const getProductsQuerySchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Image proxy — converts external Barbora CDN images to WebP with resizing and server-side caching
+  app.get("/api/image-proxy", handleImageProxy);
+
   // Robots.txt for SEO - block ?store= query parameters to avoid duplicate content
   app.get("/robots.txt", (_req: Request, res: Response) => {
     const robotsTxt = `User-agent: *

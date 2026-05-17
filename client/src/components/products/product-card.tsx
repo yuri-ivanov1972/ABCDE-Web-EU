@@ -4,6 +4,7 @@ import { ProductWithDetails } from '@/types';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getPhotoSrc, getPhotoSrcSet } from '@/lib/photoUrl';
 import smallA from '@assets/RVB_A_1768766381068.png';
 import smallB from '@assets/RVB_B_1768766381068.png';
 import smallC from '@assets/RVB_C_1768766381068.png';
@@ -22,15 +23,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
   const mainPhoto = photos?.find(p => p.isPrimary) || photos?.[0];
 
   const rawPhotoUrl = mainPhoto?.photoUrl;
-  const isCloudinary = rawPhotoUrl?.includes('cloudinary.com');
-  const cardSrc = rawPhotoUrl
-    ? (isCloudinary ? rawPhotoUrl.replace(/\bw_auto\b/g, 'w_300').replace(/\bw_\d+\b/g, 'w_300') : rawPhotoUrl)
-    : `https://via.placeholder.com/300x200?text=${encodeURIComponent(t('noImage'))}`;
-  const cardSrcSet = isCloudinary && rawPhotoUrl
-    ? [150, 300, 450]
-        .map(w => `${rawPhotoUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
-        .join(', ')
-    : undefined;
+  const cardSrc = getPhotoSrc(rawPhotoUrl, 300, t('noImage'));
+  const cardSrcSet = getPhotoSrcSet(rawPhotoUrl, [150, 300, 450]);
 
   const quantityFormatted = quantityValue && quantityUnit 
     ? `${quantityValue}${quantityUnit}`

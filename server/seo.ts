@@ -298,10 +298,20 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
 
   if (pageData?.product?.photoUrl) {
     const rawUrl = pageData.product.photoUrl;
+
     if (rawUrl.includes('cloudinary.com')) {
-      const makeSrc = (w: number) => rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
+      const base = rawUrl
+        .replace(/dpr_auto,/g, '')
+        .replace(/,dpr_auto/g, '')
+        .replace(/\bq_auto:low\b/g, 'q_auto');
+      const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
       const preloadUrl = makeSrc(900);
       const srcset = [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', ');
+      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />\n  </head>`);
+    } else if (rawUrl.includes('barbora.lv')) {
+      const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
+      const preloadUrl = `${proxyBase}&w=900`;
+      const srcset = [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', ');
       result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />\n  </head>`);
     } else {
       result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(rawUrl)}" fetchpriority="high" />\n  </head>`);

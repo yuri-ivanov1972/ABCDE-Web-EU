@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Category } from '@/types';
 import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
+import { getPhotoSrc, getPhotoSrcSet } from '@/lib/photoUrl';
 import NotFound from '@/pages/not-found';
 import mediumA from '@assets/RVB_A_1768766381068.png';
 import mediumB from '@assets/RVB_B_1768766381068.png';
@@ -277,15 +278,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
             <div className="bg-gray-100 relative aspect-[3/2] md:aspect-auto md:flex-1">
               {(() => {
                 const rawUrl = (selectedPhoto ?? mainPhoto)?.photoUrl;
-                const isCloudinary = rawUrl?.includes('cloudinary.com');
-                const src = rawUrl
-                  ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_600') : rawUrl)
-                  : `https://via.placeholder.com/600x400?text=${encodeURIComponent(t('common:noImage'))}`;
-                const srcSet = isCloudinary && rawUrl
-                  ? [300, 600, 900]
-                      .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
-                      .join(', ')
-                  : undefined;
+                const src = getPhotoSrc(rawUrl, 600, t('common:noImage'));
+                const srcSet = getPhotoSrcSet(rawUrl, [300, 600, 900]);
                 return (
                   <img
                     src={src}
@@ -307,15 +301,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
               <div className="flex gap-2 p-2 bg-gray-50 overflow-x-auto">
                 {product.photos.map((photo, index) => {
                   const rawUrl = photo.photoUrl;
-                  const isCloudinary = rawUrl?.includes('cloudinary.com');
-                  const thumbSrc = rawUrl
-                    ? (isCloudinary ? rawUrl.replace(/\bw_auto\b/g, 'w_150').replace(/\bw_\d+\b/g, 'w_150') : rawUrl)
-                    : undefined;
-                  const thumbSrcSet = isCloudinary && rawUrl
-                    ? [80, 150, 300]
-                        .map(w => `${rawUrl.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
-                        .join(', ')
-                    : undefined;
+                  const thumbSrc = rawUrl ? getPhotoSrc(rawUrl, 150) : undefined;
+                  const thumbSrcSet = rawUrl ? getPhotoSrcSet(rawUrl, [80, 150, 300]) : undefined;
                   const isActive = (selectedPhoto ?? mainPhoto)?.photoUrl === photo.photoUrl;
                   return (
                     <button
