@@ -148,10 +148,23 @@ app.use((req, res, next) => {
         page: 1,
         pageSize: 24,
       });
-      const barboraUrls = firstPage
-        .flatMap((p) => p.photos ?? [])
-        .map((ph) => ph.photoUrl)
-        .filter((u): u is string => typeof u === "string" && u.includes("cdn.barbora.lv"));
+      const seen = new Set<string>();
+      const barboraUrls: string[] = [];
+      for (const p of firstPage) {
+        const primaryUrl = p.photos?.[0]?.photoUrl;
+        if (
+          typeof primaryUrl === "string" &&
+          !seen.has(primaryUrl)
+        ) {
+          try {
+            const { hostname } = new URL(primaryUrl);
+            if (hostname === "cdn.barbora.lv") {
+              seen.add(primaryUrl);
+              barboraUrls.push(primaryUrl);
+            }
+          } catch { /* skip invalid URLs */ }
+        }
+      }
       if (barboraUrls.length > 0) {
         await warmCache(barboraUrls, 300);
       }

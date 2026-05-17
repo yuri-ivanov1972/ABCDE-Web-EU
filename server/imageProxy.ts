@@ -20,8 +20,6 @@ try {
   const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
   if (bucketId) {
     objClient = new ObjStorageClient({ bucketId });
-    // Suppress unhandled rejection from init() re-throwing after storing error state
-    (objClient as any).state?.promise?.catch?.(() => {});
   } else {
     console.warn("[imageProxy] DEFAULT_OBJECT_STORAGE_BUCKET_ID not set — using memory cache only");
   }
@@ -74,8 +72,19 @@ async function fetchAndConvert(url: string, width: number): Promise<Buffer> {
  * Fetch+convert a Barbora image URL and populate both caches.
  * Check order: in-memory → Object Storage → fetch from Barbora CDN.
  * Returns the WebP buffer, or null on failure.
+ * Validates the URL hostname against ALLOWED_HOSTS before fetching.
  */
 export async function warmCacheEntry(url: string, width: number): Promise<Buffer | null> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+    return null;
+  }
+
   const memKey = `${url}::${width}`;
 
   // 1. In-memory hit
