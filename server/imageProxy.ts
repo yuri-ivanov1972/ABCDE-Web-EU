@@ -73,6 +73,7 @@ async function fetchAndConvert(url: string, width: number): Promise<Buffer> {
  * Check order: in-memory → Object Storage → fetch from Barbora CDN.
  * Returns the WebP buffer, or null on failure.
  * Validates the URL hostname against ALLOWED_HOSTS before fetching.
+ * Re-throws AbortError so callers can distinguish 504 upstream timeout.
  */
 export async function warmCacheEntry(url: string, width: number): Promise<Buffer | null> {
   let parsed: URL;
@@ -111,23 +112,25 @@ export async function warmCacheEntry(url: string, width: number): Promise<Buffer
   }
 
   // 3. Fetch from origin, convert, persist
-  try {
-    const webpBuffer = await fetchAndConvert(url, width);
-    pruneCache();
-    memCache.set(memKey, { data: webpBuffer, timestamp: Date.now() });
+  const webpBuffer = await fetchAndConvert(url, width);
+  pruneCache();
+  memCache.set(memKey, { data: webpBuffer, timestamp: Date.now() });
 
-    if (objClient) {
-      const key = objKey(url, width);
-      // Fire-and-forget — don't block the response
-      objClient.uploadFromBytes(key, webpBuffer).catch((err: any) =>
-        console.warn("[imageProxy] ObjStorage write failed:", err?.message)
-      );
-    }
-
-    return webpBuffer;
-  } catch {
-    return null;
+  if (objClient) {
+    const key = objKey(url, width);
+    // Fire-and-forget: detached async block inspects result.ok for observability
+    (async () => {
+      const result = await objClient!.uploadFromBytes(key, webpBuffer);
+      if (!result.ok) {
+        console.warn("[imageProxy] ObjStorage write failed:", result.error?.message ?? result.error);
+      }
+    })().catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[imageProxy] ObjStorage write error:", msg);
+    });
   }
+
+  return webpBuffer;
 }
 
 /**
@@ -180,11 +183,13 @@ export async function handleImageProxy(req: Request, res: Response): Promise<voi
     res.set("Cache-Control", "public, max-age=604800, immutable");
     res.set("Vary", "Accept");
     res.send(webpBuffer);
-  } catch (err: any) {
-    if (err?.name === "AbortError") {
+  } catch (err: unknown) {
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    if (isAbort) {
       res.status(504).send("Upstream timeout");
     } else {
-      console.error("[imageProxy] error:", err?.message);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[imageProxy] error:", msg);
       res.status(502).send("Proxy error");
     }
   }
