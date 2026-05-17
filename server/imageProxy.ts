@@ -98,8 +98,9 @@ export async function warmCacheEntry(url: string, width: number): Promise<Buffer
     try {
       const key = objKey(url, width);
       const result = await objClient.downloadAsBytes(key);
-      if (result.ok && result.value) {
-        const buf = Buffer.from(result.value);
+      // GCS download() returns [Buffer] tuple; result.value is that tuple
+      if (result.ok && Array.isArray(result.value) && result.value[0]) {
+        const buf = result.value[0] as Buffer;
         pruneCache();
         memCache.set(memKey, { data: buf, timestamp: Date.now() });
         return buf;
@@ -118,9 +119,7 @@ export async function warmCacheEntry(url: string, width: number): Promise<Buffer
     if (objClient) {
       const key = objKey(url, width);
       // Fire-and-forget — don't block the response
-      objClient.uploadFromBytes(key, webpBuffer, {
-        contentType: "image/webp",
-      }).catch((err: any) =>
+      objClient.uploadFromBytes(key, webpBuffer).catch((err: any) =>
         console.warn("[imageProxy] ObjStorage write failed:", err?.message)
       );
     }
