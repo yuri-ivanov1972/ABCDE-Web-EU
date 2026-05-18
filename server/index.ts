@@ -4,8 +4,8 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
-import { storage } from "./storage";
-import { extractIdFromSlug } from "./utils/slugify";
+import { storage, type Store } from "./storage";
+import { extractIdFromSlug, productSlug } from "./utils/slugify";
 import { warmCache } from "./imageProxy";
 
 const app = express();
@@ -300,9 +300,21 @@ app.use((req, res, next) => {
     const productMatch = urlPath.match(/^\/(lv|en)\/product\/([a-z0-9][a-z0-9-]*-\d+|\d+)$/i);
     if (productMatch) {
       const lang = productMatch[1];
-      const productId = extractIdFromSlug(productMatch[2])!;
+      const urlSlug = productMatch[2];
+      const productId = extractIdFromSlug(urlSlug)!;
       try {
-        const product = await storage.getProductById(productId);
+        let product = await storage.getProductById(productId);
+
+        // Rimi and Maxima can share the same numeric product ID.
+        // If the returned product's slug doesn't match the URL slug, the lookup
+        // found the wrong store's product — try the other store explicitly.
+        if (product && productSlug(product.name, product.productId) !== urlSlug) {
+          const maximaProduct = await storage.getProductById(productId, 'maxima' as Store);
+          if (maximaProduct && productSlug(maximaProduct.name, maximaProduct.productId) === urlSlug) {
+            product = maximaProduct;
+          }
+        }
+
         if (!product) {
           log(`404: Product ${productId} not found`);
           return serve404(lang);
