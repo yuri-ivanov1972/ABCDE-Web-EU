@@ -12,6 +12,9 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// Cached first-product image URL for homepage LCP preload — set during startup warmup
+let homepageLcpImageUrl: string | null = null;
+
 // CORS for mobile API endpoints (Expo Go and React Native apps)
 app.use('/api/mobile', (req: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -41,7 +44,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         const pageData: { product?: ProductSeoData; category?: CategorySeoData } = {};
         if (res.locals.seoProduct) pageData.product = res.locals.seoProduct;
         if (res.locals.seoCategory) pageData.category = res.locals.seoCategory;
-        return injectSeoTags(body, urlPath, pageData);
+        const cleanedPath = urlPath.split('?')[0];
+        const isHomepage = /^\/(lv|en)\/?$/.test(cleanedPath);
+        const lcpImageUrl = isHomepage ? homepageLcpImageUrl : null;
+        return injectSeoTags(body, urlPath, pageData, lcpImageUrl);
       }
     }
     return body;
@@ -148,6 +154,17 @@ app.use((req, res, next) => {
         page: 1,
         pageSize: 24,
       });
+      // Store first product's image URL for homepage LCP preload
+      // Scan until we find a product that actually has a photo
+      for (const p of firstPage) {
+        const url = p.photos?.find(ph => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
+        if (url && typeof url === 'string') {
+          homepageLcpImageUrl = url;
+          log(`[seo] homepage LCP preload URL set: ${url.slice(0, 80)}…`);
+          break;
+        }
+      }
+
       const seen = new Set<string>();
       const barboraUrls: string[] = [];
       for (const p of firstPage) {

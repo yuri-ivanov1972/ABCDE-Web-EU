@@ -75,7 +75,7 @@ if (!i18n.isInitialized) {
       
       // React configuration
       react: {
-        useSuspense: true, // Use Suspense to wait for translations before rendering
+        useSuspense: false, // Render immediately; fill in translations as they load
       }
     });
 }
