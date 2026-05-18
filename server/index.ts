@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import fs from "fs";
 import path from "path";
 import { registerRoutes } from "./routes";
@@ -9,6 +10,7 @@ import { extractIdFromSlug, productSlug } from "./utils/slugify";
 import { warmCache } from "./imageProxy";
 
 const app = express();
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
