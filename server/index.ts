@@ -16,6 +16,8 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Cached first-product image URL for homepage LCP preload — set during startup warmup
 let homepageLcpImageUrl: string | null = null;
+// Cached first page of products for homepage initial data — eliminates the API round-trip
+let homepageInitialData: { products: any[]; totalCount: number } | null = null;
 
 // CORS for mobile API endpoints (Expo Go and React Native apps)
 app.use('/api/mobile', (req: Request, res: Response, next: NextFunction) => {
@@ -49,7 +51,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         const cleanedPath = urlPath.split('?')[0];
         const isHomepage = /^\/(lv|en)\/?$/.test(cleanedPath);
         const lcpImageUrl = isHomepage ? homepageLcpImageUrl : null;
-        return injectSeoTags(body, urlPath, pageData, lcpImageUrl);
+        const initialData = isHomepage ? homepageInitialData : null;
+        return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData);
       }
     }
     return body;
@@ -150,12 +153,15 @@ app.use((req, res, next) => {
   // Pre-warm Barbora image cache — runs in background, doesn't delay server startup
   (async () => {
     try {
-      const { products: firstPage } = await storage.getProducts({
+      const { products: firstPage, totalCount } = await storage.getProducts({
         sortBy: "nutriScore",
         sortOrder: "asc",
         page: 1,
         pageSize: 24,
       });
+      // Store first 12 products as initial data for the homepage — eliminates the API round-trip
+      homepageInitialData = { products: firstPage.slice(0, 12), totalCount };
+      log(`[seo] homepage initial data cached: ${firstPage.slice(0, 12).length} products, total ${totalCount}`);
       // Store first product's image URL for homepage LCP preload
       // Scan until we find a product that actually has a photo
       for (const p of firstPage) {

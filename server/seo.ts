@@ -237,7 +237,7 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
   return '';
 }
 
-export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null): string {
+export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null, initialData?: { products: any[]; totalCount: number } | null): string {
   if (!html.includes('<!DOCTYPE html>') && !html.includes('<html')) {
     return html;
   }
@@ -340,6 +340,19 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     if (bodyContent && result.includes('<div id="root"></div>')) {
       result = result.replace('<div id="root"></div>', `<div id="root">${bodyContent}</div>`);
     }
+  }
+
+  // Inject initial product data for homepage — React reads this to skip the first API call
+  if (initialData) {
+    // Escape < > & so JSON can't accidentally close the script tag
+    const safeJson = JSON.stringify(initialData)
+      .replace(/&/g, '\\u0026')
+      .replace(/</g, '\\u003C')
+      .replace(/>/g, '\\u003E');
+    result = result.replace(
+      '</body>',
+      `<script id="__ABCDE_INITIAL_DATA__" type="application/json">${safeJson}</script>\n</body>`
+    );
   }
 
   return result;

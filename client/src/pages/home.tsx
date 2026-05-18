@@ -7,7 +7,17 @@ import { getPathWithoutLanguage } from '@/i18n';
 import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 import { getProducts, getCategoryById } from '@/api';
-import { Filters, NutriScoreGrade, SortOption, SortOrder, Store } from '@/types';
+import { Filters, NutriScoreGrade, ProductsResponse, SortOption, SortOrder, Store } from '@/types';
+
+// Read server-injected initial product data (eliminates the first API round-trip)
+function getServerInitialData(): ProductsResponse | undefined {
+  try {
+    const el = document.getElementById('__ABCDE_INITIAL_DATA__');
+    if (el?.textContent) return JSON.parse(el.textContent) as ProductsResponse;
+  } catch { /* ignore parse errors */ }
+  return undefined;
+}
+const serverInitialData = getServerInitialData();
 
 import Sidebar from '@/components/layout/sidebar';
 import MobileMenu from '@/components/layout/mobile-menu';
@@ -102,6 +112,11 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     enabled: !!categoryId
   });
   
+  // Use server-injected data as placeholder when query matches the default homepage state
+  const isDefaultQuery = !categoryId && page === 1 && filters.nutriScores.length === 0
+    && !filters.madeInLatvia && sortOption === 'nutriScore' && sortOrder === 'asc'
+    && !searchQuery && !selectedStore;
+
   // Fetch products with filters
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['/api/products', categoryId, page, filters, sortOption, sortOrder, searchQuery, selectedStore],
@@ -115,7 +130,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       search: searchQuery,
       store: selectedStore,
       madeInLatvia: filters.madeInLatvia
-    })
+    }),
+    placeholderData: isDefaultQuery ? serverInitialData : undefined,
   });
   
   // Calculate total pages based on API response data
