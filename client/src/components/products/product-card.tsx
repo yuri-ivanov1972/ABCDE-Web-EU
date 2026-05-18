@@ -23,8 +23,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
   const mainPhoto = photos?.find(p => p.isPrimary) || photos?.[0];
 
   const rawPhotoUrl = mainPhoto?.photoUrl;
-  const cardSrc = getPhotoSrc(rawPhotoUrl, 300, t('noImage'));
-  const cardSrcSet = getPhotoSrcSet(rawPhotoUrl, [150, 300, 450]);
+  // Barbora (Maxima) thumbnails: load directly from CDN to avoid proxy latency on listing pages.
+  // The proxy is kept for the product detail page where large WebP conversion is worth the cost.
+  const isBarbora = rawPhotoUrl?.includes('barbora.lv');
+  const cardSrc = isBarbora
+    ? rawPhotoUrl!
+    : getPhotoSrc(rawPhotoUrl, 300, t('noImage'));
+  const cardSrcSet = isBarbora ? undefined : getPhotoSrcSet(rawPhotoUrl, [150, 300, 450]);
 
   const quantityFormatted = quantityValue && quantityUnit 
     ? `${quantityValue}${quantityUnit}`
