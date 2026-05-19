@@ -23,13 +23,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
   const mainPhoto = photos?.find(p => p.isPrimary) || photos?.[0];
 
   const rawPhotoUrl = mainPhoto?.photoUrl;
-  // Barbora (Maxima) thumbnails: load directly from CDN to avoid proxy latency on listing pages.
-  // The proxy is kept for the product detail page where large WebP conversion is worth the cost.
   const isBarbora = rawPhotoUrl?.includes('barbora.lv');
-  const cardSrc = isBarbora
+  // Priority (above-fold / LCP) Barbora images go through the proxy — pre-warmed at startup,
+  // so it's a memory cache hit and eliminates CDN geographic latency for the LCP element.
+  // Non-priority Barbora images still load directly from CDN to avoid cold-proxy latency
+  // on images that weren't warmed.
+  const cardSrc = (!priority && isBarbora)
     ? rawPhotoUrl!
     : getPhotoSrc(rawPhotoUrl, 300, t('noImage'));
-  const cardSrcSet = isBarbora ? undefined : getPhotoSrcSet(rawPhotoUrl, [150, 300, 450]);
+  const cardSrcSet = (!priority && isBarbora) ? undefined : getPhotoSrcSet(rawPhotoUrl, [150, 300, 450]);
 
   const quantityFormatted = quantityValue && quantityUnit 
     ? `${quantityValue}${quantityUnit}`

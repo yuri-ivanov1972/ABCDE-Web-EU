@@ -331,7 +331,10 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
       const srcset = [150, 300, 450].map(w => `${makeSrc(w)} ${w}w`).join(', ');
       result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />\n  </head>`);
     } else if (rawUrl.includes('barbora.lv')) {
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(rawUrl)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />\n  </head>`);
+      const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
+      const preloadUrl = `${proxyBase}&w=300`;
+      const srcset = [150, 300, 450].map(w => `${proxyBase}&w=${w} ${w}w`).join(', ');
+      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />\n  </head>`);
     }
   }
 
