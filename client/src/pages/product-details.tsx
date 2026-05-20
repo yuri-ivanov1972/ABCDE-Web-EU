@@ -340,7 +340,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     alt={`Nutri-Score ${product.nutrition.nutriScoreGrade}`}
                     width={150}
                     height={81}
-                    className="h-16 aspect-[150/81] flex-shrink-0"
+                    className="h-16 w-auto flex-shrink-0"
                   />
                   <p className="text-sm text-gray-600 mt-1">
                     {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
