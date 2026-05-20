@@ -3,7 +3,10 @@ import { Route, Switch, Redirect, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, type SupportedLanguage } from '@/i18n';
 
-const Home = lazy(() => import('@/pages/home'));
+// Home is the landing page — import directly so it's in the main bundle.
+// This eliminates the Suspense spinner → content swap (the primary CLS source)
+// that lazy loading causes on cold first visits.
+import Home from '@/pages/home';
 const ProductDetails = lazy(() => import('@/pages/product-details'));
 const ProductSearch = lazy(() => import('@/pages/product-search'));
 const ScanPage = lazy(() => import('@/pages/scan'));

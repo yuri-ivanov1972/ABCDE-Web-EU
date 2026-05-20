@@ -50,6 +50,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         if (res.locals.seoCategory) pageData.category = res.locals.seoCategory;
         const cleanedPath = urlPath.split('?')[0];
         const isHomepage = /^\/(lv|en)\/?$/.test(cleanedPath);
+        if (isHomepage && !homepageInitialData) {
+          console.warn('[seo] WARNING: homepage request arrived before warmup completed — skeleton will be shown, CLS risk');
+        }
         const lcpImageUrl = isHomepage ? homepageLcpImageUrl : null;
         const initialData = isHomepage ? homepageInitialData : null;
         return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData);
@@ -150,54 +153,55 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // Pre-warm Barbora image cache — runs in background, doesn't delay server startup
-  (async () => {
-    try {
-      const { products: firstPage, totalCount } = await storage.getProducts({
-        sortBy: "nutriScore",
-        sortOrder: "asc",
-        page: 1,
-        pageSize: 24,
-      });
-      // Store first 12 products as initial data for the homepage — eliminates the API round-trip
-      homepageInitialData = { products: firstPage.slice(0, 12), totalCount };
-      log(`[seo] homepage initial data cached: ${firstPage.slice(0, 12).length} products, total ${totalCount}`);
-      // Store first product's image URL for homepage LCP preload
-      // Scan until we find a product that actually has a photo
-      for (const p of firstPage) {
-        const url = p.photos?.find(ph => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
-        if (url && typeof url === 'string') {
-          homepageLcpImageUrl = url;
-          log(`[seo] homepage LCP preload URL set: ${url.slice(0, 80)}…`);
-          break;
-        }
+  // Phase 1 — blocking: fetch first page of products and set homepageInitialData before
+  // the server starts accepting requests. This ensures cold-boot PageSpeed runs always
+  // receive the injected initial data and never see a skeleton→products layout shift.
+  try {
+    const { products: firstPage, totalCount } = await storage.getProducts({
+      sortBy: "nutriScore",
+      sortOrder: "asc",
+      page: 1,
+      pageSize: 24,
+    });
+    homepageInitialData = { products: firstPage.slice(0, 12), totalCount };
+    log(`[seo] homepage initial data cached: ${firstPage.slice(0, 12).length} products, total ${totalCount}`);
+    for (const p of firstPage) {
+      const url = p.photos?.find(ph => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
+      if (url && typeof url === 'string') {
+        homepageLcpImageUrl = url;
+        log(`[seo] homepage LCP preload URL set: ${url.slice(0, 80)}…`);
+        break;
       }
-
-      const seen = new Set<string>();
-      const barboraUrls: string[] = [];
-      for (const p of firstPage) {
-        const primaryUrl = p.photos?.[0]?.photoUrl;
-        if (
-          typeof primaryUrl === "string" &&
-          !seen.has(primaryUrl)
-        ) {
-          try {
-            const { hostname } = new URL(primaryUrl);
-            if (hostname === "cdn.barbora.lv") {
-              seen.add(primaryUrl);
-              barboraUrls.push(primaryUrl);
-            }
-          } catch { /* skip invalid URLs */ }
-        }
-      }
-      if (barboraUrls.length > 0) {
-        await warmCache(barboraUrls, 300);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn("[imageProxy] warmup failed:", msg);
     }
-  })();
+
+    // Phase 2 — fire-and-forget: warm Barbora image proxy cache (doesn't block startup)
+    const seen = new Set<string>();
+    const barboraUrls: string[] = [];
+    for (const p of firstPage) {
+      const primaryUrl = p.photos?.[0]?.photoUrl;
+      if (
+        typeof primaryUrl === "string" &&
+        !seen.has(primaryUrl)
+      ) {
+        try {
+          const { hostname } = new URL(primaryUrl);
+          if (hostname === "cdn.barbora.lv") {
+            seen.add(primaryUrl);
+            barboraUrls.push(primaryUrl);
+          }
+        } catch { /* skip invalid URLs */ }
+      }
+    }
+    if (barboraUrls.length > 0) {
+      warmCache(barboraUrls, 300).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn("[imageProxy] image cache warmup failed:", msg);
+      });
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn("[seo] homepage data warmup failed — cold boots will show skeleton:", msg);
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

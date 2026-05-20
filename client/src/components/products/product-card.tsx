@@ -73,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
                 alt={`Nutri-Score ${nutrition.nutriScoreGrade}`}
                 width={150}
                 height={81}
-                className="h-11 md:h-10 w-auto"
+                className="h-11 md:h-10 aspect-[150/81]"
               />
             </div>
           )}
