@@ -22,6 +22,7 @@ const serverInitialData = getServerInitialData();
 import Sidebar from '@/components/layout/sidebar';
 import MobileMenu from '@/components/layout/mobile-menu';
 import ProductGrid from '@/components/products/product-grid';
+import { ProductCardSkeleton } from '@/components/products/product-card';
 import Pagination from '@/components/pagination';
 import ActiveFilters from '@/components/filters/active-filters';
 
@@ -248,20 +249,29 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     }
   };
 
-  // Return loading state while translations are loading
+  // Return loading state while translations are loading.
+  // IMPORTANT: layout must be pixel-identical to the ready state to avoid CLS.
+  // Different column counts or card heights between !ready and ready cause a large layout shift.
   if (!ready) {
     return (
       <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
-        <div className="w-64 hidden md:block">
+        {/* Sidebar placeholder — same width as real sidebar */}
+        <div className="w-64 shrink-0 hidden md:block mr-6">
           <div className="bg-gray-100 rounded-md h-96 animate-pulse"></div>
         </div>
         <main className="flex-grow">
           <div className="mb-6">
-            <div className="h-8 bg-gray-100 rounded-md w-64 mb-4 animate-pulse"></div>
+            {/* Title placeholder */}
+            <div className="h-8 bg-gray-100 rounded-md w-48 mb-2 animate-pulse"></div>
+            {/* Sort bar placeholder — same height as real sort row */}
+            <div className="flex justify-end mb-4 mt-6">
+              <div className="h-8 bg-gray-100 rounded-md w-40 animate-pulse"></div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-md h-64 animate-pulse"></div>
+          {/* Grid must use SAME columns as real layout to avoid column-count CLS */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         </main>
