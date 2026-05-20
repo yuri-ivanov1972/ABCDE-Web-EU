@@ -15,36 +15,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOpen, onToggleMobileFilters, hasActiveFilters }) => {
-  const { t, ready, i18n } = useTranslation(['header', 'common']);
+  const { t, i18n } = useTranslation(['header', 'common']);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Return loading state while translations are loading
-  if (!ready) {
-    return (
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center shrink-0">
-            <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt="ABCDE.lv" width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] w-auto" />
-            </LangLink>
-          </div>
-          <div className="hidden md:block flex-grow max-w-2xl">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Loading..."
-                className="w-full px-4 py-2 pr-16 rounded-md border border-gray-300 opacity-50"
-                disabled
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher compact={true} />
-          </div>
-        </div>
-      </header>
-    );
-  }
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

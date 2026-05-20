@@ -22,7 +22,6 @@ const serverInitialData = getServerInitialData();
 import Sidebar from '@/components/layout/sidebar';
 import MobileMenu from '@/components/layout/mobile-menu';
 import ProductGrid from '@/components/products/product-grid';
-import { ProductCardSkeleton } from '@/components/products/product-card';
 import Pagination from '@/components/pagination';
 import ActiveFilters from '@/components/filters/active-filters';
 
@@ -35,7 +34,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCategoryId, isMobileFiltersOpen = false, onCloseMobileFilters, onActiveFiltersChange }) => {
-  const { t, ready, i18n } = useTranslation(['home', 'common']);
+  const { t, i18n } = useTranslation(['home', 'common']);
   const [location] = useLocation();
   const params = useParams<{ id?: string }>();
   
@@ -248,36 +247,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       }
     }
   };
-
-  // Return loading state while translations are loading.
-  // IMPORTANT: layout must be pixel-identical to the ready state to avoid CLS.
-  // Different column counts or card heights between !ready and ready cause a large layout shift.
-  if (!ready) {
-    return (
-      <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
-        {/* Sidebar placeholder — same width as real sidebar */}
-        <div className="w-64 shrink-0 hidden md:block mr-6">
-          <div className="bg-gray-100 rounded-md h-96 animate-pulse"></div>
-        </div>
-        <main className="flex-grow">
-          <div className="mb-6">
-            {/* Title placeholder */}
-            <div className="h-8 bg-gray-100 rounded-md w-48 mb-2 animate-pulse"></div>
-            {/* Sort bar placeholder — same height as real sort row */}
-            <div className="flex justify-end mb-4 mt-6">
-              <div className="h-8 bg-gray-100 rounded-md w-40 animate-pulse"></div>
-            </div>
-          </div>
-          {/* Grid must use SAME columns as real layout to avoid column-count CLS */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <ProductCardSkeleton key={i} />
-            ))}
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   const canonicalPath = category?.slug ? `/category/${category.slug}` : (categoryId ? `/category/${categoryId}` : '/');
   const currentLang = i18n.language?.split('-')[0] || 'lv';
