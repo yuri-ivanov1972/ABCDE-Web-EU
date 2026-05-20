@@ -115,8 +115,13 @@ if (!i18n.isInitialized) {
       returnEmptyString: false,
       returnNull: false,
 
-      // useSuspense: true is the default — React suspends once, renders once,
-      // no re-renders, no CLS, no TBT spike.
+      // useSuspense: false — prevents i18next from throwing a Promise (React Suspense)
+      // when init isn't complete yet. With bundled translations, init finishes in <1ms
+      // anyway, but the Suspense mechanism still activates the <PageLoader> full-screen
+      // spinner in LanguageRouter, which causes the 0.37 CLS (spinner→content shift).
+      // With useSuspense: false, useTranslation() returns ready=false immediately and
+      // components handle the brief !ready state with a layout-stable skeleton instead.
+      useSuspense: false,
     });
 }
 
