@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt="ABCDE.lv" width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] aspect-[300/157]" />
+              <img src={nutriScoreLogo} alt="ABCDE.lv" width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] w-auto" />
             </LangLink>
           </div>
           <div className="hidden md:block flex-grow max-w-2xl">
@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
           {/* Logo */}
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt={t('header:logo.alt')} width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] aspect-[300/157]" />
+              <img src={nutriScoreLogo} alt={t('header:logo.alt')} width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] w-auto" />
             </LangLink>
           </div>
 
