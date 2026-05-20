@@ -6,7 +6,6 @@ import { sql } from "drizzle-orm";
 import { rimiDb, maximaDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
 import { categorySlug, productSlug, extractIdFromSlug } from "./utils/slugify";
-import { ObjectStorageService } from "./objectStorage";
 import { handleImageProxy } from "./imageProxy";
 
 // Define API route schemas
@@ -751,8 +750,6 @@ Sitemap: https://abcde.lv/sitemap.xml
   });
 
   app.post("/api/scan", async (req: Request, res: Response) => {
-    let photoUrl: string | null = null;
-    
     try {
       const result = scanRequestSchema.safeParse(req.body);
       
@@ -789,19 +786,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         console.log('Could not parse image dimensions');
       }
       
-      // Save photo to object storage before processing (only if configured)
-      if (process.env.PRIVATE_OBJECT_DIR) {
-        const objectStorageService = new ObjectStorageService();
-        try {
-          photoUrl = await objectStorageService.saveImageFromBase64(image);
-          console.log(`Photo saved to storage: ${photoUrl}`);
-        } catch (storageError) {
-          console.error("Failed to save photo to storage:", storageError);
-          // Continue with OCR even if storage fails
-        }
-      } else {
-        console.log("Object storage not configured, skipping photo save");
-      }
+      // Photo data is stored directly in the database (no Object Storage dependency)
       
       // Cleanup old scans (30+ days) asynchronously
       storage.cleanupOldScans(30).catch(err => {
@@ -892,14 +877,14 @@ Sitemap: https://abcde.lv/sitemap.xml
       let createdScan;
       try {
         createdScan = await storage.createScan({
-          photoUrl: photoUrl, // Can be null if storage not configured
+          photoData: image,
           ocrText: fullText,
           productId: matchedProduct?.productId || null,
-          matchConfidence: matchedProduct ? "85.00" : null, // Default confidence
+          matchConfidence: matchedProduct ? "85.00" : null,
           success: !!matchedProduct,
           language: req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'unknown'
         });
-        console.log(`Scan metadata saved to database. Product: ${matchedProduct ? matchedProduct.name : 'none'}, Photo: ${photoUrl ? 'saved' : 'not saved'}, Token: ${createdScan.photoAccessToken}`);
+        console.log(`Scan saved. Product: ${matchedProduct ? matchedProduct.name : 'none'}, Token: ${createdScan.photoAccessToken}`);
       } catch (dbError) {
         console.error("Failed to save scan metadata:", dbError);
         // Continue even if DB save fails
@@ -1211,26 +1196,19 @@ Sitemap: https://abcde.lv/sitemap.xml
         });
       }
 
-      if (!scan.photoUrl) {
+      if (!scan.photoData) {
         return res.status(404).json({
           success: false,
           message: "No photo associated with this scan"
         });
       }
 
-      // Parse gs:// path and stream the photo
-      const objectStorageService = new ObjectStorageService();
-      const file = await objectStorageService.getFileFromStoragePath(scan.photoUrl);
-      
-      if (!file) {
-        return res.status(404).json({
-          success: false,
-          message: "Photo file not found in storage"
-        });
-      }
-
-      // Stream the photo directly to the client
-      await objectStorageService.downloadObject(file, res);
+      // Serve photo stored as base64 directly from the database
+      const base64Data = scan.photoData.replace(/^data:image\/[a-z]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      res.set('Content-Type', 'image/jpeg');
+      res.set('Cache-Control', 'private, max-age=2592000');
+      res.send(buffer);
     } catch (error) {
       console.error("Error serving scan photo:", error);
       if (!res.headersSent) {

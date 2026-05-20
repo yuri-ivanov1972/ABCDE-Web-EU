@@ -14,6 +14,7 @@ export const scans = pgTable("scans", {
   scanId: serial("scan_id").primaryKey(),
   photoAccessToken: varchar("photo_access_token", { length: 36 }).notNull().unique().$defaultFn(() => crypto.randomUUID()),
   photoUrl: text("photo_url"),
+  photoData: text("photo_data"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   ocrText: text("ocr_text"),
   productId: integer("product_id"),

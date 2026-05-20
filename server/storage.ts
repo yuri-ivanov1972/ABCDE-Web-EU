@@ -1624,40 +1624,19 @@ export class DatabaseStorage implements IStorage {
   }
   
   async cleanupOldScans(daysOld: number): Promise<number> {
-    // Calculate the cutoff date
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
     
-    // Get old scans with photo URLs
     const oldScans = await scansDb
-      .select({ photoUrl: scans.photoUrl })
+      .select({ scanId: scans.scanId })
       .from(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
     
-    // Delete photos from object storage
-    if (oldScans.length > 0) {
-      const { ObjectStorageService } = await import("./objectStorage");
-      const objectStorageService = new ObjectStorageService();
-      
-      for (const scan of oldScans) {
-        if (scan.photoUrl) {
-          try {
-            await objectStorageService.deleteImageByUrl(scan.photoUrl);
-            console.log(`Deleted photo from storage: ${scan.photoUrl}`);
-          } catch (err) {
-            console.error(`Failed to delete photo ${scan.photoUrl}:`, err);
-            // Continue with cleanup even if photo deletion fails
-          }
-        }
-      }
-    }
-    
-    // Delete from database
     await scansDb
       .delete(scans)
       .where(sql`${scans.createdAt} < ${cutoffDate.toISOString()}`);
     
-    console.log(`Cleaned up ${oldScans.length} old scans from database and storage`);
+    console.log(`Cleaned up ${oldScans.length} old scans from database`);
     return oldScans.length;
   }
 }

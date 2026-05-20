@@ -22,7 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Processing**: SQL-level operations for filtering and sorting to ensure scalability and performance.
 - **Authentication**: Basic session-based user management for future extensibility.
 - **OCR and Product Recognition**: Integrates with Google Cloud Vision API for OCR, followed by a two-pass token matching algorithm to identify products from scanned text, normalizing Latvian characters for accuracy.
-- **Scan Photo Storage**: Backend-only storage of scanned price tag photos and associated metadata using Replit App Storage, with a 30-day retention policy and automatic cleanup.
+- **Scan Photo Storage**: Backend-only storage of scanned price tag photos as base64 directly in the local PostgreSQL `scans` table (`photo_data` column), with a 30-day retention policy and automatic cleanup. No external Object Storage dependency.
 
 ### Data Storage
 - **Databases**: PostgreSQL with three database connections:
