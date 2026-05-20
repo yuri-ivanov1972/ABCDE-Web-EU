@@ -1,0 +1,53 @@
+PageSpeed Optimization — Handoff Summary
+Starting state
+Score: ~71 (mobile, PageSpeed Insights)
+Deployment: North America, autoscale
+What was done and what it achieved
+1. Gzip compression (compression middleware in server/index.ts)
+Score jumped to ~92. Single biggest win — HTML/JSON responses were uncompressed before.
+
+2. Server-side data injection (server/seo.ts + server/index.ts)
+At startup the server fetches the first 12 products and caches them. On every homepage request, this data is injected directly into the HTML as a <script id="initial-data"> tag. The React frontend reads this on mount and skips the API round-trip entirely. Eliminated ~300ms of blank-screen time on first load.
+
+3. LCP image preload (server/seo.ts)
+The first product's photo URL is stored at startup and injected as <link rel="preload" as="image"> with a srcset at widths 150w/300w/450w. This tells the browser to start fetching the LCP image before React even boots.
+
+4. Barbora image proxy (server/imageProxy.ts, client/src/lib/photoUrl.ts, client/src/components/products/product-card.tsx)
+Barbora CDN serves JPEG/PNG; the proxy converts them to WebP and resizes on first fetch, caching in memory. Above-fold product card images and the homepage LCP preload both route through /api/image-proxy?url=...&w=300. The proxy warms up the first 12 images at server startup (background, non-blocking).
+
+5. Object Storage removed (server/imageProxy.ts, server/objectStorage.ts deleted)
+Originally added as a persistent cache layer. Removed because it locked deployment geography to North America. Scan photos now store as base64 in the local PostgreSQL scans.photo_data column instead.
+
+6. SEO fixes (all already in the codebase)
+
+/en/ pages: noindex, follow meta tag
+/product/:id (no lang prefix): server-side 301 → /lv/product/:id
+SEO content injected inside <div id="root"> so Google's renderer sees it before React mounts
+Score behaviour after these changes
+Condition	Score
+Warm instance (proxy cache hot)	91–93
+Cold instance, North America	74–88 (proxy fetches ~150ms transatlantic to Barbora CDN)
+Cold instance, Europe (your new deployment)	Expected 88–93 consistently (proxy→Barbora ~5ms)
+The warm/cold alternation was caused by autoscale recycling instances. With the server now in Europe, the cold-start Barbora fetch is negligible and scores should be stable.
+
+Open issue to investigate next (Task #27, was proposed but cancelled)
+One PageSpeed run showed an outlier: TBT 1,074ms, CLS 0.27 — completely different from the usual ~100ms TBT and 0.00 CLS. Likely causes:
+
+GTM/GA loading in a way that occasionally blocks the main thread on cold boot
+Product card images rendering without reserved dimensions, causing layout shift when the WebP proxy response arrives at a different size than expected
+Files to look at: client/index.html (analytics script order), client/src/components/products/product-card.tsx (img width/height attributes), server/index.ts (warmup timing relative to first request)
+Key files in the new project to verify are correct
+File	What to check
+server/imageProxy.ts	Memory-only cache, no @replit/object-storage import
+server/index.ts	Warmup runs at startup; homepageLcpImageUrl and homepageInitialData are set
+server/seo.ts	LCP preload injected with proxy URL + srcset; initial data injected in #root
+client/src/components/products/product-card.tsx	Priority cards use getPhotoSrc/getPhotoSrcSet (proxy URLs)
+shared/schema.ts	scans table has photoData text column
+server/storage.ts	cleanupOldScans has no Object Storage references
+Secrets to re-enter in the new project
+RIMI_DATABASE_URL — Neon DB for Rimi products/categories
+MAXIMA_DATABASE_URL — Neon DB for Maxima products
+DATABASE_URL — local PostgreSQL for scans (Replit auto-provides this)
+GOOGLE_CLOUD_API_KEY — Cloud Vision OCR for the scanner feature
+Any GTM/GA environment variables if used server-side
+The three Object Storage secrets (DEFAULT_OBJECT_STORAGE_BUCKET_ID, PRIVATE_OBJECT_DIR, PUBLIC_OBJECT_SEARCH_PATHS) should not be added — leave them absent to keep the project free of Object Storage.
