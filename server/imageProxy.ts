@@ -1,7 +1,5 @@
 import type { Request, Response } from "express";
 import sharp from "sharp";
-import { createHash } from "crypto";
-import { Client as ObjStorageClient } from "@replit/object-storage";
 
 const ALLOWED_HOSTS = new Set(["cdn.barbora.lv"]);
 const MAX_WIDTH = 1200;
@@ -14,26 +12,6 @@ interface CacheEntry {
 const memCache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_CACHE_SIZE = 500;
-
-let objClient: ObjStorageClient | null = null;
-try {
-  const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-  if (bucketId) {
-    objClient = new ObjStorageClient({ bucketId });
-  } else {
-    console.warn("[imageProxy] DEFAULT_OBJECT_STORAGE_BUCKET_ID not set — using memory cache only");
-  }
-} catch {
-  console.warn("[imageProxy] Object Storage unavailable — using memory cache only");
-}
-
-function urlHash(url: string): string {
-  return createHash("md5").update(url).digest("hex").slice(0, 16);
-}
-
-function objKey(url: string, width: number): string {
-  return `.private/img-cache/${urlHash(url)}-${width}.webp`;
-}
 
 function pruneCache() {
   if (memCache.size < MAX_CACHE_SIZE) return;
@@ -69,8 +47,8 @@ async function fetchAndConvert(url: string, width: number): Promise<Buffer> {
 }
 
 /**
- * Fetch+convert a Barbora image URL and populate both caches.
- * Check order: in-memory → Object Storage → fetch from Barbora CDN.
+ * Fetch+convert a Barbora image URL and populate the in-memory cache.
+ * Check order: in-memory → fetch from Barbora CDN.
  * Returns the WebP buffer, or null on failure.
  * Validates the URL hostname against ALLOWED_HOSTS before fetching.
  * Re-throws AbortError so callers can distinguish 504 upstream timeout.
@@ -94,41 +72,10 @@ export async function warmCacheEntry(url: string, width: number): Promise<Buffer
     return cached.data;
   }
 
-  // 2. Object Storage hit
-  if (objClient) {
-    try {
-      const key = objKey(url, width);
-      const result = await objClient.downloadAsBytes(key);
-      // GCS download() returns [Buffer] tuple; result.value is that tuple
-      if (result.ok && Array.isArray(result.value) && result.value[0]) {
-        const buf = result.value[0] as Buffer;
-        pruneCache();
-        memCache.set(memKey, { data: buf, timestamp: Date.now() });
-        return buf;
-      }
-    } catch {
-      // fall through to fetch
-    }
-  }
-
-  // 3. Fetch from origin, convert, persist
+  // 2. Fetch from origin, convert, store in memory
   const webpBuffer = await fetchAndConvert(url, width);
   pruneCache();
   memCache.set(memKey, { data: webpBuffer, timestamp: Date.now() });
-
-  if (objClient) {
-    const key = objKey(url, width);
-    // Fire-and-forget: detached async block inspects result.ok for observability
-    (async () => {
-      const result = await objClient!.uploadFromBytes(key, webpBuffer);
-      if (!result.ok) {
-        console.warn("[imageProxy] ObjStorage write failed:", result.error?.message ?? result.error);
-      }
-    })().catch((err: unknown) => {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn("[imageProxy] ObjStorage write error:", msg);
-    });
-  }
 
   return webpBuffer;
 }
