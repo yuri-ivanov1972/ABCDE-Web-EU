@@ -36,18 +36,17 @@ function buildProductImgUrls(rawUrl: string): { src: string; srcset: string | nu
   if (rawUrl.includes('cloudinary.com')) {
     const base = rawUrl
       .replace(/dpr_auto,/g, '')
-      .replace(/,dpr_auto/g, '')
-      .replace(/\bq_auto:low\b/g, 'q_auto');
+      .replace(/,dpr_auto/g, '');
     const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
     return {
-      src: makeSrc(900),
+      src: makeSrc(600),
       srcset: [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', '),
     };
   }
   if (rawUrl.includes('barbora.lv')) {
     const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
     return {
-      src: `${proxyBase}&w=900`,
+      src: `${proxyBase}&w=600`,
       srcset: [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', '),
     };
   }
