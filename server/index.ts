@@ -165,7 +165,11 @@ app.use((req, res, next) => {
     });
     homepageInitialData = { products: firstPage.slice(0, 12), totalCount };
     log(`[seo] homepage initial data cached: ${firstPage.slice(0, 12).length} products, total ${totalCount}`);
-    for (const p of firstPage) {
+    // Limit LCP URL search to the first 4 products — these are the cards that get
+    // priority=true on mobile (getAboveFoldCount() returns 4 for <768px viewports).
+    // Searching beyond index 3 would preload a URL for a non-priority card which uses
+    // the direct CDN URL instead of the proxy, causing a preload/srcset URL mismatch.
+    for (const p of firstPage.slice(0, 4)) {
       const url = p.photos?.find(ph => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
       if (url && typeof url === 'string') {
         homepageLcpImageUrl = url;
@@ -174,28 +178,34 @@ app.use((req, res, next) => {
       }
     }
 
-    // Phase 1b — blocking: warm the LCP image at all srcset widths BEFORE server.listen.
-    // This guarantees every request (including Lighthouse cold-boot runs) gets a proxy
-    // cache hit for the LCP element so the <link rel="preload"> image arrives before FCP.
-    if (homepageLcpImageUrl) {
+    // Phase 1b — blocking: warm ALL Barbora images in the first 4 products at all
+    // srcset widths BEFORE server.listen.  All 4 above-fold cards get priority=true
+    // on mobile and use the proxy, so every one needs to be in the proxy cache before
+    // the server starts accepting connections.
+    const aboveFoldBarbora: string[] = [];
+    for (const p of firstPage.slice(0, 4)) {
+      const url = p.photos?.find((ph: any) => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
+      if (typeof url === 'string') {
+        try {
+          const { hostname } = new URL(url);
+          if (hostname === "cdn.barbora.lv") aboveFoldBarbora.push(url);
+        } catch { /* skip */ }
+      }
+    }
+    if (aboveFoldBarbora.length > 0) {
       try {
-        const { hostname } = new URL(homepageLcpImageUrl);
-        if (hostname === "cdn.barbora.lv") {
-          await Promise.allSettled(
-            [150, 300, 450].map(w => warmCacheEntry(homepageLcpImageUrl!, w))
-          );
-          log(`[imageProxy] LCP image pre-warmed at w=150/300/450 — proxy cache ready`);
-        }
+        await Promise.allSettled(
+          aboveFoldBarbora.flatMap(url => [150, 300, 450].map(w => warmCacheEntry(url, w)))
+        );
+        log(`[imageProxy] ${aboveFoldBarbora.length} above-fold image(s) pre-warmed at w=150/300/450 — proxy cache ready`);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.warn("[imageProxy] LCP blocking warmup failed:", msg);
+        console.warn("[imageProxy] above-fold blocking warmup failed:", msg);
       }
     }
 
     // Phase 2 — fire-and-forget: warm remaining Barbora images (doesn't block startup)
-    const seen = new Set<string>();
-    // Seed seen with the LCP URL — already warmed above, skip it in the bulk pass
-    if (homepageLcpImageUrl) seen.add(homepageLcpImageUrl);
+    const seen = new Set<string>(aboveFoldBarbora); // already warmed blocking above
     const barboraUrls: string[] = [];
     for (const p of firstPage) {
       // Use isPrimary-first selection — same logic as the LCP preload URL above so

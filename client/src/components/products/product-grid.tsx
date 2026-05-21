@@ -11,7 +11,8 @@ function getAboveFoldCount(): number {
   if (typeof window === 'undefined') return 4;
   if (window.innerWidth >= 1024) return 4;
   if (window.innerWidth >= 768) return 3;
-  return 2;
+  // Mobile 360×640: ~60px header + 2 rows × (110px image + 80px text + 16px gap) ≈ 4 cards above fold
+  return 4;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
