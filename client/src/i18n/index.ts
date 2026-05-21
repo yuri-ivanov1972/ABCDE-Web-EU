@@ -120,6 +120,10 @@ export function lazyLoadEnHomepage(): Promise<void> {
     i18n.addResourceBundle('en', 'categories', categories.default, true, false);
     i18n.addResourceBundle('en', 'pagination', pagination.default, true, false);
     i18n.addResourceBundle('en', 'errors', errors.default, true, false);
+    // Notify react-i18next to re-render all components now that EN translations are ready
+    if (i18n.language === 'en' || i18n.language?.startsWith('en-')) {
+      i18n.emit('languageChanged', i18n.language);
+    }
   })();
   return enHomepagePromise;
 }
