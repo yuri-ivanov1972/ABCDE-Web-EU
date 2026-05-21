@@ -55,7 +55,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         }
         const lcpImageUrl = isHomepage ? homepageLcpImageUrl : null;
         const initialData = isHomepage ? homepageInitialData : null;
-        return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData);
+        const productInitialData = pageData.product ? (res.locals.seoFullProduct || null) : null;
+        return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData, productInitialData);
       }
     }
     return body;
@@ -399,11 +400,12 @@ app.use((req, res, next) => {
           categoryNameLv: product.category?.nameLv || null,
           categoryNameEn: product.category?.nameEn || null,
           store: product.store || 'rimi',
-          photoUrl: product.photos?.[0]?.photoUrl || null,
+          photoUrl: (product.photos?.find((p: any) => p.isPrimary) || product.photos?.[0])?.photoUrl || null,
           quantityValue: product.quantityValue || null,
           quantityUnit: product.quantityUnit || null,
           productId: product.productId,
         } as ProductSeoData;
+        res.locals.seoFullProduct = product;
       } catch (err) {
         console.error('Error checking product existence:', err);
       }

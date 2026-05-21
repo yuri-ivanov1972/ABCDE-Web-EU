@@ -115,6 +115,14 @@ const NutritionFactsCollapsible: React.FC<NutritionFactsCollapsibleProps> = ({ n
   );
 };
 
+function readServerProductData(): any | undefined {
+  try {
+    const el = document.getElementById('__ABCDE_PRODUCT_DATA__');
+    if (el?.textContent) return JSON.parse(el.textContent);
+  } catch {}
+  return undefined;
+}
+
 const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   const { t, ready, i18n } = useTranslation(['product', 'common', 'header']);
   
@@ -126,12 +134,18 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   
   const urlParams = new URLSearchParams(window.location.search);
   const store = urlParams.get('store') as 'rimi' | 'maxima' | undefined;
+
+  const serverProduct = React.useMemo(() => {
+    const data = readServerProductData();
+    return data?.productId === productId ? data : undefined;
+  }, [productId]);
   
   // Always call all hooks first before any early returns
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['/api/products', productId, store],
     queryFn: () => getProductById(productId, store || undefined),
-    enabled: ready && Number.isFinite(productId) && productId > 0 && !!id && !isNaN(productId)
+    enabled: ready && Number.isFinite(productId) && productId > 0 && !!id && !isNaN(productId),
+    placeholderData: serverProduct,
   });
 
   // Fetch category path

@@ -32,6 +32,28 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function buildProductImgUrls(rawUrl: string): { src: string; srcset: string | null } {
+  if (rawUrl.includes('cloudinary.com')) {
+    const base = rawUrl
+      .replace(/dpr_auto,/g, '')
+      .replace(/,dpr_auto/g, '')
+      .replace(/\bq_auto:low\b/g, 'q_auto');
+    const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
+    return {
+      src: makeSrc(900),
+      srcset: [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', '),
+    };
+  }
+  if (rawUrl.includes('barbora.lv')) {
+    const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
+    return {
+      src: `${proxyBase}&w=900`,
+      srcset: [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', '),
+    };
+  }
+  return { src: rawUrl, srcset: null };
+}
+
 function parseUrlPath(urlPath: string): { lang: string; cleanPath: string } {
   const pathParts = urlPath.split('?')[0].split('/').filter(Boolean);
   const lang = SUPPORTED_LANGUAGES.includes(pathParts[0]) ? pathParts[0] : DEFAULT_LANG;
@@ -222,7 +244,14 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
     rows.push(`<p>${isLv ? 'Veikals' : 'Store'}: ${storeName}</p>`);
     if (p.quantityValue && p.quantityUnit) rows.push(`<p>${isLv ? 'Daudzums' : 'Quantity'}: ${escapeHtml(p.quantityValue)} ${escapeHtml(p.quantityUnit)}</p>`);
 
-    return `<div id="seo-prerender"><h1>${escapeHtml(p.name)}</h1>${rows.join('')}</div>`;
+    const imgHtml = p.photoUrl
+      ? (() => {
+          const { src, srcset } = buildProductImgUrls(p.photoUrl!);
+          const srcsetAttr = srcset ? ` srcset="${escapeHtml(srcset)}" sizes="(min-width: 768px) 50vw, 100vw"` : '';
+          return `<img src="${escapeHtml(src)}"${srcsetAttr} width="600" height="400" fetchpriority="high" loading="eager" alt="${escapeHtml(p.name)}" style="width:100%;max-width:600px;height:auto;display:block" />`;
+        })()
+      : '';
+    return `<div id="seo-prerender">${imgHtml}<h1>${escapeHtml(p.name)}</h1>${rows.join('')}</div>`;
   }
 
   if (pageData.category) {
@@ -237,7 +266,7 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
   return '';
 }
 
-export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null, initialData?: { products: any[]; totalCount: number } | null): string {
+export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null, initialData?: { products: any[]; totalCount: number } | null, productInitialData?: any | null): string {
   if (!html.includes('<!DOCTYPE html>') && !html.includes('<html')) {
     return html;
   }
@@ -310,28 +339,11 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
   }
 
   if (pageData?.product?.photoUrl) {
-    const rawUrl = pageData.product.photoUrl;
-
-    if (rawUrl.includes('cloudinary.com')) {
-      const base = rawUrl
-        .replace(/dpr_auto,/g, '')
-        .replace(/,dpr_auto/g, '')
-        .replace(/\bq_auto:low\b/g, 'q_auto');
-      const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
-      const preloadUrl = makeSrc(900);
-      const srcset = [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', ');
-      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />`;
-      result = injectPreloadEarly(result, preloadTag);
-    } else if (rawUrl.includes('barbora.lv')) {
-      const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
-      const preloadUrl = `${proxyBase}&w=900`;
-      const srcset = [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', ');
-      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />`;
-      result = injectPreloadEarly(result, preloadTag);
-    } else {
-      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(rawUrl)}" fetchpriority="high" />`;
-      result = injectPreloadEarly(result, preloadTag);
-    }
+    const { src: preloadSrc, srcset: preloadSrcset } = buildProductImgUrls(pageData.product.photoUrl);
+    const preloadTag = preloadSrcset
+      ? `<link rel="preload" as="image" href="${escapeHtml(preloadSrc)}" imagesrcset="${escapeHtml(preloadSrcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />`
+      : `<link rel="preload" as="image" href="${escapeHtml(preloadSrc)}" fetchpriority="high" />`;
+    result = injectPreloadEarly(result, preloadTag);
   }
 
   // Homepage LCP image preload — injected when no product-specific preload is already present
@@ -409,6 +421,17 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     result = result.replace(
       '</body>',
       `<script id="__ABCDE_INITIAL_DATA__" type="application/json">${safeJson}</script>\n</body>`
+    );
+  }
+
+  if (productInitialData) {
+    const safeJson = JSON.stringify(productInitialData)
+      .replace(/&/g, '\\u0026')
+      .replace(/</g, '\\u003C')
+      .replace(/>/g, '\\u003E');
+    result = result.replace(
+      '</body>',
+      `<script id="__ABCDE_PRODUCT_DATA__" type="application/json">${safeJson}</script>\n</body>`
     );
   }
 
