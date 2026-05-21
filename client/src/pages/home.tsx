@@ -60,7 +60,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const [sortOption, setSortOption] = useState<SortOption>('nutriScore');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
-  const [selectedStore, setSelectedStore] = useState<Store | undefined>(undefined);
+  const [selectedStore, setSelectedStore] = useState<Store | undefined>('rimi');
   
   // Initialize search from props
   useEffect(() => {
@@ -115,7 +115,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   // Use server-injected data as placeholder when query matches the default homepage state
   const isDefaultQuery = !categoryId && page === 1 && filters.nutriScores.length === 0
     && !filters.madeInLatvia && sortOption === 'nutriScore' && sortOrder === 'asc'
-    && !searchQuery && !selectedStore;
+    && !searchQuery && selectedStore === 'rimi';
 
   // Fetch products with filters
   const { data, isLoading, refetch } = useQuery({

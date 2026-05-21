@@ -162,6 +162,7 @@ app.use((req, res, next) => {
       sortOrder: "asc",
       page: 1,
       pageSize: 24,
+      store: "rimi",
     });
     homepageInitialData = { products: firstPage.slice(0, 12), totalCount };
     log(`[seo] homepage initial data cached: ${firstPage.slice(0, 12).length} products, total ${totalCount}`);
