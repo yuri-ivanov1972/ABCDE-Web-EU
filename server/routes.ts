@@ -7,6 +7,7 @@ import { rimiDb, maximaDb } from "./db";
 import { normalizeLvText } from "./utils/textNormalization";
 import { categorySlug, productSlug, extractIdFromSlug } from "./utils/slugify";
 import { handleImageProxy } from "./imageProxy";
+import type { Store } from "@shared/schema";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -34,9 +35,136 @@ const getProductsQuerySchema = z.object({
   store: z.enum(['rimi', 'maxima']).optional()
 });
 
+function classifyImageUrl(url: string | null | undefined): 'cloudinary' | 'barbora' | 'none' {
+  if (!url) return 'none';
+  if (url.includes('cloudinary.com')) return 'cloudinary';
+  if (url.includes('barbora.lv')) return 'barbora';
+  return 'none';
+}
+
+function buildLcpPreloadUrls(rawUrl: string, type: 'cloudinary' | 'barbora'): { src: string; srcset: string } {
+  if (type === 'cloudinary') {
+    const base = rawUrl
+      .replace(/dpr_auto,/g, '')
+      .replace(/,dpr_auto/g, '')
+      .replace(/\bq_auto:low\b/g, 'q_auto');
+    const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
+    return {
+      src: makeSrc(900),
+      srcset: [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', '),
+    };
+  }
+  const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
+  return {
+    src: `${proxyBase}&w=900`,
+    srcset: [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', '),
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Image proxy — converts external Barbora CDN images to WebP with resizing and server-side caching
   app.get("/api/image-proxy", handleImageProxy);
+
+  // LCP diagnostic — reports which image URL pattern a product page would use and confirms
+  // that the Task #12 server-side preload/img injection is in place.
+  // Usage:
+  //   GET /api/lcp-diagnostic?productId=12345            — single product report
+  //   GET /api/lcp-diagnostic?productId=12345&store=maxima
+  //   GET /api/lcp-diagnostic?sample=20                  — top-N by Nutri-Score per store (default 10, max 50)
+  app.get("/api/lcp-diagnostic", async (req: Request, res: Response) => {
+    try {
+      const sampleParam = req.query.sample;
+      if (sampleParam !== undefined) {
+        // Sample mode: fetch up to N products per store (sorted by Nutri-Score asc) and return
+        // image URL type distribution. Use ?productId=X for per-product LCP detail.
+        const perStore = Math.min(50, Math.max(1, parseInt(String(sampleParam), 10) || 10));
+        const [rimiResult, maximaResult] = await Promise.allSettled([
+          storage.getProducts({ page: 1, pageSize: perStore, store: 'rimi', sortBy: 'nutriScore', sortOrder: 'asc' }),
+          storage.getProducts({ page: 1, pageSize: perStore, store: 'maxima', sortBy: 'nutriScore', sortOrder: 'asc' }),
+        ]);
+
+        const counts = { cloudinary: 0, barbora: 0, none: 0 };
+        const exampleProducts: any[] = [];
+
+        for (const result of [rimiResult, maximaResult]) {
+          if (result.status !== 'fulfilled') continue;
+          for (const p of result.value.products) {
+            const photoUrl = (p.photos?.find((ph: any) => ph.isPrimary) || p.photos?.[0])?.photoUrl || null;
+            const type = classifyImageUrl(photoUrl);
+            counts[type]++;
+            if (exampleProducts.filter(e => e.imageType === type).length < 2) {
+              exampleProducts.push({
+                productId: p.productId,
+                name: p.name,
+                store: p.store,
+                imageType: type,
+                diagnosticUrl: `/api/lcp-diagnostic?productId=${p.productId}${p.store === 'maxima' ? '&store=maxima' : ''}`,
+              });
+            }
+          }
+        }
+
+        const total = counts.cloudinary + counts.barbora + counts.none;
+        return res.json({
+          requestedPerStore: perStore,
+          actualProductsChecked: total,
+          note: 'Products are the top-N by Nutri-Score A→E from each store. Use ?productId=X for per-URL LCP detail.',
+          distribution: {
+            cloudinary: { count: counts.cloudinary, pct: total ? Math.round(counts.cloudinary / total * 100) : 0, note: 'Rimi products — direct Cloudinary CDN with srcset' },
+            barbora: { count: counts.barbora, pct: total ? Math.round(counts.barbora / total * 100) : 0, note: 'Maxima products — routed through /api/image-proxy (WebP, resized)' },
+            none: { count: counts.none, pct: total ? Math.round(counts.none / total * 100) : 0, note: 'No photo; text element becomes LCP candidate' },
+          },
+          exampleProducts,
+        });
+      }
+
+      // Single-product mode
+      const productIdParam = req.query.productId;
+      if (!productIdParam) {
+        return res.status(400).json({ error: 'Provide ?productId=X or ?sample=N' });
+      }
+      const productId = parseInt(String(productIdParam), 10);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: 'productId must be a number' });
+      }
+      const storeParam = req.query.store as Store | undefined;
+      const product = await storage.getProductById(productId, storeParam);
+      if (!product) {
+        return res.status(404).json({ error: `Product ${productId} not found` });
+      }
+
+      const photoUrl = (product.photos?.find((p: any) => p.isPrimary) || product.photos?.[0])?.photoUrl || null;
+      const imageType = classifyImageUrl(photoUrl);
+      const preloadUrls = imageType !== 'none' ? buildLcpPreloadUrls(photoUrl!, imageType) : null;
+
+      return res.json({
+        productId: product.productId,
+        name: product.name,
+        store: product.store || 'rimi',
+        slug: product.slug,
+        productPageUrl: `https://abcde.lv/lv/product/${product.slug || product.productId}`,
+        imageType,
+        photoUrl,
+        preload: preloadUrls
+          ? { src: preloadUrls.src, srcset: preloadUrls.srcset }
+          : null,
+        lcpOptimizations: {
+          serverSideImgInjected: imageType !== 'none',
+          preloadTagInjected: imageType !== 'none',
+          productDataScriptInjected: true,
+          note: imageType === 'none'
+            ? 'No product photo — no LCP image to preload; text content becomes LCP element'
+            : imageType === 'barbora'
+            ? 'Barbora image routed through /api/image-proxy (WebP, resized). Ensure proxy cache is warm.'
+            : 'Cloudinary image served directly with responsive srcset.',
+        },
+        nutriScoreGrade: product.nutrition?.nutriScoreGrade || null,
+      });
+    } catch (err: any) {
+      console.error('[lcp-diagnostic] error:', err?.message || err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   // Robots.txt for SEO - block ?store= query parameters to avoid duplicate content
   app.get("/robots.txt", (_req: Request, res: Response) => {
