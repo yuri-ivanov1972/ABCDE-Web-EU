@@ -29,32 +29,5 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return;
-          if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/scheduler/') ||
-            id.includes('react-helmet-async')
-          ) return 'react-vendor';
-          if (
-            id.includes('@radix-ui/') ||
-            id.includes('class-variance-authority') ||
-            id.includes('/clsx/') ||
-            id.includes('tailwind-merge') ||
-            id.includes('cmdk') ||
-            id.includes('vaul')
-          ) return 'radix-vendor';
-          if (id.includes('@tanstack/')) return 'query-vendor';
-          if (
-            id.includes('i18next') ||
-            id.includes('react-i18next') ||
-            id.includes('i18next-browser-languagedetector')
-          ) return 'i18n-vendor';
-        },
-      },
-    },
   },
 });

@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// ── Latvian (homepage namespaces — bundled synchronously, default language) ───
+// ── Latvian ──────────────────────────────────────────────────────────────────
 import lvCommon from '../locales/lv/common.json';
 import lvHeader from '../locales/lv/header.json';
 import lvHome from '../locales/lv/home.json';
@@ -11,9 +11,26 @@ import lvFilters from '../locales/lv/filters.json';
 import lvCategories from '../locales/lv/categories.json';
 import lvPagination from '../locales/lv/pagination.json';
 import lvErrors from '../locales/lv/errors.json';
+import lvScan from '../locales/lv/scan.json';
+import lvIngredients from '../locales/lv/ingredients.json';
+import lvAboutNutriScore from '../locales/lv/aboutNutriScore.json';
+import lvAboutProject from '../locales/lv/aboutProject.json';
+import lvStats from '../locales/lv/stats.json';
 
-// English homepage namespaces are NOT statically imported.
-// They are loaded on demand via lazyLoadEnHomepage() when the user visits /en.
+// ── English ──────────────────────────────────────────────────────────────────
+import enCommon from '../locales/en/common.json';
+import enHeader from '../locales/en/header.json';
+import enHome from '../locales/en/home.json';
+import enProduct from '../locales/en/product.json';
+import enFilters from '../locales/en/filters.json';
+import enCategories from '../locales/en/categories.json';
+import enPagination from '../locales/en/pagination.json';
+import enErrors from '../locales/en/errors.json';
+import enScan from '../locales/en/scan.json';
+import enIngredients from '../locales/en/ingredients.json';
+import enAboutNutriScore from '../locales/en/aboutNutriScore.json';
+import enAboutProject from '../locales/en/aboutProject.json';
+import enStats from '../locales/en/stats.json';
 
 // Supported languages
 export const SUPPORTED_LANGUAGES = ['lv', 'en'] as const;
@@ -22,17 +39,11 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
 // Default language
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'lv';
 
-// All namespaces (reference — lazy ones are loaded on demand)
+// All namespaces (kept for reference)
 export const NAMESPACES = [
   'common', 'header', 'home', 'product', 'filters', 'categories',
   'pagination', 'errors', 'scan', 'ingredients', 'aboutNutriScore',
   'aboutProject', 'stats',
-] as const;
-
-// Namespaces bundled in the initial chunk (needed on the homepage)
-const INITIAL_NAMESPACES = [
-  'common', 'header', 'home', 'product', 'filters', 'categories',
-  'pagination', 'errors',
 ] as const;
 
 // Language detection configuration
@@ -51,6 +62,7 @@ if (!i18n.isInitialized) {
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
+      // All translations bundled inline — zero extra network requests
       resources: {
         lv: {
           common: lvCommon,
@@ -61,19 +73,41 @@ if (!i18n.isInitialized) {
           categories: lvCategories,
           pagination: lvPagination,
           errors: lvErrors,
+          scan: lvScan,
+          ingredients: lvIngredients,
+          aboutNutriScore: lvAboutNutriScore,
+          aboutProject: lvAboutProject,
+          stats: lvStats,
         },
-        // EN resources are loaded lazily via lazyLoadEnHomepage()
+        en: {
+          common: enCommon,
+          header: enHeader,
+          home: enHome,
+          product: enProduct,
+          filters: enFilters,
+          categories: enCategories,
+          pagination: enPagination,
+          errors: enErrors,
+          scan: enScan,
+          ingredients: enIngredients,
+          aboutNutriScore: enAboutNutriScore,
+          aboutProject: enAboutProject,
+          stats: enStats,
+        },
       },
 
       supportedLngs: SUPPORTED_LANGUAGES,
       fallbackLng: DEFAULT_LANGUAGE,
       debug: import.meta.env.DEV,
 
+      // Language detection
       detection: detectionOptions,
 
-      ns: INITIAL_NAMESPACES,
+      // Namespace configuration
+      ns: NAMESPACES,
       defaultNS: 'common',
 
+      // Interpolation
       interpolation: {
         escapeValue: false,
       },
@@ -84,122 +118,25 @@ if (!i18n.isInitialized) {
       // useSuspense: false — prevents i18next from throwing a Promise (React Suspense)
       // when init isn't complete yet. With bundled translations, init finishes in <1ms
       // anyway, but the Suspense mechanism still activates the <PageLoader> full-screen
-      // spinner in LanguageRouter, which causes CLS.
-      // With useSuspense: false, useTranslation() returns ready=false immediately.
+      // spinner in LanguageRouter, which causes the 0.37 CLS (spinner→content shift).
+      // With useSuspense: false, useTranslation() returns ready=false immediately and
+      // components handle the brief !ready state with a layout-stable skeleton instead.
       useSuspense: false,
     });
 }
 
-// ── Lazy EN homepage loader ───────────────────────────────────────────────────
-// English homepage namespaces are split into a separate Vite chunk.
-// This function is called by LanguageRouter when the URL starts with /en.
-
-let enHomepagePromise: Promise<void> | null = null;
-
-export function lazyLoadEnHomepage(): Promise<void> {
-  if (i18n.hasResourceBundle('en', 'common')) return Promise.resolve();
-  if (enHomepagePromise) return enHomepagePromise;
-  enHomepagePromise = (async () => {
-    const [
-      common, header, home, product, filters, categories, pagination, errors,
-    ] = await Promise.all([
-      import('../locales/en/common.json'),
-      import('../locales/en/header.json'),
-      import('../locales/en/home.json'),
-      import('../locales/en/product.json'),
-      import('../locales/en/filters.json'),
-      import('../locales/en/categories.json'),
-      import('../locales/en/pagination.json'),
-      import('../locales/en/errors.json'),
-    ]);
-    i18n.addResourceBundle('en', 'common', common.default, true, false);
-    i18n.addResourceBundle('en', 'header', header.default, true, false);
-    i18n.addResourceBundle('en', 'home', home.default, true, false);
-    i18n.addResourceBundle('en', 'product', product.default, true, false);
-    i18n.addResourceBundle('en', 'filters', filters.default, true, false);
-    i18n.addResourceBundle('en', 'categories', categories.default, true, false);
-    i18n.addResourceBundle('en', 'pagination', pagination.default, true, false);
-    i18n.addResourceBundle('en', 'errors', errors.default, true, false);
-    // Notify react-i18next to re-render all components now that EN translations are ready
-    if (i18n.language === 'en' || i18n.language?.startsWith('en-')) {
-      i18n.emit('languageChanged', i18n.language);
-    }
-  })();
-  return enHomepagePromise;
-}
-
-// ── Lazy page-specific namespace loaders ──────────────────────────────────────
-// Page-specific namespaces are NOT in the initial bundle. Each page that needs
-// one calls lazyLoadNamespace(ns) on mount — this dynamic import creates a
-// separate Vite chunk that is only fetched when that page is first visited.
-
-type LazyNS = 'scan' | 'ingredients' | 'aboutNutriScore' | 'aboutProject' | 'stats';
-
-const lazyLoaders: Record<LazyNS, () => Promise<void>> = {
-  scan: async () => {
-    const [lv, en] = await Promise.all([
-      import('../locales/lv/scan.json'),
-      import('../locales/en/scan.json'),
-    ]);
-    i18n.addResourceBundle('lv', 'scan', lv.default, true, false);
-    i18n.addResourceBundle('en', 'scan', en.default, true, false);
-  },
-  ingredients: async () => {
-    const [lv, en] = await Promise.all([
-      import('../locales/lv/ingredients.json'),
-      import('../locales/en/ingredients.json'),
-    ]);
-    i18n.addResourceBundle('lv', 'ingredients', lv.default, true, false);
-    i18n.addResourceBundle('en', 'ingredients', en.default, true, false);
-  },
-  aboutNutriScore: async () => {
-    const [lv, en] = await Promise.all([
-      import('../locales/lv/aboutNutriScore.json'),
-      import('../locales/en/aboutNutriScore.json'),
-    ]);
-    i18n.addResourceBundle('lv', 'aboutNutriScore', lv.default, true, false);
-    i18n.addResourceBundle('en', 'aboutNutriScore', en.default, true, false);
-  },
-  aboutProject: async () => {
-    const [lv, en] = await Promise.all([
-      import('../locales/lv/aboutProject.json'),
-      import('../locales/en/aboutProject.json'),
-    ]);
-    i18n.addResourceBundle('lv', 'aboutProject', lv.default, true, false);
-    i18n.addResourceBundle('en', 'aboutProject', en.default, true, false);
-  },
-  stats: async () => {
-    const [lv, en] = await Promise.all([
-      import('../locales/lv/stats.json'),
-      import('../locales/en/stats.json'),
-    ]);
-    i18n.addResourceBundle('lv', 'stats', lv.default, true, false);
-    i18n.addResourceBundle('en', 'stats', en.default, true, false);
-  },
-};
-
-// In-flight promise cache so parallel calls don't double-fetch
-const loadingPromises: Partial<Record<string, Promise<void>>> = {};
-
-export async function lazyLoadNamespace(namespace: string): Promise<void> {
-  if (i18n.hasResourceBundle('lv', namespace)) return;
-  if (loadingPromises[namespace]) return loadingPromises[namespace];
-  const loader = lazyLoaders[namespace as LazyNS];
-  if (!loader) return;
-  loadingPromises[namespace] = loader();
-  return loadingPromises[namespace];
-}
-
-// ── Path helpers ──────────────────────────────────────────────────────────────
-
+// Helper function to get current language from URL
 export const getLanguageFromPath = (pathname?: string): SupportedLanguage => {
   if (!pathname) return DEFAULT_LANGUAGE;
+
   const pathLang = pathname.split('/')[1] as SupportedLanguage;
   return SUPPORTED_LANGUAGES.includes(pathLang) ? pathLang : DEFAULT_LANGUAGE;
 };
 
+// Helper function to get path without language prefix
 export const getPathWithoutLanguage = (pathname?: string): string => {
   if (!pathname) return '/';
+
   const pathLang = pathname.split('/')[1];
   if (SUPPORTED_LANGUAGES.includes(pathLang as SupportedLanguage)) {
     return pathname.replace(`/${pathLang}`, '') || '/';
@@ -207,11 +144,13 @@ export const getPathWithoutLanguage = (pathname?: string): string => {
   return pathname;
 };
 
+// Helper function to add language prefix to path
 export const addLanguageToPath = (path: string, language: SupportedLanguage): string => {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `/${language}${cleanPath === '/' ? '' : cleanPath}`;
 };
 
+// Helper function to check if language is RTL (for future use)
 export const isRTL = (language: SupportedLanguage): boolean => {
   const rtlLanguages: SupportedLanguage[] = [];
   return rtlLanguages.includes(language);

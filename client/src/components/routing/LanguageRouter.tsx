@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Route, Switch, Redirect, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, lazyLoadEnHomepage, type SupportedLanguage } from '@/i18n';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, type SupportedLanguage } from '@/i18n';
 
 // Home is the landing page — import directly so it's in the main bundle.
 // This eliminates the Suspense spinner → content swap (the primary CLS source)
@@ -33,24 +33,18 @@ interface LanguageRouterProps {
 }
 
 const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMobileFiltersOpen = false, onCloseMobileFilters, onActiveFiltersChange }) => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { i18n } = useTranslation();
 
   // Get current language from URL
   const currentLanguage = getLanguageFromPath(location);
-
+  
   useEffect(() => {
     // Update i18n language when URL changes
     if (currentLanguage && i18n.language !== currentLanguage) {
       i18n.changeLanguage(currentLanguage);
     }
-    // Kick off EN homepage namespace loading in the background.
-    // lazyLoadEnHomepage() emits 'languageChanged' when done so react-i18next
-    // automatically re-renders components with EN translations — no gate needed.
-    if (currentLanguage === 'en') {
-      lazyLoadEnHomepage();
-    }
-  }, [currentLanguage]);
+  }, [currentLanguage, i18n]);
 
   // Component to handle language-specific routes with additional props
   const LanguageAwareRoute: React.FC<{
