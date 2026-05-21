@@ -296,6 +296,19 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     }
   }
 
+  // Inject a preload tag as early as possible in <head>.
+  // By inserting before the Cloudinary preconnect (line ~30 of the static HTML),
+  // the image download starts before the browser discovers the Vite-injected JS
+  // bundle and CSS stylesheet — giving the image a clear bandwidth head-start.
+  // Falls back to inserting before </head> if the preconnect marker is absent.
+  function injectPreloadEarly(html: string, preloadTag: string): string {
+    const CLOUDINARY_PRECONNECT = '<link rel="preconnect" href="https://rimibaltic-res.cloudinary.com"';
+    if (html.includes(CLOUDINARY_PRECONNECT)) {
+      return html.replace(CLOUDINARY_PRECONNECT, `${preloadTag}\n    ${CLOUDINARY_PRECONNECT}`);
+    }
+    return html.replace('</head>', `  ${preloadTag}\n  </head>`);
+  }
+
   if (pageData?.product?.photoUrl) {
     const rawUrl = pageData.product.photoUrl;
 
@@ -307,14 +320,17 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
       const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
       const preloadUrl = makeSrc(900);
       const srcset = [300, 600, 900].map(w => `${makeSrc(w)} ${w}w`).join(', ');
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />\n  </head>`);
+      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />`;
+      result = injectPreloadEarly(result, preloadTag);
     } else if (rawUrl.includes('barbora.lv')) {
       const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
       const preloadUrl = `${proxyBase}&w=900`;
       const srcset = [300, 600, 900].map(w => `${proxyBase}&w=${w} ${w}w`).join(', ');
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />\n  </head>`);
+      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 768px) 50vw, 100vw" fetchpriority="high" />`;
+      result = injectPreloadEarly(result, preloadTag);
     } else {
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(rawUrl)}" fetchpriority="high" />\n  </head>`);
+      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(rawUrl)}" fetchpriority="high" />`;
+      result = injectPreloadEarly(result, preloadTag);
     }
   }
 
@@ -327,14 +343,18 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
         .replace(/,dpr_auto/g, '')
         .replace(/\bq_auto:low\b/g, 'q_auto');
       const makeSrc = (w: number) => base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`);
-      const preloadUrl = makeSrc(300);
+      // Use w_450 as the href fallback: at 360 px viewport, 50 vw, DPR ≥ 2 the
+      // browser selects the 450 w candidate from imagesrcset, so href must match.
+      const preloadUrl = makeSrc(450);
       const srcset = [150, 300, 450].map(w => `${makeSrc(w)} ${w}w`).join(', ');
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />\n  </head>`);
+      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />`;
+      result = injectPreloadEarly(result, preloadTag);
     } else if (rawUrl.includes('barbora.lv')) {
       const proxyBase = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
-      const preloadUrl = `${proxyBase}&w=300`;
+      const preloadUrl = `${proxyBase}&w=450`;
       const srcset = [150, 300, 450].map(w => `${proxyBase}&w=${w} ${w}w`).join(', ');
-      result = result.replace('</head>', `  <link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />\n  </head>`);
+      const preloadTag = `<link rel="preload" as="image" href="${escapeHtml(preloadUrl)}" imagesrcset="${escapeHtml(srcset)}" imagesizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" fetchpriority="high" />`;
+      result = injectPreloadEarly(result, preloadTag);
     }
   }
 
