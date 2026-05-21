@@ -445,6 +445,12 @@ app.use((req, res, next) => {
     if (!fs.existsSync(distPath)) {
       throw new Error(`Could not find the build directory: ${distPath}, make sure to build the client first`);
     }
+    // Vite hashes asset filenames — serve them with a 1-year immutable cache
+    app.use('/assets', express.static(path.join(distPath, 'assets'), {
+      setHeaders: (_res, _filePath) => {
+        _res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }));
     app.use(express.static(distPath));
     const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
     app.use("*", (_req, res) => {

@@ -63,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
             height={200}
             loading={priority ? 'eager' : 'lazy'}
             fetchpriority={priority ? 'high' : 'auto'}
-            decoding="async"
+            decoding={priority ? "sync" : "async"}
             className="w-full h-full object-cover"
           />
           {nutrition?.nutriScoreGrade && (

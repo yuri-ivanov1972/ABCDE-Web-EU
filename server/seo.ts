@@ -347,8 +347,42 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
 
   // Inject initial product data for homepage — React reads this to skip the first API call
   if (initialData) {
+    // Strip fields not needed for the product grid to minimise HTML payload.
+    // ingredient.ingredients arrays alone account for ~25 KB per 12 products.
+    const slimData = {
+      totalCount: initialData.totalCount,
+      products: initialData.products.map((p: any) => ({
+        productId: p.productId,
+        name: p.name,
+        slug: p.slug,
+        quantityValue: p.quantityValue,
+        quantityUnit: p.quantityUnit,
+        store: p.store,
+        externalUrl: p.externalUrl,
+        photos: p.photos?.map((ph: any) => ({
+          photoUrl: ph.photoUrl,
+          altText: ph.altText,
+          isPrimary: ph.isPrimary,
+        })),
+        nutrition: p.nutrition ? {
+          nutriScoreGrade: p.nutrition.nutriScoreGrade,
+          carbsSugars: p.nutrition.carbsSugars,
+          fatSaturated: p.nutrition.fatSaturated,
+          protein: p.nutrition.protein,
+          salt: p.nutrition.salt,
+        } : undefined,
+        // Keep only counts — the full ingredients array is fetched on demand
+        ingredientCard: p.ingredientCard ? {
+          naturalCount: p.ingredientCard.naturalCount,
+          processedCount: p.ingredientCard.processedCount,
+          avoidCount: p.ingredientCard.avoidCount,
+          limitCount: p.ingredientCard.limitCount,
+          cautionCount: p.ingredientCard.cautionCount,
+        } : undefined,
+      })),
+    };
     // Escape < > & so JSON can't accidentally close the script tag
-    const safeJson = JSON.stringify(initialData)
+    const safeJson = JSON.stringify(slimData)
       .replace(/&/g, '\\u0026')
       .replace(/</g, '\\u003C')
       .replace(/>/g, '\\u003E');

@@ -155,19 +155,9 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     }
   }, [hasActiveFilters, onActiveFiltersChange]);
   
-  // Log data for debugging pagination with filters
-  useEffect(() => {
-    if (data) {
-      console.log('API response - Products count:', data.products.length);
-      console.log('API response - Total count:', data.totalCount);
-      console.log('Calculated pages:', calculatedPages);
-      console.log('Current page:', page, 'Total pages:', totalPages);
-    }
-  }, [data, calculatedPages, totalPages, page]);
   
   // Handle page change
   const handlePageChange = (newPage: number) => {
-    console.log('Changing page from', page, 'to', newPage, 'with current filters:', filters);
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -181,8 +171,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const handleApplyFilters = () => {
     // Reset to page 1 when applying filters
     setPage(1);
-    console.log('Applying filters:', filters);
-    // Refetch products with the current filters
     refetch();
   };
   
@@ -193,7 +181,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     
     setFilters(newFilters);
     setPage(1);
-    console.log('Removed filter:', filterType);
     refetch();
   };
   
@@ -211,7 +198,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       madeInLatvia: false
     });
     setPage(1);
-    console.log('Cleared all filters');
     refetch();
   };
   
@@ -231,7 +217,6 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     // Update filters state and trigger refetch
     setFilters(newFilters);
     setPage(1);
-    console.log('Applied mobile filters:', newFilters);
     refetch();
   };
 
