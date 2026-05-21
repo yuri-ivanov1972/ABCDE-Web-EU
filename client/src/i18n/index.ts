@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// ── Latvian (homepage namespaces — bundled synchronously) ─────────────────────
+// ── Latvian (homepage namespaces — bundled synchronously, default language) ───
 import lvCommon from '../locales/lv/common.json';
 import lvHeader from '../locales/lv/header.json';
 import lvHome from '../locales/lv/home.json';
@@ -12,15 +12,8 @@ import lvCategories from '../locales/lv/categories.json';
 import lvPagination from '../locales/lv/pagination.json';
 import lvErrors from '../locales/lv/errors.json';
 
-// ── English (homepage namespaces — bundled synchronously) ─────────────────────
-import enCommon from '../locales/en/common.json';
-import enHeader from '../locales/en/header.json';
-import enHome from '../locales/en/home.json';
-import enProduct from '../locales/en/product.json';
-import enFilters from '../locales/en/filters.json';
-import enCategories from '../locales/en/categories.json';
-import enPagination from '../locales/en/pagination.json';
-import enErrors from '../locales/en/errors.json';
+// English homepage namespaces are NOT statically imported.
+// They are loaded on demand via lazyLoadEnHomepage() when the user visits /en.
 
 // Supported languages
 export const SUPPORTED_LANGUAGES = ['lv', 'en'] as const;
@@ -69,16 +62,7 @@ if (!i18n.isInitialized) {
           pagination: lvPagination,
           errors: lvErrors,
         },
-        en: {
-          common: enCommon,
-          header: enHeader,
-          home: enHome,
-          product: enProduct,
-          filters: enFilters,
-          categories: enCategories,
-          pagination: enPagination,
-          errors: enErrors,
-        },
+        // EN resources are loaded lazily via lazyLoadEnHomepage()
       },
 
       supportedLngs: SUPPORTED_LANGUAGES,
@@ -106,7 +90,41 @@ if (!i18n.isInitialized) {
     });
 }
 
-// ── Lazy namespace loaders ────────────────────────────────────────────────────
+// ── Lazy EN homepage loader ───────────────────────────────────────────────────
+// English homepage namespaces are split into a separate Vite chunk.
+// This function is called by LanguageRouter when the URL starts with /en.
+
+let enHomepagePromise: Promise<void> | null = null;
+
+export function lazyLoadEnHomepage(): Promise<void> {
+  if (i18n.hasResourceBundle('en', 'common')) return Promise.resolve();
+  if (enHomepagePromise) return enHomepagePromise;
+  enHomepagePromise = (async () => {
+    const [
+      common, header, home, product, filters, categories, pagination, errors,
+    ] = await Promise.all([
+      import('../locales/en/common.json'),
+      import('../locales/en/header.json'),
+      import('../locales/en/home.json'),
+      import('../locales/en/product.json'),
+      import('../locales/en/filters.json'),
+      import('../locales/en/categories.json'),
+      import('../locales/en/pagination.json'),
+      import('../locales/en/errors.json'),
+    ]);
+    i18n.addResourceBundle('en', 'common', common.default, true, false);
+    i18n.addResourceBundle('en', 'header', header.default, true, false);
+    i18n.addResourceBundle('en', 'home', home.default, true, false);
+    i18n.addResourceBundle('en', 'product', product.default, true, false);
+    i18n.addResourceBundle('en', 'filters', filters.default, true, false);
+    i18n.addResourceBundle('en', 'categories', categories.default, true, false);
+    i18n.addResourceBundle('en', 'pagination', pagination.default, true, false);
+    i18n.addResourceBundle('en', 'errors', errors.default, true, false);
+  })();
+  return enHomepagePromise;
+}
+
+// ── Lazy page-specific namespace loaders ──────────────────────────────────────
 // Page-specific namespaces are NOT in the initial bundle. Each page that needs
 // one calls lazyLoadNamespace(ns) on mount — this dynamic import creates a
 // separate Vite chunk that is only fetched when that page is first visited.

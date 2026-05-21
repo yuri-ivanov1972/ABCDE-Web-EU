@@ -1,7 +1,8 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Route, Switch, Redirect, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, type SupportedLanguage } from '@/i18n';
+import i18n from 'i18next';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, getLanguageFromPath, getPathWithoutLanguage, lazyLoadEnHomepage, type SupportedLanguage } from '@/i18n';
 
 // Home is the landing page — import directly so it's in the main bundle.
 // This eliminates the Suspense spinner → content swap (the primary CLS source)
@@ -34,17 +35,37 @@ interface LanguageRouterProps {
 
 const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMobileFiltersOpen = false, onCloseMobileFilters, onActiveFiltersChange }) => {
   const [location, setLocation] = useLocation();
-  const { i18n } = useTranslation();
+  const { i18n: i18nInstance } = useTranslation();
 
   // Get current language from URL
   const currentLanguage = getLanguageFromPath(location);
-  
+
+  // Track whether EN homepage namespaces are available.
+  // On /lv this is immediately true (LV is always bundled).
+  // On /en we lazy-load the EN chunk first and show a spinner.
+  const [enHomepageReady, setEnHomepageReady] = useState(
+    () => currentLanguage !== 'en' || i18n.hasResourceBundle('en', 'common')
+  );
+
   useEffect(() => {
     // Update i18n language when URL changes
-    if (currentLanguage && i18n.language !== currentLanguage) {
-      i18n.changeLanguage(currentLanguage);
+    if (currentLanguage && i18nInstance.language !== currentLanguage) {
+      i18nInstance.changeLanguage(currentLanguage);
     }
-  }, [currentLanguage, i18n]);
+
+    // Ensure EN homepage namespaces are loaded when on /en
+    if (currentLanguage === 'en' && !i18n.hasResourceBundle('en', 'common')) {
+      setEnHomepageReady(false);
+      lazyLoadEnHomepage().then(() => setEnHomepageReady(true));
+    } else if (currentLanguage !== 'en') {
+      setEnHomepageReady(true);
+    }
+  }, [currentLanguage, i18nInstance]);
+
+  // Show spinner while EN homepage translations are being fetched
+  if (!enHomepageReady) {
+    return <PageLoader />;
+  }
 
   // Component to handle language-specific routes with additional props
   const LanguageAwareRoute: React.FC<{
