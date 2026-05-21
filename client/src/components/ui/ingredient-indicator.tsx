@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProductIngredientCard, IngredientItem } from '@/types';
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { useLazyNamespace } from '@/hooks/useLazyNamespace';
 
 interface IngredientIndicatorProps {
   ingredientCard: ProductIngredientCard;
@@ -9,6 +10,7 @@ interface IngredientIndicatorProps {
 }
 
 const IngredientIndicator: React.FC<IngredientIndicatorProps> = ({ ingredientCard, compact = false }) => {
+  const nsReady = useLazyNamespace('ingredients');
   const { t } = useTranslation('ingredients');
   const [expanded, setExpanded] = useState(false);
   
@@ -16,7 +18,7 @@ const IngredientIndicator: React.FC<IngredientIndicatorProps> = ({ ingredientCar
   
   const concernCount = avoidCount + limitCount + cautionCount;
   
-  if (concernCount === 0) {
+  if (!nsReady || concernCount === 0) {
     return null;
   }
 

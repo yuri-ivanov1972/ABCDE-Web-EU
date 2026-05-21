@@ -5,8 +5,10 @@ import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft, ExternalLink, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
+import { useLazyNamespace } from '@/hooks/useLazyNamespace';
 
 export default function AboutProject() {
+  const nsReady = useLazyNamespace('aboutProject');
   const { t, i18n } = useTranslation('aboutProject');
   const currentLang = i18n.language?.split('-')[0] || 'lv';
   const hreflangUrls = getHreflangUrls('/about-project');
@@ -14,6 +16,8 @@ export default function AboutProject() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  if (!nsReady) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" /></div>;
 
   return (
     <>

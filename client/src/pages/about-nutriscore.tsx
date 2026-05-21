@@ -11,8 +11,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useLazyNamespace } from '@/hooks/useLazyNamespace';
 
 export default function AboutNutriScore() {
+  const nsReady = useLazyNamespace('aboutNutriScore');
   const { t, i18n } = useTranslation('aboutNutriScore');
   const currentLang = i18n.language?.split('-')[0] || 'lv';
   const hreflangUrls = getHreflangUrls('/about-nutriscore');
@@ -20,6 +22,8 @@ export default function AboutNutriScore() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  if (!nsReady) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" /></div>;
 
   return (
     <>

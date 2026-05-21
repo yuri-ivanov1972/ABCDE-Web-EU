@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { useLazyNamespace } from '@/hooks/useLazyNamespace';
 
 interface NutriScoreDistribution {
   grade: string;
@@ -197,6 +198,7 @@ const StatsBlock = ({
 };
 
 const WhatLatviansEat = () => {
+  const nsReady = useLazyNamespace('stats');
   const { t, i18n } = useTranslation(['stats', 'common']);
   const currentLang = i18n.language?.split('-')[0] || 'lv';
   
@@ -213,7 +215,7 @@ const WhatLatviansEat = () => {
   const enPath = '/what-latvians-eat';
   const currentPath = currentLang === 'en' ? enPath : lvPath;
 
-  if (isLoading) {
+  if (!nsReady || isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
