@@ -178,7 +178,9 @@ app.use((req, res, next) => {
     const seen = new Set<string>();
     const barboraUrls: string[] = [];
     for (const p of firstPage) {
-      const primaryUrl = p.photos?.[0]?.photoUrl;
+      // Use isPrimary-first selection — same logic as the LCP preload URL above so
+      // the proxy cache key always matches the <link rel="preload"> href.
+      const primaryUrl = p.photos?.find((ph: any) => ph.isPrimary)?.photoUrl ?? p.photos?.[0]?.photoUrl;
       if (
         typeof primaryUrl === "string" &&
         !seen.has(primaryUrl)
@@ -193,10 +195,23 @@ app.use((req, res, next) => {
       }
     }
     if (barboraUrls.length > 0) {
-      warmCache(barboraUrls, 300).catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.warn("[imageProxy] image cache warmup failed:", msg);
-      });
+      // Above-fold cards (first 4) need all three srcset widths warmed so any
+      // device DPR gets a cache hit: mobile DPR≥2 picks w=450, desktop picks w=300.
+      const aboveFold = barboraUrls.slice(0, 4);
+      const rest = barboraUrls.slice(4);
+      for (const w of [150, 300, 450]) {
+        warmCache(aboveFold, w).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn(`[imageProxy] LCP warmup failed at w=${w}:`, msg);
+        });
+      }
+      // Remaining (below-fold) cards only need the standard width
+      if (rest.length > 0) {
+        warmCache(rest, 300).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn("[imageProxy] below-fold warmup failed:", msg);
+        });
+      }
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
