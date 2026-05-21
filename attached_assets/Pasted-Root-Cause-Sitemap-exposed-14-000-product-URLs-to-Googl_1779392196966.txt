@@ -1,0 +1,24 @@
+Root Cause: Sitemap exposed 14,000 product URLs to Google on May 14
+What happened in one sentence: The slug URL rollout on May 14 caused Google to discover and measure ~14,000 product pages for the first time — pages that have slow LCP were already there, but Google simply hadn't measured them yet.
+
+The sequence
+Before May 14 — Google had only indexed ~400–500 URLs total. These were likely category pages and a handful of product pages that Google had found organically through links. LCP was already slow on most pages, but the measured count was low because Google hadn't crawled most of the site.
+
+May 14, 13:33 — de9730a — "Improve product browsing speed" — added server-side caching to storage layer.
+
+May 14, 14:12 — adb4040 — The big one: introduced slug-based product URLs (/lv/product/product-name-123) replacing numeric IDs (/lv/product/123). The sitemap was already listing all 14,000+ products, but now it listed them under entirely new slug URLs that Google had never seen. From Google's perspective: 14,000 brand-new pages appeared in the sitemap overnight.
+
+May 14, 18:42 — 0df5399 — Sitemap priority changes (minor, Google would re-fetch it promptly).
+
+May 14 → 15 → 16: Google's crawler rapidly ingests the new sitemap and measures LCP on each URL. It finds >2.5s on most of them: 7,696 → 11,734 → 12,388. The ceiling (~12,000–12,400) matches the total product count (~14,000 minus Maxima products without photos or other edge cases).
+
+Why is product page LCP > 2.5s?
+The homepage has the full LCP optimisation stack (server-side data injection + preload hint). Individual product pages don't:
+
+No server-side LCP image preload on product pages — the homepageLcpImageUrl mechanism only fires for the homepage. When Googlebot hits /lv/product/product-name-123, the HTML served has no <link rel="preload" as="image"> for that product's photo.
+React must boot before anything is visible — the product data comes from an API call after React mounts. Google's renderer sees a blank #root until JS completes.
+Product photo goes through the image proxy — on a cold instance the proxy must fetch from Barbora CDN before it can respond. Even at 5ms with the EU deployment, the proxy has to process it on first request.
+The SEO body injection (seo-prerender div) was added to address point 2, but it injects text content — not the product image — so LCP (which measures the largest image element) is still blocked on the proxy response.
+
+What this means for fixing it
+The fix needs to make individual product pages serve their LCP image preload header server-side, the same way the homepage does. The server/index.ts middleware already has access to res.locals.seoProduct (including photoUrl) before the HTML is sent — that's the hook to inject a per-product <link rel="preload"> pointing at the proxy URL. That single change would collapse LCP from ~3.1s to the same 1–1.5s range the homepage achieves.
