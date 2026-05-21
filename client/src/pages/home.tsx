@@ -131,7 +131,13 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
       store: selectedStore,
       madeInLatvia: filters.madeInLatvia
     }),
-    placeholderData: isDefaultQuery ? serverInitialData : undefined,
+    // initialData (not placeholderData) prevents an immediate background refetch that would
+    // replace the server-injected products with slightly different fresh data → CLS 0.37.
+    // initialDataUpdatedAt: Date.now() marks the data as fresh so staleTime applies.
+    // After staleTime the query refetches silently in the background (well past CLS window).
+    initialData: isDefaultQuery ? serverInitialData : undefined,
+    initialDataUpdatedAt: isDefaultQuery && serverInitialData ? Date.now() : undefined,
+    staleTime: 5 * 60 * 1000,
   });
   
   // Calculate total pages based on API response data

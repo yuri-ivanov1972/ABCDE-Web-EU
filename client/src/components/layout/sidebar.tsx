@@ -118,10 +118,11 @@ const Sidebar: React.FC<SidebarProps> = ({ categoryId, filters, onUpdateFilters,
   const [location] = useLocation();
   const { t } = useTranslation(['filters', 'categories']);
   
-  // Fetch main level categories
+  // Fetch main level categories (staleTime prevents refetch during CLS window)
   const { data: mainCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['/api/categories', { level: 1 }],
-    queryFn: () => getCategories(1)
+    queryFn: () => getCategories(1),
+    staleTime: 5 * 60 * 1000,
   });
   
   // Fetch current category
