@@ -7,7 +7,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
 import { storage, type Store } from "./storage";
 import { extractIdFromSlug, productSlug } from "./utils/slugify";
-import { warmCache } from "./imageProxy";
+import { warmCache, warmCacheEntry } from "./imageProxy";
 
 const app = express();
 app.use(compression());
@@ -174,8 +174,28 @@ app.use((req, res, next) => {
       }
     }
 
-    // Phase 2 — fire-and-forget: warm Barbora image proxy cache (doesn't block startup)
+    // Phase 1b — blocking: warm the LCP image at all srcset widths BEFORE server.listen.
+    // This guarantees every request (including Lighthouse cold-boot runs) gets a proxy
+    // cache hit for the LCP element so the <link rel="preload"> image arrives before FCP.
+    if (homepageLcpImageUrl) {
+      try {
+        const { hostname } = new URL(homepageLcpImageUrl);
+        if (hostname === "cdn.barbora.lv") {
+          await Promise.allSettled(
+            [150, 300, 450].map(w => warmCacheEntry(homepageLcpImageUrl!, w))
+          );
+          log(`[imageProxy] LCP image pre-warmed at w=150/300/450 — proxy cache ready`);
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn("[imageProxy] LCP blocking warmup failed:", msg);
+      }
+    }
+
+    // Phase 2 — fire-and-forget: warm remaining Barbora images (doesn't block startup)
     const seen = new Set<string>();
+    // Seed seen with the LCP URL — already warmed above, skip it in the bulk pass
+    if (homepageLcpImageUrl) seen.add(homepageLcpImageUrl);
     const barboraUrls: string[] = [];
     for (const p of firstPage) {
       // Use isPrimary-first selection — same logic as the LCP preload URL above so
@@ -195,17 +215,15 @@ app.use((req, res, next) => {
       }
     }
     if (barboraUrls.length > 0) {
-      // Above-fold cards (first 4) need all three srcset widths warmed so any
-      // device DPR gets a cache hit: mobile DPR≥2 picks w=450, desktop picks w=300.
+      // Above-fold cards (first 4 remaining) at all srcset widths; rest at w=300 only.
       const aboveFold = barboraUrls.slice(0, 4);
       const rest = barboraUrls.slice(4);
       for (const w of [150, 300, 450]) {
         warmCache(aboveFold, w).catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : String(err);
-          console.warn(`[imageProxy] LCP warmup failed at w=${w}:`, msg);
+          console.warn(`[imageProxy] above-fold warmup failed at w=${w}:`, msg);
         });
       }
-      // Remaining (below-fold) cards only need the standard width
       if (rest.length > 0) {
         warmCache(rest, 300).catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : String(err);
