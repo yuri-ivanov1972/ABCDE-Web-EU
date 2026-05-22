@@ -1,0 +1,28 @@
+Paraugprakse
+Parametrs [user-scalable="no"] tiek lietots elementā <meta name="viewport">, vai atribūts [maximum-scale] ir mazāks par 5
+Ja tālummaiņa ir atspējota, lietotājiem ar redzes traucējumiem, kuri izmanto ekrāna palielinājumu, ir grūtības piekļūt tīmekļa lapas saturam. Uzziniet vairāk par skatvietas metatagu.
+Nederīgi elementi
+head > meta
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+Skāriena mērķu izmēri un atstarpes nav pietiekamas
+Iestatot skāriena mērķiem pietiekamus izmērus un atstarpes, varat palīdzēt šos mērķus aktivizēt lietotājiem, kam ir grūtības atlasīt mazas vadīklas. Uzziniet vairāk par skāriena mērķiem.
+Nederīgi elementi
+Meklēt
+<button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:te…" aria-label="Meklēt" data-testid="mobile-search-button">
+div.md:hidden > form > div.relative > input.w-full
+<input type="text" placeholder="Meklēt produktus..." class="w-full px-4 py-2 pr-16 rounded-md border border-gray-300 focus:outline-non…" data-testid="mobile-search-input" value="">
+Šie vienumi parāda izplatītas pieejamības paraugprakses.
+Nosaukumi un iezīmes
+Atlasītajiem elementiem nav saistītu iezīmju elementu
+Veidlapu elementi bez efektīvām iezīmēm var radīt neapmierinošu pieredzi ekrāna lasītāju lietotājiem. Uzziniet vairāk par elementu “select”.
+Nederīgi elementi
+Kārtot pēc: Nosaukuma Kārtot pēc: Nutri-Score Kārtot pēc: Cukura (no zema uz au…
+<select class="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.…">
+Šie ieteikumi ļauj uzlabot lietojumprogrammas vadīklu semantiku. Tādējādi var nodrošināt labāku pieredzi lietotājiem, kuri izmanto palīgtehnoloģijas, piemēram, ekrāna lasītājus.
+Navigācija
+Virsrakstu elementi nav atveidoti secīgi dilstošā secībā
+Virsraksti, kas ir sakārtoti pareizi un neizlaižot līmeņus, atveido lapas semantisko struktūru, tādējādi atvieglojot navigāciju un izpratni atbalsta tehnoloģiju lietotājiem. Uzziniet vairāk par virsrakstu secību.
+Nederīgi elementi
+Sojas dzēriens Alpro ar vaniļas garšu, kalciju, vitamīniem 1l
+<h3 class="font-medium text-gray-900 mb-2 text-sm md:text-base">
+Šie ieteikumi ļauj uzlabot jūsu lietotnes tastatūras navigāciju.
