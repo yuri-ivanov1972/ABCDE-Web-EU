@@ -309,6 +309,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
                 className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={sortOption === 'nutriScore' ? 'nutri-score' : sortOption}
                 onChange={handleSortChange}
+                aria-label={t('home:sorting.label')}
               >
                 <option value="name">{t('home:sorting.label')} {t('home:sorting.name')}</option>
                 <option value="nutri-score">{t('home:sorting.label')} {t('home:sorting.nutriScore')}</option>

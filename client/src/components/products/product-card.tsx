@@ -86,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
           )}
         </div>
         <div className="p-3">
-          <h3 className="font-medium text-gray-900 mb-2 text-sm md:text-base">{name}</h3>
+          <h2 className="font-medium text-gray-900 mb-2 text-sm md:text-base">{name}</h2>
           
           {nutrition && (
             <div className="space-y-1.5 mb-2">

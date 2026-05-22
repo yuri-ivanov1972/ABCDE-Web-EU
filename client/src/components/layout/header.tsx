@@ -157,7 +157,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
               {searchQuery && (
                 <button 
                   type="button"
-                  className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
+                  className="absolute right-10 top-1/2 transform -translate-y-1/2 p-2 -m-2 text-gray-400 hover:text-primary flex items-center justify-center"
                   onClick={() => {
                     setSearchQuery('');
                     onSearch(''); // Clear search results
@@ -170,7 +170,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
               )}
               <button 
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 -m-2 text-gray-400 hover:text-primary flex items-center justify-center"
                 aria-label={t('header:search.button')}
                 data-testid="mobile-search-button"
               >
