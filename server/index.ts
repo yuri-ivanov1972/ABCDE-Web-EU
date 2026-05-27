@@ -101,6 +101,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// 301 redirect: strip ?store= from product page URLs to prevent duplicate content.
+// Product detail pages (/lv/product/... and /en/product/...) must use clean canonical URLs.
+// Category and homepage ?store= filters are legitimate and are NOT redirected here.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const isProductPage = /^\/(lv|en)\/product\//.test(req.path);
+  if (isProductPage && req.query.store) {
+    const remainingQuery = { ...req.query } as Record<string, any>;
+    delete remainingQuery.store;
+    const qs = new URLSearchParams(remainingQuery).toString();
+    return res.redirect(301, qs ? `${req.path}?${qs}` : req.path);
+  }
+  next();
+});
+
 // 301 redirect: /product/:id → /lv/product/:id  and  /category/:id → /lv/category/:id
 // Must be BEFORE Vite/registerRoutes so Vite doesn't serve index.html first
 app.use((req: Request, res: Response, next: NextFunction) => {

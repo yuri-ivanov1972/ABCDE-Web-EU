@@ -46,9 +46,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
   };
   
   const slug = product.slug || String(productId);
-  const linkUrl = product.store === 'maxima' 
-    ? `/product/${slug}?store=maxima` 
-    : `/product/${slug}`;
+  const linkUrl = `/product/${slug}`;
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">

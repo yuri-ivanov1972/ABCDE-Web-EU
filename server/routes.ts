@@ -173,8 +173,8 @@ Allow: /
 
 # Block query parameter variations to avoid duplicate content
 # These create duplicate pages with different filters/pagination
-Disallow: /*?store=
-Disallow: /*&store=
+Disallow: /*?store
+Disallow: /*&store
 Disallow: /*?page=
 Disallow: /*&page=
 Disallow: /*?nutriScores=
