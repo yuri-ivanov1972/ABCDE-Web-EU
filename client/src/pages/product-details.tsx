@@ -132,9 +132,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     return m ? parseInt(m[1], 10) : NaN;
   })() : NaN;
   
-  const urlParams = new URLSearchParams(window.location.search);
-  const store = urlParams.get('store') as 'rimi' | 'maxima' | undefined;
-
   const serverProduct = React.useMemo(() => {
     const data = readServerProductData();
     return data?.productId === productId ? data : undefined;
@@ -142,8 +139,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
   
   // Always call all hooks first before any early returns
   const { data: product, isLoading, error } = useQuery({
-    queryKey: ['/api/products', productId, store],
-    queryFn: () => getProductById(productId, store || undefined),
+    queryKey: ['/api/products', id],
+    queryFn: () => getProductById(id!),
     enabled: ready && Number.isFinite(productId) && productId > 0 && !!id && !isNaN(productId),
     placeholderData: serverProduct,
   });

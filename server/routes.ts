@@ -586,14 +586,26 @@ Sitemap: https://abcde.lv/sitemap.xml
   
   app.get("/api/products/:id", async (req: Request, res: Response) => {
     try {
-      const productId = extractIdFromSlug(req.params.id);
+      const urlSlug = req.params.id;
+      const productId = extractIdFromSlug(urlSlug);
       const store = req.query.store as 'rimi' | 'maxima' | undefined;
       
       if (!productId) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
       
-      const product = await storage.getProductById(productId, store);
+      let product = await storage.getProductById(productId, store);
+
+      // Rimi and Maxima can share the same numeric product ID (different products).
+      // When no store hint is given, apply slug-based disambiguation: if the returned
+      // product's slug doesn't match the URL slug, the lookup found the wrong store's
+      // product — try Maxima explicitly. Mirrors the same logic in the SSR middleware.
+      if (!store && product && productSlug(product.name, product.productId) !== urlSlug) {
+        const maximaProduct = await storage.getProductById(productId, 'maxima');
+        if (maximaProduct && productSlug(maximaProduct.name, maximaProduct.productId) === urlSlug) {
+          product = maximaProduct;
+        }
+      }
       
       if (!product) {
         return res.status(404).json({ message: "Product not found" });

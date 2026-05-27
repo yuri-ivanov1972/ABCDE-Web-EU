@@ -130,13 +130,8 @@ export const getProducts = async (options: {
   return response.json();
 };
 
-export const getProductById = async (id: number, store?: 'rimi' | 'maxima'): Promise<ProductWithDetails> => {
-  const params = new URLSearchParams();
-  if (store) {
-    params.set('store', store);
-  }
-  const queryString = params.toString();
-  const url = queryString ? `${API_BASE_URL}/products/${id}?${queryString}` : `${API_BASE_URL}/products/${id}`;
+export const getProductById = async (slug: string): Promise<ProductWithDetails> => {
+  const url = `${API_BASE_URL}/products/${encodeURIComponent(slug)}`;
   
   const response = await fetch(url);
   
