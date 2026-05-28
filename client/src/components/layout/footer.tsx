@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
 
         <div className="border-t border-gray-100 pt-4">
           <p className="text-sm text-gray-500 text-center">
-            © {new Date().getFullYear()} ABCDE.lv. {t('footer.allRightsReserved')}
+            © {new Date().getFullYear()} Biedrība ABCDE Open Food Data Lab. {t('footer.allRightsReserved')}
           </p>
         </div>
       </div>
