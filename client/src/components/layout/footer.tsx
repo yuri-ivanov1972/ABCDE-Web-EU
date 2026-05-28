@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
 
         <div className="border-t border-gray-100 pt-4">
           <p className="text-sm text-gray-500 text-center">
-            © {new Date().getFullYear()} {t('footer.orgName')}. {t('footer.allRightsReserved')}
+            © {new Date().getFullYear()} <a href="https://company.lursoft.lv/lv/abcde-open-food-data-lab/40008356414" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('footer.orgName')}</a>. {t('footer.allRightsReserved')}
           </p>
         </div>
       </div>
