@@ -1396,7 +1396,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       // Get all product IDs from Rimi that have Nutri-Score, excluding hidden categories
       const rimiProductsResult = await rimiDb.execute(sql`
-        SELECT DISTINCT ON (p.product_id) p.product_id, p.name
+        SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm
         FROM products p
         JOIN nutritionfacts nf ON p.product_id = nf.product_id
         WHERE nf.nutri_score_grade IS NOT NULL
@@ -1411,7 +1411,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       let maximaProducts: any[] = [];
       if (maximaDb) {
         const maximaProductsResult = await maximaDb.execute(sql`
-          SELECT DISTINCT ON (p.product_id) p.product_id, p.name
+          SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm
           FROM products p
           JOIN nutritionfacts nf ON p.product_id = nf.product_id
           WHERE nf.nutri_score_grade IS NOT NULL
@@ -1422,8 +1422,26 @@ Sitemap: https://abcde.lv/sitemap.xml
             (maximaProductsResult as any).rows : [];
       }
       
-      // Combine all products (both stores use product_id in URLs)
-      const allProducts = [...rimiProducts, ...maximaProducts];
+      // Build a set of Rimi name_norms for fast duplicate lookup
+      const rimiNormSet = new Set<string>(
+        rimiProducts
+          .map((p: any) => p.name_norm as string | null)
+          .filter((n): n is string => !!n)
+      );
+
+      // Exclude Maxima products whose name_norm matches a Rimi product — those would be
+      // duplicate-content pages (same physical product sold in both stores). Maxima-only
+      // products (no Rimi equivalent) remain in the sitemap.
+      const deduplicatedMaxima = maximaProducts.filter((p: any) => {
+        const norm = p.name_norm as string | null;
+        if (norm) return !rimiNormSet.has(norm);
+        // Fallback: compare lowercased names when name_norm is absent
+        const nameLower = (p.name as string || '').toLowerCase().trim();
+        return !rimiProducts.some((r: any) => (r.name as string || '').toLowerCase().trim() === nameLower);
+      });
+
+      // Combine Rimi + deduplicated Maxima for sitemap
+      const allProducts = [...rimiProducts, ...deduplicatedMaxima];
       
       // Build XML
       let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';

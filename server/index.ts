@@ -2,12 +2,14 @@ import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import fs from "fs";
 import path from "path";
+import { sql } from "drizzle-orm";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { injectSeoTags, type ProductSeoData, type CategorySeoData } from "./seo";
 import { storage, type Store } from "./storage";
 import { extractIdFromSlug, productSlug } from "./utils/slugify";
 import { warmCache, warmCacheEntry } from "./imageProxy";
+import { rimiDb } from "./db";
 
 const app = express();
 app.use(compression());
@@ -18,6 +20,8 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 let homepageLcpImageUrl: string | null = null;
 // Cached first page of products for homepage initial data — eliminates the API round-trip
 let homepageInitialData: { products: any[]; totalCount: number } | null = null;
+// Set of Rimi product name_norm values — used to detect Maxima duplicate pages and noindex them
+let rimiNameNormSet: Set<string> = new Set();
 
 // CORS for mobile API endpoints (Expo Go and React Native apps)
 app.use('/api/mobile', (req: Request, res: Response, next: NextFunction) => {
@@ -45,6 +49,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       const urlPath = req.originalUrl || req.path;
       if (!urlPath.startsWith('/api') && !urlPath.includes('.')) {
         res.set('Cache-Control', 'public, max-age=300');
+        if (res.locals.noindex) {
+          res.set('X-Robots-Tag', 'noindex, follow');
+        }
         const pageData: { product?: ProductSeoData; category?: CategorySeoData } = {};
         if (res.locals.seoProduct) pageData.product = res.locals.seoProduct;
         if (res.locals.seoCategory) pageData.category = res.locals.seoCategory;
@@ -56,7 +63,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         const lcpImageUrl = isHomepage ? homepageLcpImageUrl : null;
         const initialData = isHomepage ? homepageInitialData : null;
         const productInitialData = pageData.product ? (res.locals.seoFullProduct || null) : null;
-        return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData, productInitialData);
+        return injectSeoTags(body, urlPath, pageData, lcpImageUrl, initialData, productInitialData, !!res.locals.noindex);
       }
     }
     return body;
@@ -263,6 +270,20 @@ app.use((req, res, next) => {
     console.warn("[seo] homepage data warmup failed — cold boots will show skeleton:", msg);
   }
 
+  // Phase 3 — blocking: build Rimi name_norm set for Maxima duplicate-page noindex detection.
+  // Loaded once at startup; stays accurate for the server lifetime (product names change rarely).
+  try {
+    const rimiNormRows = await rimiDb.execute(sql`
+      SELECT DISTINCT name_norm FROM products WHERE name_norm IS NOT NULL
+    `);
+    const normArr = Array.isArray(rimiNormRows) ? rimiNormRows : (rimiNormRows as any).rows || [];
+    rimiNameNormSet = new Set(normArr.map((r: any) => r.name_norm as string));
+    log(`[seo] Loaded ${rimiNameNormSet.size} Rimi name_norms for Maxima dedup`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('[seo] Failed to build Rimi name_norm set — Maxima noindex dedup disabled:', msg);
+  }
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -421,6 +442,16 @@ app.use((req, res, next) => {
           productId: product.productId,
         } as ProductSeoData;
         res.locals.seoFullProduct = product;
+
+        // If this is a Maxima product and the same product name exists in Rimi,
+        // mark it as noindex to prevent duplicate-content signals in Google Search.
+        if (product.store === 'maxima') {
+          const nameNorm = (product as any).name_norm as string | null | undefined;
+          if (nameNorm && rimiNameNormSet.has(nameNorm)) {
+            res.locals.noindex = true;
+            res.setHeader('X-Robots-Tag', 'noindex, follow');
+          }
+        }
       } catch (err) {
         console.error('Error checking product existence:', err);
       }

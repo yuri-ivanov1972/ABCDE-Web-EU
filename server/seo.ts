@@ -265,7 +265,7 @@ function generateBodyContent(pageData: { product?: ProductSeoData; category?: Ca
   return '';
 }
 
-export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null, initialData?: { products: any[]; totalCount: number } | null, productInitialData?: any | null): string {
+export function injectSeoTags(html: string, urlPath: string, pageData?: { product?: ProductSeoData; category?: CategorySeoData }, lcpImageUrl?: string | null, initialData?: { products: any[]; totalCount: number } | null, productInitialData?: any | null, noindex?: boolean): string {
   if (!html.includes('<!DOCTYPE html>') && !html.includes('<html')) {
     return html;
   }
@@ -318,7 +318,7 @@ export function injectSeoTags(html: string, urlPath: string, pageData?: { produc
     result = result.replace('</head>', `${extraTags}\n  </head>`);
   }
 
-  if (lang === 'en') {
+  if (lang === 'en' || noindex) {
     if (result.includes('</title>')) {
       result = result.replace('</title>', `</title>\n    <meta name="robots" content="noindex, follow" />`);
     }
