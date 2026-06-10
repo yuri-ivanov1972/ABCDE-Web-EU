@@ -1,0 +1,8 @@
+{
+  "previous": "Iepriekšējā",
+  "next": "Nākamā", 
+  "previousPage": "Iepriekšējā lapa",
+  "nextPage": "Nākamā lapa",
+  "pageInfo": "Lapa {{currentPage}} no {{totalPages}}",
+  "morePages": "Vairāk lapu"
+}

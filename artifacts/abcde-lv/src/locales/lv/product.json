@@ -1,0 +1,46 @@
+{
+  "backToProducts": "Atpakaļ pie produktiem",
+  "notFound": "Produkts nav atrasts",
+  "notFoundMessage": "Atvainojiet, mēs nevarējām atrast meklēto produktu.",
+  "viewDetails": "Skatīt detaļas",
+  "viewOnRimi": "Skatīt Rimi",
+  "viewOnBarbora": "Skatīt Barbora",
+  "openRimi": "Atvērt Rimi",
+  "search": {
+    "title": "Meklēt produktu pēc Rimi URL",
+    "placeholder": "Ievadiet Rimi produkta URL",
+    "button": "Meklēt",
+    "clear": "Notīrīt meklēšanu",
+    "notFound": "Produkts netika atrasts",
+    "notFoundHint": "Pārbaudiet URL vai mēģiniet citu adresi."
+  },
+  "nutrition": {
+    "facts": "Uzturvērtības fakti",
+    "showFacts": "Rādīt uzturvērtības faktus",
+    "hideFacts": "Slēpt uzturvērtības faktus",
+    "characteristics": "Uzturvērtības īpatnības",
+    "energy": "Enerģija",
+    "protein": "Olbaltumvielas",
+    "fatTotal": "Kopējie tauki",
+    "fatSaturated": "Piesātinātie tauki",
+    "carbsTotal": "Kopējie oglhidrāti",
+    "sugar": "Cukurs",
+    "fiber": "Šķiedrvielas",
+    "salt": "Sāls"
+  },
+  "nutriScore": {
+    "A": "Augstvērtīgs produkts; piemērots regulāram patēriņam bez ierobežojumiem.",
+    "B": "Kvalitatīva izvēle; ieteicams droši iekļaut ikdienas ēdienkartē.",
+    "C": "Vidējas kvalitātes uzturvērtība; uzturā vēlams lietot mērenos daudzumos.",
+    "D": "Zemāka uzturvērtība; ikdienā ieteicams patērēt uzmanīgi un nelielās devās.",
+    "E": "Mazvērtīgs uztura ziņā; rekomendējams lietot tikai retos izņēmuma gadījumos."
+  },
+  "petition": {
+    "text": "Balsojiet, ja vēlaties redzēt šo marķējumu uz visiem produktiem."
+  },
+  "ingredients": "Sastāvdaļas",
+  "alternatives": {
+    "button": "Meklēt labākas alternatīvas",
+    "noAlternatives": "Šajā kategorijā nav veselīgāku produktu. Varat meklēt alternatīvas citās kategorijās."
+  }
+}

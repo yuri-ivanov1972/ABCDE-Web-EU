@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "About the Project | ABCDE.lv",
+    "description": "Learn more about the ABCDE.lv project and its goals for healthier food choices in Latvia."
+  },
+  "title": "About the Project",
+  "backToHome": "Back",
+  "intro": "This is a personal project by Jurijs Ivanovs.",
+  "goal": {
+    "title": "My Goal",
+    "description": "My main goal is to make Nutri-Score labeling mandatory in Latvia. I believe that having clear nutrition information directly on price tags helps everyone make healthier food choices more easily."
+  },
+  "support": {
+    "title": "Support the Initiative",
+    "description": "I invite you to vote for healthy nutrition labeling on product price tags in stores:"
+  },
+  "technical": {
+    "title": "Technical Details",
+    "hosting": "I created and host this site on Replit.com.",
+    "disclaimer": "Product information is gathered from rimi.lv and barbora.lv. Please note that I cannot guarantee the absolute correctness of the data provided by these external sites."
+  },
+  "contact": {
+    "title": "Contact Me",
+    "description": "For feedback or to report an error, please reach out to me at:"
+  }
+}

@@ -1,0 +1,104 @@
+2025-05-19 16:51:46.88
+4c472827
+User
+Error executing Drizzle query: error: Control plane request failed
+2025-05-19 16:51:46.88
+4c472827
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-05-19 16:51:46.88
+4c472827
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-05-19 16:51:46.88
+4c472827
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-05-19 16:51:46.88
+4c472827
+User
+at async DatabaseStorage.getProducts (file:///home/runner/workspace/dist/index.js:377:28)
+2025-05-19 16:51:46.88
+4c472827
+User
+at async file:///home/runner/workspace/dist/index.js:827:22 {
+2025-05-19 16:51:46.88
+4c472827
+User
+length: 49,
+2025-05-19 16:51:46.88
+4c472827
+User
+severity: 'ERROR',
+2025-05-19 16:51:46.88
+4c472827
+User
+code: 'XX000',
+2025-05-19 16:51:46.88
+4c472827
+User
+detail: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+hint: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+position: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+internalPosition: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+internalQuery: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+where: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+schema: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+table: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+column: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+dataType: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+constraint: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+file: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+line: undefined,
+2025-05-19 16:51:46.88
+4c472827
+User
+routine: undefined
+2025-05-19 16:51:46.88
+4c472827
+User
+}
+2025-05-19 16:51:46.88
+4c472827
+User
+GET products with options {"page":1,"pageSize":12,"filters":{"nutriScores":"none","nutrients":{}},"sort":{"sortBy":"nutriScore","sortOrder":"asc"}} returned 0 products, total: 0
+2025-05-19 16:51:46.88
+4c472827
+User
+1:51:46 PM [express] GET /api/products 200 in 61143ms :: {"products":[],"totalCount":0}

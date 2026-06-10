@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="64" height="64" fill="#1e8e3e" rx="8" ry="8" /> <!-- A Background with rounded corners -->
+  
+  <!-- Letter A -->
+  <text x="32" y="38" font-family="ui-sans-serif, system-ui, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">A</text>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "appName": "ABCDE.lv",
+  "loading": "Ielādē...",
+  "backToHome": "Atpakaļ uz sākumu",
+  "notAvailable": "Nav pieejams",
+  "per100g": "Uz 100g/ml",
+  "toggleSidebar": "Pārslēgt sānjoslu",
+  "close": "Aizvērt",
+  "apply": "Pielietot",
+  "clear": "Notīrīt",
+  "more": "Vairāk",
+  "less": "Mazāk",
+  "yes": "Jā",
+  "no": "Nē",
+  "nutrients": {
+    "sugar": "Cukurs",
+    "fat": "Tauki",
+    "saturatedFat": "Pies. tauki",
+    "protein": "Olbaltumvielas",
+    "proteinShort": "Olbalt.",
+    "salt": "Sāls"
+  },
+  "noImage": "Nav attēla",
+  "footer": {
+    "aboutNutriScore": "Par Nutri-Score",
+    "whatLatviansEat": "Ko ēd Latvijā?",
+    "aboutProject": "Par projektu",
+    "orgName": "Biedrība ABCDE Open Food Data Lab",
+    "allRightsReserved": "Visas tiesības aizsargātas.",
+    "pagesHeading": "Par projektu"
+  }
+}

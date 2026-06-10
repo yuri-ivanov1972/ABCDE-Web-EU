@@ -1,0 +1,8 @@
+{
+  "previous": "Previous",
+  "next": "Next",
+  "previousPage": "Previous page", 
+  "nextPage": "Next page",
+  "pageInfo": "Page {{currentPage}} of {{totalPages}}",
+  "morePages": "More pages"
+}

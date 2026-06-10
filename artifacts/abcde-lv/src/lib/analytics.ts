@@ -1,0 +1,157 @@
+/**
+ * Google Tag Manager Analytics Utility
+ * 
+ * Sends custom events to GTM's dataLayer for tracking user activity
+ */
+
+interface GTMWindow extends Window {
+  dataLayer?: any[];
+}
+
+declare const window: GTMWindow;
+
+/**
+ * Send a custom event to Google Tag Manager
+ * Initializes dataLayer if it doesn't exist to ensure events are queued before GTM loads
+ */
+function pushToDataLayer(data: Record<string, any>) {
+  if (typeof window !== 'undefined') {
+    // Initialize dataLayer if it doesn't exist (ensures events are queued before GTM loads)
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(data);
+  }
+}
+
+/**
+ * Track virtual pageview for SPA navigation
+ * This is essential for GTM to track page changes in Single Page Applications
+ */
+export function trackPageView(params: {
+  pagePath: string;
+  pageTitle?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'virtual_pageview',
+    page_path: params.pagePath,
+    page_title: params.pageTitle || document.title,
+    page_location: window.location.href,
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when a product is successfully scanned via OCR
+ */
+export function trackProductScanned(params: {
+  productId: number;
+  productName: string;
+  nutriScore?: string;
+  confidence?: number;
+  store?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'product_scanned',
+    product_id: params.productId,
+    product_name: params.productName,
+    nutri_score: params.nutriScore || 'unknown',
+    scan_confidence: params.confidence || 0,
+    store: params.store || 'unknown',
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when user clicks "View Details" button after scanning
+ */
+export function trackProductViewAfterScan(params: {
+  productId: number;
+  productName: string;
+  nutriScore?: string;
+  store?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'product_view_after_scan',
+    product_id: params.productId,
+    product_name: params.productName,
+    nutri_score: params.nutriScore || 'unknown',
+    store: params.store || 'unknown',
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when the petition link is clicked
+ */
+export function trackPetitionClick(params: {
+  linkUrl: string;
+  linkText: string;
+  language: string;
+}) {
+  pushToDataLayer({
+    event: 'petition_click',
+    link_url: params.linkUrl,
+    link_text: params.linkText,
+    language: params.language,
+  });
+}
+
+/**
+ * Track when camera permission is granted or denied
+ */
+export function trackCameraPermission(params: {
+  permission: 'granted' | 'denied';
+  error?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'camera_permission',
+    permission_status: params.permission,
+    error_message: params.error || null,
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when OCR scan fails to detect a product
+ */
+export function trackScanFailure(params: {
+  reason: string;
+  hasText: boolean;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'scan_failure',
+    failure_reason: params.reason,
+    text_detected: params.hasText,
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when user clicks "Look for better options" button on product details page
+ */
+export function trackHealthierAlternativesClick(params: {
+  productId: number;
+  productName: string;
+  currentGrade: string;
+  categoryId: number;
+  betterGrades: string[];
+  alternativesCount: number;
+  store: string;
+  language: string;
+}) {
+  pushToDataLayer({
+    event: 'healthier_alternatives_click',
+    product_id: params.productId,
+    product_name: params.productName,
+    nutri_score: params.currentGrade,
+    category_id: params.categoryId,
+    better_grades: params.betterGrades.join(','),
+    alternatives_count: params.alternativesCount,
+    store: params.store,
+    language: params.language,
+  });
+}

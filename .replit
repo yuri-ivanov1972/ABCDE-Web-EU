@@ -1,52 +1,28 @@
-modules = ["nodejs-20", "bash", "web", "postgresql-16", "python-3.11"]
-run = "npm run dev"
-hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
-
-[nix]
-channel = "stable-24_05"
+modules = ["nodejs-24"]
 
 [deployment]
+router = "application"
 deploymentTarget = "autoscale"
-run = ["npm", "run", "start"]
-build = ["npm", "run", "build"]
 
-[[ports]]
-localPort = 5000
-externalPort = 80
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
 
 [workflows]
 runButton = "Project"
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
 [agent]
-integrations = ["styling_shadcn:1.0.0", "javascript_object_storage:1.0.0"]
+stack = "PNPM_WORKSPACE"
+expertMode = true
 
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
 
-[objectStorage]
-defaultBucketID = "replit-objstore-556c4c9e-7fdb-4e49-89d5-6376264f590a"
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 20716
+externalPort = 3000

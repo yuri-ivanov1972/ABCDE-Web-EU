@@ -1,0 +1,32 @@
+{
+  "appName": "ABCDE.lv",
+  "loading": "Loading...",
+  "backToHome": "Back to Home",
+  "notAvailable": "Not available",
+  "per100g": "Per 100g/ml",
+  "toggleSidebar": "Toggle sidebar",
+  "close": "Close",
+  "apply": "Apply",
+  "clear": "Clear",
+  "more": "More",
+  "less": "Less",
+  "yes": "Yes",
+  "no": "No",
+  "nutrients": {
+    "sugar": "Sugar",
+    "fat": "Fat",
+    "saturatedFat": "Sat. fat",
+    "protein": "Protein",
+    "proteinShort": "Protein",
+    "salt": "Salt"
+  },
+  "noImage": "No Image",
+  "footer": {
+    "aboutNutriScore": "About Nutri-Score",
+    "whatLatviansEat": "What Latvians Eat?",
+    "aboutProject": "About the Project",
+    "orgName": "Society ABCDE Open Food Data Lab",
+    "allRightsReserved": "All rights reserved.",
+    "pagesHeading": "About"
+  }
+}

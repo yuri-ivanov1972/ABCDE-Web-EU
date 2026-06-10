@@ -1,0 +1,46 @@
+{
+  "backToProducts": "Back to products",
+  "notFound": "Product not found",
+  "notFoundMessage": "Sorry, we couldn't find the product you're looking for.",
+  "viewDetails": "View details",
+  "viewOnRimi": "View on Rimi",
+  "viewOnBarbora": "View on Barbora",
+  "openRimi": "Open Rimi",
+  "search": {
+    "title": "Search product by Rimi URL",
+    "placeholder": "Enter Rimi product URL",
+    "button": "Search",
+    "clear": "Clear search",
+    "notFound": "Product not found",
+    "notFoundHint": "Check the URL or try a different address."
+  },
+  "nutrition": {
+    "facts": "Nutrition Facts",
+    "showFacts": "Show nutrition facts",
+    "hideFacts": "Hide nutrition facts",
+    "characteristics": "Nutritional Characteristics",
+    "energy": "Energy",
+    "protein": "Protein",
+    "fatTotal": "Total Fat",
+    "fatSaturated": "Saturated Fat",
+    "carbsTotal": "Total Carbohydrates",
+    "sugar": "Sugar",
+    "fiber": "Fiber",
+    "salt": "Salt"
+  },
+  "nutriScore": {
+    "A": "Eat plenty and often; the most recommended choice.",
+    "B": "Eat safely; a very good choice.",
+    "C": "Eat in moderation; medium nutritional value.",
+    "D": "Limit consumption; lower nutritional value.",
+    "E": "Unhealthy product; choose as rarely as possible."
+  },
+  "petition": {
+    "text": "Vote if you want to see this labeling on all products."
+  },
+  "ingredients": "Ingredients",
+  "alternatives": {
+    "button": "Look for better options",
+    "noAlternatives": "There are no healthier products in this category. You can look for alternatives in other categories."
+  }
+}

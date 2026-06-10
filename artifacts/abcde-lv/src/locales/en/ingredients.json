@@ -1,0 +1,17 @@
+{
+  "avoid": {
+    "label": "Avoid",
+    "tooltip": "{{count}} ingredients to avoid"
+  },
+  "limit": {
+    "label": "Limit",
+    "tooltip": "{{count}} ingredients to limit"
+  },
+  "caution": {
+    "label": "Caution",
+    "tooltip": "{{count}} ingredients to use with caution"
+  },
+  "title": "Ingredient Analysis",
+  "showDetails": "Show details",
+  "hideDetails": "Hide details"
+}

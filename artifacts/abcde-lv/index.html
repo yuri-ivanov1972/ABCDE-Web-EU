@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ABCDE - Veselīgi pārtikas produkti</title>
+    <meta name="description" content="ABCDE - Veselīgu pārtikas produktu meklēšanas platforma ar Nutri-Score rādītājiem." />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    
+    <!-- Critical CSS for above-the-fold content - prevents render blocking -->
+    <style>
+      *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"}
+      body{margin:0;line-height:inherit;background-color:#f3f4f6}
+      #root{min-height:100vh;display:flex;flex-direction:column}
+      .container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+      @media(min-width:640px){.container{max-width:640px}}
+      @media(min-width:768px){.container{max-width:768px}}
+      @media(min-width:1024px){.container{max-width:1024px}}
+      @media(min-width:1280px){.container{max-width:1280px}}
+      header{background-color:#fff;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);position:sticky;top:0;z-index:50}
+      footer{background-color:#fff;border-top:1px solid #e5e7eb;padding:1.5rem 0}
+    </style>
+    
+    <!-- Resource hints for faster external connections -->
+    <!-- Product image CDNs - critical for LCP -->
+    <link rel="preconnect" href="https://rimibaltic-res.cloudinary.com" crossorigin>
+    <link rel="dns-prefetch" href="https://rimibaltic-res.cloudinary.com">
+    <!-- Analytics (lower priority) -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Analytics loaded after page content (non-blocking) -->
+    <script>
+      // Lazy load analytics after page is interactive
+      function loadAnalytics() {
+        // Google Tag Manager
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-P46NQX5H');
+        
+        // Google Analytics
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-TLGL1PJYTC';
+        document.head.appendChild(script);
+        
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-TLGL1PJYTC');
+      }
+      
+      // Load analytics after 2 seconds or when page is idle
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadAnalytics, { timeout: 2000 });
+      } else {
+        setTimeout(loadAnalytics, 2000);
+      }
+    </script>
+    
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P46NQX5H"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "404": {
+    "title": "404 Page Not Found",
+    "message": "Sorry, but this page doesn't exist.",
+    "backHome": "Back to Home"
+  },
+  "products": {
+    "notFound": "No products found",
+    "notFoundHint": "Try adjusting your filters or search for something else.",
+    "loadError": "Error loading products"
+  },
+  "api": {
+    "categoriesFailed": "Failed to load categories",
+    "categoryFailed": "Failed to load category",
+    "categoryPathFailed": "Failed to load category path",
+    "productsFailed": "Failed to load products",
+    "productFailed": "Failed to load product",
+    "productBySkuFailed": "Failed to load product by SKU",
+    "productByUrlFailed": "Failed to load product by URL"
+  }
+}

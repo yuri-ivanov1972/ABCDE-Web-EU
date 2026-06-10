@@ -1,0 +1,31 @@
+Hello! I need to build a new feature for my Next.js application. Please create a camera capture module by following these instructions.
+The goal is to create a new page at /scan that allows mobile users to take a photo of a product's price tag.
+Task 1: Create a Reusable "Scanner" React Component
+Create a new, self-contained component located at components/Scanner/Scanner.js. This component should handle all the camera-related functionality.
+Implement the following logic within the Scanner component:
+Device and Feature Check: When the component loads, it must first check if the user is on a mobile device and if their browser supports the necessary camera APIs (navigator.mediaDevices.getUserMedia). If not, it should display a user-friendly message like "This feature is for mobile devices only."
+Camera Permissions: It should request permission to use the user's rear-facing camera (facingMode: 'environment'). It must handle both cases:
+Permission Granted: Display a live video stream from the camera.
+Permission Denied: Display a clear error message instructing the user to enable camera permissions in their browser settings.
+Capture Functionality:
+Display a "Take Photo" button over or under the live video stream.
+When the button is clicked, capture the current frame from the video. Use a hidden <canvas> element to achieve this.
+Preview and Retake:
+After a photo is taken, the live video stream should stop.
+The component should then display the captured photo as an image preview.
+Below the preview, show a "Retake Photo" button. Clicking this should discard the image and start the camera process over again.
+Component Cleanup: Ensure you clean up properly by stopping the camera stream when the component is unmounted or a photo is taken.
+Task 2: Style the Scanner Component
+Create a CSS Module file at components/Scanner/Scanner.module.css and use it to style the Scanner component. Please make it look clean and mobile-friendly. Include styles for:
+The main container.
+The video element to fill its container.
+A visual overlay (like a semi-transparent border) on top of the video to help users frame the price tag.
+The capture button to make it stand out.
+Any error messages to make them noticeable.
+Task 3: Create the Page to Display the Component
+Create a new page for the application at pages/scan.js. This page will display the Scanner component.
+In this file, you must:
+Use Dynamic Import: Import the Scanner component using next/dynamic.
+Disable Server-Side Rendering (SSR): When importing, make sure to set ssr: false. This is critical because the camera APIs only exist in the browser environment.
+Add a Loading State: Provide a simple loading message (e.g., "Loading Camera...") that shows while the component is being loaded.
+Render the Component: Add a title like "Scan a Product Price Tag" and then render the dynamically imported Scanner component on the page.

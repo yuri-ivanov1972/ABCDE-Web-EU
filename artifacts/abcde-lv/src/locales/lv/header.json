@@ -1,0 +1,29 @@
+{
+  "petition": {
+    "text": "Balso par veselīga uztura marķējumu<br/>uz preču cenu zīmēm veikalos!",
+    "url": "https://manabalss.lv/i/3716"
+  },
+  "logo": {
+    "alt": "ABCDE.lv logotips"
+  },
+  "search": {
+    "placeholder": "Meklēt produktus...",
+    "button": "Meklēt",
+    "clear": "Notīrīt meklēšanu"
+  },
+  "scan": {
+    "button": "Skenēt",
+    "tooltip": "Skenēt produkta cenu zīmi"
+  },
+  "menu": {
+    "toggle": "Izvēlne"
+  },
+  "filters": {
+    "toggle": "Filtri"
+  },
+  "language": {
+    "switch": "Mainīt valodu",
+    "latvian": "Latviešu",
+    "english": "English"
+  }
+}

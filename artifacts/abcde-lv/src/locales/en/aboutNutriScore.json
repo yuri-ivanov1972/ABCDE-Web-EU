@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "title": "About Nutri-Score - ABCDE.lv",
+    "description": "Learn about Nutri-Score: how it's calculated, how to use it, its scientific basis, and common misconceptions."
+  },
+  "backToHome": "Back to Home",
+  "title": "About Nutri-Score",
+  "subtitle": "A science-based nutrition label helping consumers make healthier food choices at a glance.",
+  "intro": "Nutri-Score is a front-of-pack nutrition label that uses a 5-color scale from A (dark green, most favorable) to E (red, least favorable) to rate the overall nutritional quality of foods and beverages. Developed by French public health authorities, it's now used across several European countries.",
+  "sections": {
+    "whatIs": {
+      "title": "What is Nutri-Score?",
+      "p1": "Nutri-Score is a simplified nutrition labeling system designed to help consumers quickly understand the nutritional quality of food products. It displays a letter from A to E on the front of food packaging, with each letter corresponding to a color: A (dark green) represents the best nutritional quality, while E (red) indicates the least favorable.",
+      "p2": "The system was developed by French researchers from INSERM, INRAE, and Sorbonne Paris Nord University, working in collaboration with Santé Publique France. It's based on the UK Food Standards Agency's nutrient profiling system, which has been adapted and improved for the European context.",
+      "p3": "Nutri-Score was officially adopted by France in 2017 and has since been endorsed by several other European countries as a recommended voluntary nutrition label."
+    },
+    "whyImportant": {
+      "title": "Why is Nutri-Score Important?",
+      "p1": "Nutrition-related chronic diseases such as obesity, cardiovascular disease, diabetes, and certain cancers represent major public health challenges. Poor dietary habits are a leading cause of preventable death worldwide. Nutri-Score addresses this by:",
+      "bullet1": "Simplifying complex nutritional information into an easy-to-understand format",
+      "bullet2": "Enabling quick comparisons between products at the point of purchase",
+      "bullet3": "Encouraging food manufacturers to reformulate products to improve their scores",
+      "bullet4": "Supporting consumers in making healthier dietary choices without requiring specialized nutritional knowledge",
+      "p2": "Research shows that consumers using Nutri-Score make healthier purchasing decisions compared to those relying solely on traditional nutrition tables."
+    },
+    "howCalculated": {
+      "title": "How is Nutri-Score Calculated?",
+      "p1": "Nutri-Score is calculated per 100g or 100ml of a product based on a balance of unfavorable and favorable nutrients and ingredients:",
+      "negative": {
+        "title": "Components that increase the score (less favorable):",
+        "item1": "Energy (calories/kilojoules)",
+        "item2": "Sugars",
+        "item3": "Saturated fatty acids",
+        "item4": "Sodium (salt)"
+      },
+      "positive": {
+        "title": "Components that decrease the score (more favorable):",
+        "item1": "Fiber",
+        "item2": "Protein",
+        "item3": "Fruits, vegetables, legumes, nuts, and certain oils (olive, rapeseed, walnut, etc.)"
+      },
+      "p2": "The final score determines the letter grade: lower scores result in A or B ratings (healthier), while higher scores lead to D or E ratings (less healthy). The 2023 algorithm update improved the system to better distinguish between similar products and align more closely with dietary recommendations."
+    },
+    "howToUse": {
+      "title": "How to Use Nutri-Score",
+      "p1": "Nutri-Score is designed for practical use while shopping:",
+      "step1": "Compare products within the same category: For example, compare different breakfast cereals or yogurts to find healthier options. An A-rated cereal is nutritionally better than a D-rated one.",
+      "step2": "Compare the same product across brands: Different manufacturers may have very different recipes for similar products. Use Nutri-Score to find the healthier version.",
+      "step3": "Compare products with similar uses: You can compare products that serve similar purposes, such as different snack options or various protein sources.",
+      "p2": "Remember: Nutri-Score doesn't tell you whether you should or shouldn't eat a product—it simply helps you identify which option is nutritionally better within a comparison."
+    },
+    "limitations": {
+      "title": "What Nutri-Score Cannot Tell You",
+      "p1": "While Nutri-Score is a valuable tool, it has important limitations:",
+      "bullet1": "It only addresses nutritional quality, not food additives, pesticides, ultra-processing, or environmental impact",
+      "bullet2": "It cannot include all vitamins, minerals, or beneficial compounds like polyphenols due to lack of mandatory labeling",
+      "bullet3": "It doesn't consider portion sizes—it's always calculated per 100g/ml",
+      "bullet4": "It cannot replace general dietary guidelines about food groups and variety",
+      "bullet5": "Products without Nutri-Score may still be healthy (e.g., fresh fruits and vegetables don't require it)",
+      "p2": "Nutri-Score should be used as one tool among others, combined with ingredient lists, dietary guidelines, and personal health considerations."
+    },
+    "myths": {
+      "title": "Common Misconceptions About Nutri-Score",
+      "myth1": {
+        "claim": "Myth: Nutri-Score penalizes traditional foods like cheese and olive oil",
+        "truth": "Truth: Nutri-Score reflects actual nutritional content. Traditional products high in saturated fat or salt will score lower, but this doesn't mean they should be avoided—just consumed in appropriate quantities. The updated 2023 algorithm now gives better scores to olive oil and other healthy oils."
+      },
+      "myth2": {
+        "claim": "Myth: Nutri-Score is unscientific and keeps changing",
+        "truth": "Truth: Nutri-Score is based on extensive peer-reviewed research and was updated in 2023 precisely because science evolves. The update improved alignment with current nutritional knowledge and made the system more accurate."
+      },
+      "myth3": {
+        "claim": "Myth: A product with an E rating is 'bad' and shouldn't be eaten",
+        "truth": "Truth: Nutri-Score doesn't forbid any foods. An E rating simply means other options in that category are nutritionally better. Occasional consumption of lower-rated products as part of a balanced diet is perfectly fine."
+      },
+      "myth4": {
+        "claim": "Myth: Nutri-Score hurts the Mediterranean diet",
+        "truth": "Truth: Studies show that diets following Nutri-Score guidance are actually more aligned with Mediterranean diet principles. The system favors fruits, vegetables, legumes, fish, and healthy oils—all Mediterranean diet staples."
+      }
+    },
+    "countries": {
+      "title": "Where is Nutri-Score Used?",
+      "p1": "Nutri-Score has been officially adopted as a recommended voluntary label in these countries:",
+      "france": "France",
+      "belgium": "Belgium",
+      "germany": "Germany",
+      "spain": "Spain",
+      "netherlands": "Netherlands",
+      "luxembourg": "Luxembourg",
+      "switzerland": "Switzerland",
+      "p2": "Many major food manufacturers and retailers across Europe have voluntarily adopted Nutri-Score. Discussions continue at the EU level about making a harmonized front-of-pack nutrition label mandatory across all member states."
+    },
+    "scientific": {
+      "title": "Scientific Basis",
+      "p1": "Nutri-Score is backed by over 100 peer-reviewed scientific publications. Studies have validated its ability to: correctly classify foods according to their nutritional quality, be understood by consumers from various educational backgrounds, influence purchasing behavior toward healthier choices, and predict health outcomes at the population level.",
+      "p2": "Prospective cohort studies following hundreds of thousands of participants have shown that diets with lower average Nutri-Score values (more A and B products) are associated with reduced risk of obesity, cardiovascular disease, cancer, and mortality.",
+      "p3": "The European Commission's Joint Research Centre has analyzed various front-of-pack nutrition labels and found Nutri-Score to be among the most effective at helping consumers identify healthier options."
+    }
+  },
+  "source": {
+    "title": "Official Source",
+    "description": "This information is based on the official Nutri-Score scientific blog maintained by EREN (Nutritional Epidemiology Research Team) at Sorbonne Paris Nord University."
+  }
+}

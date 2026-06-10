@@ -1,0 +1,29 @@
+{
+  "petition": {
+    "text": "Vote for the healthy nutrition labeling<br/>on product price tags in stores!",
+    "url": "https://manabalss.lv/i/3716"
+  },
+  "logo": {
+    "alt": "ABCDE.lv logo"
+  },
+  "search": {
+    "placeholder": "Search products...",
+    "button": "Search",
+    "clear": "Clear search"
+  },
+  "scan": {
+    "button": "Scan",
+    "tooltip": "Scan product price tag"
+  },
+  "menu": {
+    "toggle": "Menu"
+  },
+  "filters": {
+    "toggle": "Filters"
+  },
+  "language": {
+    "switch": "Change language",
+    "latvian": "Latviešu",
+    "english": "English"
+  }
+}

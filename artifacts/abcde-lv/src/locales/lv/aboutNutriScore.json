@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "title": "Par Nutri-Score - ABCDE.lv",
+    "description": "Uzziniet par Nutri-Score: kā tas tiek aprēķināts, kā to izmantot, tā zinātnisko pamatojumu un izplatītākos mītus."
+  },
+  "backToHome": "Atpakaļ uz sākumu",
+  "title": "Par Nutri-Score",
+  "subtitle": "Zinātniski pamatota uztura marķējuma sistēma, kas palīdz patērētājiem ātri izvēlēties veselīgākus pārtikas produktus.",
+  "intro": "Nutri-Score ir uztura marķējums uz iepakojuma priekšpuses, kas izmanto 5 krāsu skalu no A (tumši zaļa, veselīgākā) līdz E (sarkana, vismazāk veselīgā), lai novērtētu pārtikas produktu un dzērienu kopējo uzturvērtību. To izstrādāja Francijas sabiedrības veselības iestādes, un tagad to izmanto vairākās Eiropas valstīs.",
+  "sections": {
+    "whatIs": {
+      "title": "Kas ir Nutri-Score?",
+      "p1": "Nutri-Score ir vienkāršota uztura marķējuma sistēma, kas palīdz patērētājiem ātri izprast pārtikas produktu uzturvērtību. Tā uz iepakojuma priekšpuses rāda burtu no A līdz E, kur katram burtam atbilst krāsa: A (tumši zaļa) apzīmē augstāko uzturvērtību, savukārt E (sarkana) norāda uz zemāko.",
+      "p2": "Sistēmu izstrādāja franču pētnieki no INSERM, INRAE un Sorbonnas Parīzes Ziemeļu universitātes sadarbībā ar Santé Publique France. Tā balstās uz Apvienotās Karalistes Pārtikas standartu aģentūras uzturvielu profilēšanas sistēmu, kas ir pielāgota un uzlabota Eiropas kontekstam.",
+      "p3": "Nutri-Score oficiāli tika pieņemts Francijā 2017. gadā, un kopš tā laika to ir atbalstījušas vairākas citas Eiropas valstis kā ieteicamu brīvprātīgu uztura marķējumu."
+    },
+    "whyImportant": {
+      "title": "Kāpēc Nutri-Score ir svarīgs?",
+      "p1": "Ar uzturu saistītas hroniskas slimības, piemēram, aptaukošanās, sirds un asinsvadu slimības, diabēts un noteikti vēža veidi, ir nopietnas sabiedrības veselības problēmas. Slikti uztura paradumi ir viens no galvenajiem novēršamās nāves cēloņiem pasaulē. Nutri-Score risina šo problēmu:",
+      "bullet1": "Vienkāršojot sarežģītu uztura informāciju viegli saprotamā formātā",
+      "bullet2": "Ļaujot ātri salīdzināt produktus iepirkšanās brīdī",
+      "bullet3": "Mudinot pārtikas ražotājus pārformulēt produktus, lai uzlabotu to novērtējumu",
+      "bullet4": "Atbalstot patērētājus veselīgāku uztura izvēļu izdarīšanā, neprasot specializētas uztura zināšanas",
+      "p2": "Pētījumi rāda, ka patērētāji, kas izmanto Nutri-Score, pieņem veselīgākus pirkšanas lēmumus salīdzinājumā ar tiem, kas paļaujas tikai uz tradicionālajām uzturvērtību tabulām."
+    },
+    "howCalculated": {
+      "title": "Kā tiek aprēķināts Nutri-Score?",
+      "p1": "Nutri-Score tiek aprēķināts uz 100g vai 100ml produkta, pamatojoties uz neveselīgo un veselīgo uzturvielu un sastāvdaļu līdzsvaru:",
+      "negative": {
+        "title": "Komponenti, kas paaugstina punktu skaitu (mazāk veselīgi):",
+        "item1": "Enerģētiskā vērtība (kalorijas/kilodžouli)",
+        "item2": "Cukuri",
+        "item3": "Piesātinātās taukskābes",
+        "item4": "Nātrijs (sāls)"
+      },
+      "positive": {
+        "title": "Komponenti, kas pazemina punktu skaitu (veselīgāki):",
+        "item1": "Šķiedrvielas",
+        "item2": "Olbaltumvielas",
+        "item3": "Augļi, dārzeņi, pākšaugi, rieksti un noteiktas eļļas (olīvu, rapšu, valriekstu u.c.)"
+      },
+      "p2": "Galīgais rezultāts nosaka burtu: zemāki rezultāti noved pie A vai B novērtējuma (veselīgāki), savukārt augstāki rezultāti — pie D vai E novērtējuma (mazāk veselīgi). 2023. gada algoritma atjauninājums uzlaboja sistēmu, lai labāk atšķirtu līdzīgus produktus un precīzāk atbilstu uztura ieteikumiem."
+    },
+    "howToUse": {
+      "title": "Kā izmantot Nutri-Score",
+      "p1": "Nutri-Score ir paredzēts praktiskai lietošanai iepērkoties:",
+      "step1": "Salīdziniet produktus vienā kategorijā: Piemēram, salīdziniet dažādas brokastīs pārslas vai jogurtus, lai atrastu veselīgākas izvēles. Pārslas ar A novērtējumu ir uzturvērtīgākas nekā ar D novērtējumu.",
+      "step2": "Salīdziniet vienu produktu dažādu zīmolu izpildījumā: Dažādi ražotāji var izmantot ļoti atšķirīgas receptes līdzīgiem produktiem. Izmantojiet Nutri-Score, lai atrastu veselīgāko versiju.",
+      "step3": "Salīdziniet produktus ar līdzīgu pielietojumu: Varat salīdzināt produktus, kas kalpo līdzīgiem mērķiem, piemēram, dažādas uzkodu iespējas vai dažādus olbaltumvielu avotus.",
+      "p2": "Atcerieties: Nutri-Score nesaka, vai jums vajadzētu vai nevajadzētu ēst produktu — tas vienkārši palīdz noteikt, kura izvēle ir uzturvērtīgāka salīdzinājumā."
+    },
+    "limitations": {
+      "title": "Ko Nutri-Score nevar pastāstīt",
+      "p1": "Lai gan Nutri-Score ir vērtīgs rīks, tam ir svarīgi ierobežojumi:",
+      "bullet1": "Tas attiecas tikai uz uzturvērtību, nevis pārtikas piedevām, pesticīdiem, īpaši apstrādātiem produktiem vai ietekmi uz vidi",
+      "bullet2": "Tas nevar iekļaut visus vitamīnus, minerālvielas vai labvēlīgus savienojumus, piemēram, polifenolus, jo nav obligātas marķēšanas prasības",
+      "bullet3": "Tas neņem vērā porciju lielumus — tas vienmēr tiek aprēķināts uz 100g/ml",
+      "bullet4": "Tas nevar aizstāt vispārīgās uztura vadlīnijas par pārtikas grupām un daudzveidību",
+      "bullet5": "Produkti bez Nutri-Score joprojām var būt veselīgi (piem., svaigiem augļiem un dārzeņiem tas nav nepieciešams)",
+      "p2": "Nutri-Score jāizmanto kā viens no rīkiem līdzās sastāvdaļu sarakstiem, uztura vadlīnijām un personīgiem veselības apsvērumiem."
+    },
+    "myths": {
+      "title": "Izplatītākie mīti par Nutri-Score",
+      "myth1": {
+        "claim": "Mīts: Nutri-Score soda tradicionālos produktus, piemēram, sieru un olīveļļu",
+        "truth": "Patiesība: Nutri-Score atspoguļo faktisko uzturvērtību. Tradicionālie produkti ar augstu piesātināto tauku vai sāls saturu saņems zemāku novērtējumu, taču tas nenozīmē, ka no tiem jāizvairās — tikai jālieto piemērotos daudzumos. Atjauninātais 2023. gada algoritms tagad piešķir labākus novērtējumus olīveļļai un citām veselīgām eļļām."
+      },
+      "myth2": {
+        "claim": "Mīts: Nutri-Score ir nezinātnisks un pastāvīgi mainās",
+        "truth": "Patiesība: Nutri-Score ir balstīts uz plašiem recenzētiem pētījumiem un tika atjaunināts 2023. gadā tieši tāpēc, ka zinātne attīstās. Atjauninājums uzlaboja atbilstību pašreizējām uztura zināšanām un padarīja sistēmu precīzāku."
+      },
+      "myth3": {
+        "claim": "Mīts: Produkts ar E novērtējumu ir 'slikts' un to nevajadzētu ēst",
+        "truth": "Patiesība: Nutri-Score neaizliedz nevienu pārtiku. E novērtējums vienkārši nozīmē, ka šajā kategorijā ir uzturvērtīgākas alternatīvas. Retāka produktu ar zemāku novērtējumu lietošana līdzsvarota uztura ietvaros ir pilnīgi pieņemama."
+      },
+      "myth4": {
+        "claim": "Mīts: Nutri-Score kaitē Vidusjūras reģiona diētai",
+        "truth": "Patiesība: Pētījumi rāda, ka uztura paradumi, kas seko Nutri-Score ieteikumiem, faktiski labāk atbilst Vidusjūras reģiona diētas principiem. Sistēma dod priekšroku augļiem, dārzeņiem, pākšaugiem, zivīm un veselīgām eļļām — visiem Vidusjūras reģiona diētas pamatproduktiem."
+      }
+    },
+    "countries": {
+      "title": "Kur izmanto Nutri-Score?",
+      "p1": "Nutri-Score ir oficiāli pieņemts kā ieteicams brīvprātīgs marķējums šajās valstīs:",
+      "france": "Francija",
+      "belgium": "Beļģija",
+      "germany": "Vācija",
+      "spain": "Spānija",
+      "netherlands": "Nīderlande",
+      "luxembourg": "Luksemburga",
+      "switzerland": "Šveice",
+      "p2": "Daudzi lieli pārtikas ražotāji un mazumtirgotāji visā Eiropā ir brīvprātīgi pieņēmuši Nutri-Score. ES līmenī turpinās diskusijas par vienota uztura marķējuma uz iepakojuma priekšpuses obligātu ieviešanu visās dalībvalstīs."
+    },
+    "scientific": {
+      "title": "Zinātniskais pamatojums",
+      "p1": "Nutri-Score pamatā ir vairāk nekā 100 recenzētu zinātnisko publikāciju. Pētījumi ir apstiprinājuši tā spēju: pareizi klasificēt pārtiku atbilstoši tās uzturvērtībai, būt saprotamam patērētājiem ar dažādu izglītības līmeni, ietekmēt pirkšanas uzvedību veselīgāku izvēļu virzienā un prognozēt veselības iznākumus iedzīvotāju līmenī.",
+      "p2": "Prospektīvie kohortu pētījumi, kuros piedalījās simtiem tūkstošu dalībnieku, ir parādījuši, ka uztura paradumi ar zemākiem vidējiem Nutri-Score rādītājiem (vairāk A un B produktu) ir saistīti ar samazinātu aptaukošanās, sirds un asinsvadu slimību, vēža un mirstības risku.",
+      "p3": "Eiropas Komisijas Kopīgais pētniecības centrs ir analizējis dažādus uztura marķējumus uz iepakojuma priekšpuses un konstatējis, ka Nutri-Score ir viens no efektīvākajiem, palīdzot patērētājiem identificēt veselīgākas izvēles."
+    }
+  },
+  "source": {
+    "title": "Oficiālais avots",
+    "description": "Šī informācija ir balstīta uz oficiālo Nutri-Score zinātnisko emuāru, ko uztur EREN (Uztura epidemioloģijas pētniecības grupa) Sorbonnas Parīzes Ziemeļu universitātē."
+  }
+}

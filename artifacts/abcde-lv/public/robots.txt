@@ -1,0 +1,11 @@
+# robots.txt for ABCDE.lv
+# Healthy food product browser
+
+User-agent: *
+Allow: /
+
+# No restrictions - allow search engines to crawl all content
+Disallow:
+
+# Sitemap location
+Sitemap: https://abcde.lv/sitemap.xml

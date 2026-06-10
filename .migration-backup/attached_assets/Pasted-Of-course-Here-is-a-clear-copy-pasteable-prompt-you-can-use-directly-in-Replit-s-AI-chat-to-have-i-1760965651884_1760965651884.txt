@@ -1,0 +1,203 @@
+Of course. Here is a clear, copy-pasteable prompt you can use directly in Replit's AI chat to have it implement the entire first step for you.
+Replit AI Prompt:
+Hello! I am building a new feature for my Next.js application. Please perform the following tasks to add a camera capture component.
+Goal: Create a new page at /scan that allows mobile users to take a photo. This involves creating a self-contained React component for the camera and a new page to display it.
+Step 1: Create the CSS Module for the Scanner Component
+Create a new file at components/Scanner/Scanner.module.css and add the following content:
+code
+CSS
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.errorMessage {
+  padding: 20px;
+  color: #c0392b;
+  background-color: #fbeae5;
+  border: 1px solid #c0392b;
+  border-radius: 8px;
+}
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.video {
+  width: 100%;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 25%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  transform: translateY(-50%);
+  border-radius: 8px;
+}
+
+.captureButton, .button {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #0070f3;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.previewImage {
+  width: 100%;
+  border-radius: 12px;
+}
+Step 2: Create the Main Scanner Component
+Create a new file at components/Scanner/Scanner.js and add the following React component code. This component will handle camera permissions, display the live feed, capture a photo, and handle errors for desktop users.
+code
+JavaScript
+import React, { useState, useEffect, useRef } from 'react';
+import styles from './Scanner.module.css';
+
+const Scanner = () => {
+  const [isCameraSupported, setIsCameraSupported] = useState(false);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [stream, setStream] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const isMobile = 'ontouchstart' in window;
+    const hasMediaDevices = 'mediaDevices' in navigator && navigator.mediaDevices.getUserMedia;
+
+    if (hasMediaDevices && isMobile) {
+      setIsCameraSupported(true);
+      requestCameraPermission();
+    } else {
+      setIsCameraSupported(false);
+    }
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+      setStream(stream);
+      setHasPermission(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setHasPermission(false);
+    }
+  };
+
+  const handleTakePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      setCapturedImage(imageDataUrl);
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        setStream(null);
+      }
+    }
+  };
+
+  const handleRetake = () => {
+    setCapturedImage(null);
+    requestCameraPermission();
+  };
+
+  if (!isCameraSupported) {
+    return (
+      <div className={styles.container}>
+        <p className={styles.errorMessage}>
+          This feature is for mobile devices only. Please open this page on your phone.
+        </p>
+      </div>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <div className={styles.container}>
+        <p className={styles.errorMessage}>
+          Camera access was denied. Please enable camera permissions in your browser settings to continue.
+        </p>
+      </div>
+    );
+  }
+
+  if (capturedImage) {
+    return (
+      <div className={styles.container}>
+        <img src={capturedImage} alt="Captured product tag" className={styles.previewImage} />
+        <button onClick={handleRetake} className={styles.button}>Retake Photo</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.videoContainer}>
+        <video ref={videoRef} autoPlay playsInline className={styles.video}></video>
+        <div className={styles.overlay}></div>
+      </div>
+      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+      <button onClick={handleTakePhoto} className={styles.captureButton}>Take Photo</button>
+    </div>
+  );
+};
+
+export default Scanner;
+Step 3: Create the New Page to Display the Scanner
+Finally, create a new file at pages/scan.js. This page will dynamically import the Scanner component to ensure it only runs on the client-side, which is required for camera access.
+code
+JavaScript
+import dynamic from 'next/dynamic';
+
+// Dynamically import the Scanner component with SSR turned off
+const ScannerComponent = dynamic(() => import('../components/Scanner/Scanner'), {
+  ssr: false, 
+  loading: () => <p style={{textAlign: 'center'}}>Loading Camera...</p>
+});
+
+export default function ScanPage() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Scan a Product Price Tag</h1>
+      <ScannerComponent />
+    </div>
+  );
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Ko ēd Latvijā?",
+  "description": "Nutri-Score sadalījums visiem produktiem Rimi un Maxima veikalos",
+  "totalProducts": "Kopā produktu",
+  "lastUpdated": "Pēdējoreiz atjaunots",
+  "chartTitle": "Produktu sadalījums pēc Nutri-Score",
+  "grade": "Klase",
+  "count": "Skaits",
+  "percentage": "Procenti",
+  "healthyProducts": "Veselīgi produkti (A-B)",
+  "unhealthyProducts": "Mazāk veselīgi produkti (D-E)",
+  "moderateProducts": "Vidēji veselīgi produkti (C)",
+  "latvianTitle": "Ko ražo Latvijā?",
+  "latvianDescription": "Nutri-Score sadalījums Latvijas ražotiem produktiem Rimi un Maxima veikalos"
+}

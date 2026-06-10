@@ -1,0 +1,31 @@
+{
+  "title": "Skenēt cenu zīmi",
+  "description": "Izmantojiet savu kameru, lai nofotografētu produkta cenu zīmi",
+  "camera": {
+    "start": "Startēt kameru",
+    "loading": "Ielādē kameru...",
+    "frameGuide": "Izlīdziniet cenu zīmi rāmja iekšpusē",
+    "capture": "Fotografēt",
+    "retake": "Fotografēt no jauna"
+  },
+  "detect": {
+    "button": "Atpazīt produktu",
+    "processing": "Apstrādā attēlu...",
+    "success": "Produkts veiksmīgi atpazīts!",
+    "failure": "Neizdevās atpazīt produktu. Lūdzu, mēģiniet vēlreiz ar skaidrāku attēlu."
+  },
+  "result": {
+    "matchedProduct": "Atrastais produkts:",
+    "viewDetails": "Skatīt detaļas"
+  },
+  "errors": {
+    "mobileOnly": "Šī funkcija ir pieejama tikai mobilajām ierīcēm.",
+    "notSupported": "Jūsu pārlūkprogramma neatbalsta kameras piekļuvi.",
+    "permissionDenied": "Kameras atļauja liegta. Lūdzu, iespējojiet kameras piekļuvi pārlūkprogrammas iestatījumos.",
+    "notFound": "Ierīcē nav atrasta kamera.",
+    "generic": "Nevar piekļūt kamerai. Lūdzu, mēģiniet vēlreiz.",
+    "restartFailed": "Nevar restartēt kameru. Lūdzu, atsvaidziniet lapu.",
+    "uploadFailed": "Neizdevās nosūtīt attēlu. Lūdzu, pārbaudiet savienojumu un mēģiniet vēlreiz."
+  },
+  "backToHome": "Atpakaļ uz sākumu"
+}
