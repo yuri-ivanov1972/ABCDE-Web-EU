@@ -379,6 +379,10 @@ importers:
         version: 3.25.76
 
   artifacts/abcde-lv-deck:
+    dependencies:
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.545.0(react@19.1.0)
     devDependencies:
       '@replit/vite-plugin-cartographer':
         specifier: 'catalog:'
