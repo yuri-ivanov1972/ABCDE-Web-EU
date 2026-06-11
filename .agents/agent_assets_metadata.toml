@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "egG0KRTNI6c5iRiUpABk2"
+uri = "file://.local/outputs/ABCDE-Web-EU.pptx"
+type = "slides"
+title = "ABCDE Web EU.pptx"
