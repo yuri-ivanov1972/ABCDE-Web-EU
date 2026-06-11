@@ -4,7 +4,18 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
+const REDIRECT_DOMAINS = ["nutri-score.lv", "nutriscore.lv"];
+
 const app: Express = express();
+
+// 301-redirect alternate domains to the canonical domain
+app.use((req, res, next) => {
+  if (REDIRECT_DOMAINS.includes(req.hostname)) {
+    res.redirect(301, `https://abcde.lv${req.originalUrl}`);
+    return;
+  }
+  next();
+});
 
 app.use(
   pinoHttp({
