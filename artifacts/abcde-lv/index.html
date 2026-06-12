@@ -3,6 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Canonical + hreflang injection — runs synchronously before React boots.
+         This ensures Googlebot sees correct canonical tags in the initial HTTP
+         response render, not just after React Helmet fires client-side.
+         Rule: canonical always points to the /lv/ (default language) version. -->
+    <script>
+      (function () {
+        var BASE = 'https://abcde.lv';
+        var DEFAULT_LANG = 'lv';
+        var LANGS = ['lv', 'en'];
+        var path = window.location.pathname;
+
+        // Strip the language prefix (/lv or /en) to get the bare path.
+        // e.g. /lv/product/foo-123  →  /product/foo-123
+        //      /en                  →  (empty string → treated as /)
+        //      /                    →  (no match     → treated as /)
+        var m = path.match(/^\/(lv|en)(\/.*)?$/);
+        var rest = m ? (m[2] || '') : '';
+
+        // Canonical always uses the default language prefix.
+        var canonical = BASE + '/' + DEFAULT_LANG + rest;
+
+        function injectLink(attrs) {
+          var el = document.createElement('link');
+          for (var k in attrs) {
+            if (Object.prototype.hasOwnProperty.call(attrs, k)) {
+              el.setAttribute(k, attrs[k]);
+            }
+          }
+          document.head.appendChild(el);
+        }
+
+        injectLink({ rel: 'canonical', href: canonical });
+        for (var i = 0; i < LANGS.length; i++) {
+          injectLink({ rel: 'alternate', hreflang: LANGS[i], href: BASE + '/' + LANGS[i] + rest });
+        }
+        injectLink({ rel: 'alternate', hreflang: 'x-default', href: canonical });
+      })();
+    </script>
+
     <title>ABCDE - Veselīgi pārtikas produkti</title>
     <meta name="description" content="ABCDE - Veselīgu pārtikas produktu meklēšanas platforma ar Nutri-Score rādītājiem." />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
