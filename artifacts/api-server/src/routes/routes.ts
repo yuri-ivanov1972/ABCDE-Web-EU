@@ -1602,7 +1602,19 @@ Sitemap: https://abcde.lv/sitemap.xml
     }
 
     try {
-      const product = await storage.getProductById(productId);
+      // Rimi and Maxima share numeric ID spaces, so the same ID can refer to two
+      // different products. Fetch from both stores in parallel, then pick the one
+      // whose canonical slug matches the URL slug (fall back to the first found).
+      const [rimiResult, maximaResult] = await Promise.allSettled([
+        storage.getProductById(productId),          // tries Rimi first, then Maxima
+        storage.getProductById(productId, "maxima"), // forces Maxima lookup
+      ]);
+      const candidates = [rimiResult, maximaResult]
+        .filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof storage.getProductById>>> =>
+          r.status === "fulfilled" && r.value != null)
+        .map(r => r.value!);
+
+      const product = candidates.find(p => p.slug === slug) ?? candidates[0] ?? null;
 
       if (!product) {
         res.set("Content-Type", "text/html; charset=utf-8");
