@@ -1,5 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { readFile } from "fs/promises";
+import { join } from "path";
 import { storage } from "../storage";
 import { z } from "zod/v4";
 import { sql } from "drizzle-orm";
@@ -1513,6 +1515,190 @@ Sitemap: https://abcde.lv/sitemap.xml
       res.status(500).send('Error generating sitemap');
     }
   });
+
+  // ── OG meta injection for product pages ──────────────────────────────────
+  // Link-preview bots (Telegram, WhatsApp, Slack, iMessage, Twitter/X) never
+  // execute JavaScript, so React Helmet's client-side OG tags are invisible to
+  // them. These routes intercept product/category URLs, look up the record,
+  // inject <meta> tags into index.html, and serve the modified HTML.
+  //
+  // The artifact.toml routes /lv/product/, /en/product/, /lv/category/, and
+  // /en/category/ prefixes to this Express server so these handlers fire.
+  // Static assets (/assets/*.js, *.css) are not routed here — they keep going
+  // to the static file server.
+
+  // Resolve the built frontend index.html.
+  // CWD differs between environments:
+  //   production  — node runs from workspace root → "artifacts/abcde-lv/..."
+  //   development — pnpm runs from artifacts/api-server/ → "../../artifacts/abcde-lv/..."
+  // We try all four candidates in priority order.
+  const cwd = process.cwd();
+  const INDEX_CANDIDATES = [
+    join(cwd, "artifacts/abcde-lv/dist/public/index.html"),       // prod build (prod CWD)
+    join(cwd, "../../artifacts/abcde-lv/dist/public/index.html"),  // prod build (dev CWD)
+    join(cwd, "artifacts/abcde-lv/index.html"),                    // source HTML (prod CWD)
+    join(cwd, "../../artifacts/abcde-lv/index.html"),              // source HTML (dev CWD)
+  ];
+  let indexHtmlCache: string | null = null;
+
+  async function getIndexHtml(): Promise<string | null> {
+    if (indexHtmlCache) return indexHtmlCache;
+    for (const candidate of INDEX_CANDIDATES) {
+      try {
+        const html = await readFile(candidate, "utf-8");
+        indexHtmlCache = html;
+        return html;
+      } catch { /* try next */ }
+    }
+    return null;
+  }
+
+  function escapeAttr(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function buildProductOgTags(opts: {
+    title: string;
+    description: string;
+    canonical: string;
+    imageUrl?: string;
+  }): string {
+    const { title, description, canonical, imageUrl } = opts;
+    const lines = [
+      `  <meta property="og:type" content="product" />`,
+      `  <meta property="og:site_name" content="ABCDE.lv" />`,
+      `  <meta property="og:title" content="${escapeAttr(title)}" />`,
+      `  <meta property="og:description" content="${escapeAttr(description)}" />`,
+      `  <meta property="og:url" content="${escapeAttr(canonical)}" />`,
+      imageUrl ? `  <meta property="og:image" content="${escapeAttr(imageUrl)}" />` : null,
+      `  <meta name="twitter:card" content="${imageUrl ? "summary_large_image" : "summary"}" />`,
+      `  <meta name="twitter:title" content="${escapeAttr(title)}" />`,
+      `  <meta name="twitter:description" content="${escapeAttr(description)}" />`,
+      imageUrl ? `  <meta name="twitter:image" content="${escapeAttr(imageUrl)}" />` : null,
+    ];
+    return lines.filter(Boolean).join("\n");
+  }
+
+  function injectIntoHtml(baseHtml: string, pageTitle: string, metaTags: string): string {
+    return baseHtml
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeAttr(pageTitle)}</title>`)
+      .replace("</head>", `${metaTags}\n</head>`);
+  }
+
+  // Product page handler (shared by /lv/product/:slug and /en/product/:slug)
+  // Express 5 (path-to-regexp v8) no longer supports inline regex in named params
+  // like /:lang(lv|en), so we register two explicit routes sharing one function.
+  async function serveProductPage(req: Request, res: Response): Promise<void> {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    const slug = String(req.params.slug);
+    const productId = extractIdFromSlug(slug);
+
+    if (!productId) {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.send(baseHtml);
+      return;
+    }
+
+    try {
+      const product = await storage.getProductById(productId);
+
+      if (!product) {
+        res.set("Content-Type", "text/html; charset=utf-8");
+        res.send(baseHtml);
+        return;
+      }
+
+      const name  = product.name;
+      const grade = product.nutrition?.nutriScoreGrade ?? null;
+      const store = product.store === "maxima" ? "Maxima" : "Rimi";
+      const qty   = product.quantityValue && product.quantityUnit
+        ? `${parseFloat(String(product.quantityValue))} ${product.quantityUnit}`
+        : null;
+      const photo = (product.photos?.find((p: any) => p.isPrimary) ?? product.photos?.[0])?.photoUrl;
+
+      const descParts: string[] = [];
+      if (grade) descParts.push(`Nutri-Score ${grade}`);
+      descParts.push(store);
+      if (qty)   descParts.push(qty);
+      const description = descParts.join(" · ");
+
+      const pSlug     = productSlug(name, product.productId);
+      const canonical  = `https://abcde.lv/lv/product/${pSlug}`;
+      const pageTitle  = `${name} | ABCDE.lv`;
+
+      const metaTags = buildProductOgTags({ title: name, description, canonical, imageUrl: photo });
+      const html     = injectIntoHtml(baseHtml, pageTitle, metaTags);
+
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+      res.send(html);
+    } catch {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.send(baseHtml);
+    }
+  }
+
+  app.get("/lv/product/:slug", serveProductPage);
+  app.get("/en/product/:slug", serveProductPage);
+
+  // Category page handler (shared by /lv/category/:slug and /en/category/:slug)
+  async function serveCategoryPage(req: Request, res: Response): Promise<void> {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    const lang       = req.path.startsWith("/en/") ? "en" : "lv";
+    const slug       = String(req.params.slug);
+    const categoryId = extractIdFromSlug(slug);
+
+    if (!categoryId) {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.send(baseHtml);
+      return;
+    }
+
+    try {
+      const category = await storage.getCategoryById(categoryId);
+
+      if (!category) {
+        res.set("Content-Type", "text/html; charset=utf-8");
+        res.send(baseHtml);
+        return;
+      }
+
+      const categoryName = lang === "en" ? category.nameEn : category.nameLv;
+      const pageTitle    = `${categoryName} | ABCDE.lv`;
+      const description  = lang === "en"
+        ? `Browse ${categoryName} products with Nutri-Score ratings on ABCDE.lv`
+        : `Pārlūkojiet ${categoryName} produktus ar Nutri-Score vērtējumiem — ABCDE.lv`;
+      const catSlug   = categorySlug(category.nameLv, category.categoryId);
+      const canonical = `https://abcde.lv/lv/category/${catSlug}`;
+
+      const metaTags = [
+        `  <meta property="og:type" content="website" />`,
+        `  <meta property="og:site_name" content="ABCDE.lv" />`,
+        `  <meta property="og:title" content="${escapeAttr(categoryName)}" />`,
+        `  <meta property="og:description" content="${escapeAttr(description)}" />`,
+        `  <meta property="og:url" content="${escapeAttr(canonical)}" />`,
+        `  <meta name="twitter:card" content="summary" />`,
+        `  <meta name="twitter:title" content="${escapeAttr(categoryName)}" />`,
+        `  <meta name="twitter:description" content="${escapeAttr(description)}" />`,
+      ].join("\n");
+
+      const html = injectIntoHtml(baseHtml, pageTitle, metaTags);
+
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+      res.send(html);
+    } catch {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.send(baseHtml);
+    }
+  }
+
+  app.get("/lv/category/:slug", serveCategoryPage);
+  app.get("/en/category/:slug", serveCategoryPage);
 
   const httpServer = createServer(app);
   return httpServer;
