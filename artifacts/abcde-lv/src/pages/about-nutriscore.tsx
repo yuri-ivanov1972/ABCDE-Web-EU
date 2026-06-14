@@ -238,6 +238,15 @@ export default function AboutNutriScore() {
               >
                 nutriscore.blog →
               </a>
+              <br />
+              <a
+                href="https://lv.wikipedia.org/wiki/Nutri-Score"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline text-sm font-medium"
+              >
+                Informācija par Nutri-Score Latvijas kontekstā →
+              </a>
             </div>
           </div>
         </div>
