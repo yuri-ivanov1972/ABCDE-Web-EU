@@ -1565,6 +1565,7 @@ Sitemap: https://abcde.lv/sitemap.xml
   }): string {
     const { title, description, canonical, imageUrl } = opts;
     const lines = [
+      `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
       `  <meta property="og:type" content="product" />`,
       `  <meta property="og:site_name" content="ABCDE.lv" />`,
       `  <meta property="og:title" content="${escapeAttr(title)}" />`,
@@ -1688,6 +1689,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       const canonical = `https://abcde.lv/lv/category/${catSlug}`;
 
       const metaTags = [
+        `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
         `  <meta property="og:type" content="website" />`,
         `  <meta property="og:site_name" content="ABCDE.lv" />`,
         `  <meta property="og:title" content="${escapeAttr(categoryName)}" />`,
