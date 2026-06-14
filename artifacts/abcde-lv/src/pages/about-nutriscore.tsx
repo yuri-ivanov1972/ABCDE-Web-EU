@@ -245,7 +245,7 @@ export default function AboutNutriScore() {
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline text-sm font-medium"
               >
-                Informācija par Nutri-Score Latvijas kontekstā →
+                {t('source.wikipediaLink')} →
               </a>
             </div>
           </div>
