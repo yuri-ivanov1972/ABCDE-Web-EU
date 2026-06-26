@@ -1580,10 +1580,25 @@ Sitemap: https://abcde.lv/sitemap.xml
     return lines.filter(Boolean).join("\n");
   }
 
+  // In development, Express reads the raw index.html (without Vite's transformIndexHtml),
+  // so the @vitejs/plugin-react preamble is missing. Inject it manually so that
+  // React Refresh can find window.__vite_plugin_react_preamble_installed__ and
+  // React mounts correctly on product/category pages served by Express.
+  const DEV_VITE_PREAMBLE =
+    process.env.NODE_ENV !== "production"
+      ? `  <script type="module">
+    import RefreshRuntime from "/@react-refresh"
+    RefreshRuntime.injectIntoGlobalHook(window)
+    window.$RefreshReg$ = () => {}
+    window.$RefreshSig$ = () => (type) => type
+    window.__vite_plugin_react_preamble_installed__ = true
+  </script>\n`
+      : "";
+
   function injectIntoHtml(baseHtml: string, pageTitle: string, metaTags: string): string {
     return baseHtml
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeAttr(pageTitle)}</title>`)
-      .replace("</head>", `${metaTags}\n</head>`);
+      .replace("</head>", `${DEV_VITE_PREAMBLE}${metaTags}\n</head>`);
   }
 
   // Product page handler (shared by /lv/product/:slug and /en/product/:slug)

@@ -20,12 +20,12 @@ import mediumB from '@assets/RVB_B_1768766381068.png';
 import mediumC from '@assets/RVB_C_1768766381068.png';
 import mediumD from '@assets/RVB_D_1768766381067.png';
 import mediumE from '@assets/RVB_E_1768766381067.png';
-import nova1 from '@assets/NOVA_group_1_1782500477722.svg';
-import nova2 from '@assets/NOVA_group_2_1782500477722.svg';
-import nova3 from '@assets/NOVA_group_3_1782500477721.svg';
-import nova4 from '@assets/NOVA_group_4_1782500477721.svg';
-
-const NOVA_IMAGES: Record<number, string> = { 1: nova1, 2: nova2, 3: nova3, 4: nova4 };
+const NOVA_IMAGES: Record<number, string> = {
+  1: `${import.meta.env.BASE_URL}nova-1.svg`,
+  2: `${import.meta.env.BASE_URL}nova-2.svg`,
+  3: `${import.meta.env.BASE_URL}nova-3.svg`,
+  4: `${import.meta.env.BASE_URL}nova-4.svg`,
+};
 
 interface ProductDetailsProps {
   lang?: string;
