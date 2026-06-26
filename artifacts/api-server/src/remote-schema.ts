@@ -24,6 +24,7 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").notNull(),
   quantityValue: decimal("quantity_value", { precision: 10, scale: 2 }),
   quantityUnit: varchar("quantity_unit", { length: 50 }),
+  novaScore: integer("nova_score"),
   createdAt: timestamp("created_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
@@ -42,6 +43,7 @@ export const maximaProducts = pgTable("products", {
   rimiCategoryCode: integer("rimi_category_code"),
   quantityValue: decimal("quantity_value", { precision: 10, scale: 2 }),
   quantityUnit: varchar("quantity_unit", { length: 50 }),
+  novaScore: integer("nova_score"),
   countryOfOrigin: varchar("country_of_origin", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }),

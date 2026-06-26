@@ -38,6 +38,13 @@
   "petition": {
     "text": "Vote if you want to see this labeling on all products."
   },
+  "nova": {
+    "title": "NOVA Classification",
+    "group1": "Unprocessed or minimally processed foods",
+    "group2": "Processed culinary ingredients",
+    "group3": "Processed foods",
+    "group4": "Ultra-processed food products"
+  },
   "ingredients": "Ingredients",
   "alternatives": {
     "button": "Look for better options",

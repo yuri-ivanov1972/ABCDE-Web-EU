@@ -38,6 +38,13 @@
   "petition": {
     "text": "Balsojiet, ja vēlaties redzēt šo marķējumu uz visiem produktiem."
   },
+  "nova": {
+    "title": "NOVA klasifikācija",
+    "group1": "Minimāli apstrādāti pārtikas produkti",
+    "group2": "Apstrādātas kulinārijas sastāvdaļas",
+    "group3": "Apstrādāti pārtikas produkti",
+    "group4": "Ultra-apstrādāti pārtikas produkti"
+  },
   "ingredients": "Sastāvdaļas",
   "alternatives": {
     "button": "Meklēt labākas alternatīvas",

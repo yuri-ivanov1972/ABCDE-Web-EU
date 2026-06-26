@@ -86,6 +86,7 @@ export interface ProductWithDetails extends Product {
   externalUrl?: string | null;
   ingredientCard?: ProductIngredientCard;
   slug?: string;
+  novaScore?: number | null;
 }
 
 // Filter types

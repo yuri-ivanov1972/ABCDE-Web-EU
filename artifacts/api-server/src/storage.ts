@@ -99,6 +99,7 @@ export type ProductWithDetails = Product & {
   externalUrl?: string | null;
   ingredientCard?: ProductIngredientCard;
   slug?: string;
+  novaScore?: number | null;
 };
 
 export class DatabaseStorage implements IStorage {
@@ -1064,6 +1065,7 @@ export class DatabaseStorage implements IStorage {
       rimiUrl: null,
       quantityValue: maximaProduct.quantityValue,
       quantityUnit: maximaProduct.quantityUnit,
+      novaScore: maximaProduct.novaScore,
       createdAt: maximaProduct.createdAt,
       updatedAt: maximaProduct.updatedAt,
       nutrition: nutrition || undefined,

@@ -20,6 +20,12 @@ import mediumB from '@assets/RVB_B_1768766381068.png';
 import mediumC from '@assets/RVB_C_1768766381068.png';
 import mediumD from '@assets/RVB_D_1768766381067.png';
 import mediumE from '@assets/RVB_E_1768766381067.png';
+import nova1 from '@assets/NOVA_group_1_1782500477722.svg';
+import nova2 from '@assets/NOVA_group_2_1782500477722.svg';
+import nova3 from '@assets/NOVA_group_3_1782500477721.svg';
+import nova4 from '@assets/NOVA_group_4_1782500477721.svg';
+
+const NOVA_IMAGES: Record<number, string> = { 1: nova1, 2: nova2, 3: nova3, 4: nova4 };
 
 interface ProductDetailsProps {
   lang?: string;
@@ -433,6 +439,22 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   t={t}
                 />
               </>
+            )}
+
+            {product.novaScore != null && NOVA_IMAGES[product.novaScore] && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('product:nova.title')}</h2>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={NOVA_IMAGES[product.novaScore]}
+                    alt={`NOVA ${product.novaScore}`}
+                    className="h-16 w-auto"
+                  />
+                  <p className="text-gray-700 text-sm">
+                    {t(`product:nova.group${product.novaScore}`)}
+                  </p>
+                </div>
+              </div>
             )}
 
             {product.nutrition?.ingredientsText && (
