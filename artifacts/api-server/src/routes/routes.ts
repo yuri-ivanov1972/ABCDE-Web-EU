@@ -1775,6 +1775,8 @@ Sitemap: https://abcde.lv/sitemap.xml
   // before React loads. Uses inline styles so it renders immediately without
   // waiting for the CSS bundle. React's createRoot() replaces this content when
   // it mounts (~3s on mobile), but FCP + LCP are already measured by then.
+  // Layout mirrors the React app exactly using a <style> block with media queries
+  // (Tailwind md=768px, lg=1024px) so the transition is seamless on all viewports.
   function buildPrerenderedShell(
     products: Array<{
       productId: number;
@@ -1789,49 +1791,58 @@ Sitemap: https://abcde.lv/sitemap.xml
       s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
     const isEn = lang === "en";
-    const t = {
+    const tr = {
       aboutNutriScore: isEn ? "About Nutri-Score" : "Par Nutri-Score",
       whatLatviansEat: isEn ? "What do Latvians eat?" : "Ko ēd Latvijā?",
       aboutProject: isEn ? "About the project" : "Par projektu",
       searchPlaceholder: isEn ? "Search products..." : "Meklēt produktus...",
       allProducts: isEn ? "All products" : "Visi produkti",
+      categories: isEn ? "Categories" : "Kategorijas",
+      allCategories: isEn ? "All categories" : "Visas kategorijas",
       langToggle: isEn ? "LV" : "English",
       langHref: isEn ? "/lv" : "/en",
       eatHref: isEn ? "/en/what-latvians-eat" : "/lv/ko-ed-latvija",
     };
 
     // SVG search icon (inline, no external dependency)
-    const searchIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+    const searchSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 
-    const header = `<header style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:50">
-  <div style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
-    <div style="max-width:1280px;margin:0 auto;padding:6px 16px;display:flex;justify-content:center;gap:24px">
-      <a href="/${esc(lang)}/about-nutriscore" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.aboutNutriScore}</a>
-      <a href="${esc(t.eatHref)}" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.whatLatviansEat}</a>
-      <a href="/${esc(lang)}/about-project" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.aboutProject}</a>
-    </div>
-  </div>
-  <div style="max-width:1280px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
-    <a href="/${esc(lang)}" style="display:flex;align-items:center;flex-shrink:0;text-decoration:none">
-      <img src="/nutri-score-logo.png" alt="NUTRI-SCORE" width="150" height="78" loading="eager" style="height:5.2rem;width:auto" />
-    </a>
-    <div style="flex-grow:1;max-width:512px">
-      <div style="position:relative">
-        <input type="text" placeholder="${esc(t.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
-        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchIcon}</span>
-      </div>
-    </div>
-    <a href="${esc(t.langHref)}" style="font-size:14px;color:#374151;text-decoration:none;flex-shrink:0">${t.langToggle}</a>
-  </div>
-  <div style="padding:0 16px 12px">
-    <div style="position:relative">
-      <input type="text" placeholder="${esc(t.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
-      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchIcon}</span>
-    </div>
-  </div>
-</header>`;
+    // Responsive styles that match Tailwind breakpoints exactly.
+    // React clears #root entirely when it mounts, so these styles disappear with the shell.
+    const responsiveStyles = `<style>
+/* SSR pre-render shell — removed when React mounts */
+.ssr-desktop-search{display:none}
+.ssr-mobile-search{display:block}
+.ssr-sidebar{display:none}
+.ssr-row{display:flex;flex-direction:column}
+#ssr-grid{grid-template-columns:repeat(2,1fr)}
+@media(min-width:768px){
+  .ssr-desktop-search{display:block}
+  .ssr-mobile-search{display:none}
+  .ssr-sidebar{display:block}
+  .ssr-row{flex-direction:row}
+  #ssr-grid{grid-template-columns:repeat(3,1fr);gap:24px}
+}
+@media(min-width:1024px){
+  #ssr-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>`;
 
-    // Only pre-render the 4 above-fold cards (2-col × 2-row mobile grid)
+    // Gray skeleton bar helper for sidebar category placeholders
+    const skBar = (w: string) =>
+      `<div style="height:40px;background:#e5e7eb;border-radius:6px;width:${w};margin-bottom:8px"></div>`;
+
+    const sidebar = `<aside class="ssr-sidebar" style="width:256px;flex-shrink:0;padding-right:24px">
+  <h2 style="font-weight:500;font-size:18px;color:#111827;margin:0 0 12px">${tr.categories}</h2>
+  <div style="font-size:14px;color:#6b7280;margin-bottom:16px">
+    <a href="/${esc(lang)}" style="text-decoration:none;color:#6b7280">${tr.allCategories}</a>
+  </div>
+  <div>
+    ${skBar("100%")}${skBar("90%")}${skBar("95%")}${skBar("85%")}${skBar("100%")}
+  </div>
+</aside>`;
+
+    // Product cards — only 4 above-fold (2-col × 2-row on mobile)
     const cards = products.slice(0, 4).map((p, i) => {
       const raw = (p.photos?.find((ph) => ph.isPrimary) ?? p.photos?.[0])?.photoUrl ?? "";
       const isCloudinary = raw.includes("cloudinary.com");
@@ -1855,12 +1866,44 @@ Sitemap: https://abcde.lv/sitemap.xml
 </div>`;
     }).join("\n");
 
-    return `${header}
+    return `${responsiveStyles}
+<header style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:50">
+  <div style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
+    <div style="max-width:1280px;margin:0 auto;padding:6px 16px;display:flex;justify-content:center;gap:24px">
+      <a href="/${esc(lang)}/about-nutriscore" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.aboutNutriScore}</a>
+      <a href="${esc(tr.eatHref)}" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.whatLatviansEat}</a>
+      <a href="/${esc(lang)}/about-project" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.aboutProject}</a>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+    <a href="/${esc(lang)}" style="display:flex;align-items:center;flex-shrink:0;text-decoration:none">
+      <img src="/nutri-score-logo.png" alt="NUTRI-SCORE" width="150" height="78" loading="eager" style="height:5.2rem;width:auto" />
+    </a>
+    <div class="ssr-desktop-search" style="flex-grow:1;max-width:512px">
+      <div style="position:relative">
+        <input type="text" placeholder="${esc(tr.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchSvg}</span>
+      </div>
+    </div>
+    <a href="${esc(tr.langHref)}" style="font-size:14px;color:#374151;text-decoration:none;flex-shrink:0">${tr.langToggle}</a>
+  </div>
+  <div class="ssr-mobile-search" style="padding:0 16px 12px">
+    <div style="position:relative">
+      <input type="text" placeholder="${esc(tr.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
+      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchSvg}</span>
+    </div>
+  </div>
+</header>
 <div style="background:#f3f4f6;min-height:100vh">
-  <div style="max-width:1280px;margin:0 auto;padding:16px">
-    <h1 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 16px 0">${t.allProducts}</h1>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      ${cards}
+  <div style="max-width:1280px;margin:0 auto;padding:16px 16px 24px">
+    <div class="ssr-row" style="align-items:flex-start">
+      ${sidebar}
+      <main style="flex:1;min-width:0">
+        <h1 style="font-size:24px;font-weight:700;color:#111827;margin:0 0 8px">${tr.allProducts}</h1>
+        <div id="ssr-grid" style="display:grid;gap:16px;margin-top:16px">
+          ${cards}
+        </div>
+      </main>
     </div>
   </div>
 </div>`;
