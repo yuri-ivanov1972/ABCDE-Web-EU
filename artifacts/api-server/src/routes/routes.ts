@@ -1747,9 +1747,84 @@ Sitemap: https://abcde.lv/sitemap.xml
   app.get("/lv/category/:slug", serveCategoryPage);
   app.get("/en/category/:slug", serveCategoryPage);
 
-  // Homepage SSR — serves /lv and /en with server-injected initial product data
-  // and an early LCP image preload tag. React reads __ABCDE_INITIAL_DATA__ from
-  // the DOM and skips its first API round-trip (see home.tsx: getServerInitialData).
+  // --------------------------------------------------------------------------
+  // Server-side pre-render helpers — replicate frontend photoUrl.ts logic so
+  // we can build Cloudinary URLs without running React on the server.
+  // --------------------------------------------------------------------------
+
+  function ssrCloudinaryUrl(url: string, width: number): string {
+    return url
+      .replace(/dpr_auto,/g, "")
+      .replace(/,dpr_auto/g, "")
+      .replace(/\bq_auto:low\b/g, "q_auto")
+      .replace(/\bw_auto\b/g, `w_${width}`)
+      .replace(/\bw_\d+\b/g, `w_${width}`);
+  }
+
+  function ssrSrcSet(url: string, widths: number[]): string {
+    const base = url
+      .replace(/dpr_auto,/g, "")
+      .replace(/,dpr_auto/g, "")
+      .replace(/\bq_auto:low\b/g, "q_auto");
+    return widths
+      .map((w) => `${base.replace(/\bw_auto\b/g, `w_${w}`).replace(/\bw_\d+\b/g, `w_${w}`)} ${w}w`)
+      .join(", ");
+  }
+
+  // Builds a minimal product-grid shell that is injected into <div id="root">
+  // before React loads. Uses inline styles so it renders immediately without
+  // waiting for the CSS bundle. React's createRoot() replaces this content when
+  // it mounts (~3s on mobile), but FCP + LCP are already measured by then.
+  function buildPrerenderedShell(
+    products: Array<{
+      productId: number;
+      name: string;
+      slug?: string | null;
+      store?: string | null;
+      photos?: Array<{ photoUrl?: string | null; isPrimary?: boolean | null }> | null;
+    }>,
+    lang: string,
+  ): string {
+    const esc = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    // Only pre-render the 4 above-fold cards (2-col × 2-row mobile grid)
+    const cards = products.slice(0, 4).map((p, i) => {
+      const raw = (p.photos?.find((ph) => ph.isPrimary) ?? p.photos?.[0])?.photoUrl ?? "";
+      const isCloudinary = raw.includes("cloudinary.com");
+      const src = isCloudinary ? ssrCloudinaryUrl(raw, 300) : raw;
+      const srcset = isCloudinary ? ssrSrcSet(raw, [150, 300, 450]) : "";
+      const slug = p.slug || String(p.productId);
+      const storeBg = p.store === "rimi" ? "#D33731" : "#24488B";
+      const storeLabel = p.store === "rimi" ? "Rimi" : "Maxima";
+      const isFirst = i === 0;
+
+      return `<div style="background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);border:1px solid #e5e7eb;overflow:hidden">
+  <a href="/${esc(lang)}/product/${esc(slug)}" style="display:block;text-decoration:none;color:inherit">
+    <div style="position:relative;aspect-ratio:3/2;overflow:hidden">
+      <img src="${esc(src)}"${srcset ? ` srcset="${esc(srcset)}"` : ""} sizes="(min-width:1024px) 25vw,(min-width:768px) 33vw,50vw" alt="${esc(p.name)}" width="300" height="200" loading="${isFirst ? "eager" : "lazy"}" fetchpriority="${isFirst ? "high" : "auto"}" decoding="${isFirst ? "sync" : "async"}" style="width:100%;height:100%;object-fit:cover" />
+      <div style="position:absolute;top:8px;right:8px;background:${storeBg};color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px">${storeLabel}</div>
+    </div>
+    <div style="padding:12px">
+      <div style="font-weight:500;color:#111827;font-size:14px;line-height:1.4">${esc(p.name)}</div>
+    </div>
+  </a>
+</div>`;
+    }).join("\n");
+
+    return `<div style="background:#f3f4f6;min-height:100vh">
+  <div style="max-width:1280px;margin:0 auto;padding:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${cards}
+    </div>
+  </div>
+</div>`;
+  }
+
+  // Homepage SSR — serves /lv and /en with:
+  //   1. __ABCDE_INITIAL_DATA__ embedded so React skips its first API round-trip
+  //   2. <link rel="preload"> for the LCP image so download starts immediately
+  //   3. Pre-rendered product shell in #root so FCP/LCP fire before JS loads
   async function serveHomepage(req: Request, res: Response): Promise<void> {
     let baseHtml = await getIndexHtml();
     if (!baseHtml) { res.status(404).send("Not found"); return; }
@@ -1774,13 +1849,22 @@ Sitemap: https://abcde.lv/sitemap.xml
       const firstPhoto = photos.find((p) => p.isPrimary) ?? photos[0];
       const lcpImageUrl: string | null = firstPhoto?.photoUrl ?? null;
 
-      const html = injectSeoTags(
+      const lang = req.path.startsWith("/en") ? "en" : "lv";
+
+      let html = injectSeoTags(
         baseHtml,
         req.path,
         undefined,
         lcpImageUrl,
         initialData,
       );
+
+      // Inject pre-rendered product shell so the browser has visible content
+      // immediately — FCP and LCP are measured before React boots.
+      // React's createRoot() replaces this when it mounts (no extra API call,
+      // uses __ABCDE_INITIAL_DATA__ already in the DOM).
+      const prerenderedShell = buildPrerenderedShell(initialData.products, lang);
+      html = html.replace('<div id="root"></div>', `<div id="root">${prerenderedShell}</div>`);
 
       res.set("Content-Type", "text/html; charset=utf-8");
       res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
