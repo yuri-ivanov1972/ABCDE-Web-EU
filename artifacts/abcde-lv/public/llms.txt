@@ -1,0 +1,33 @@
+# ABCDE.lv
+
+> Latvian food product browser showing Nutri-Score ratings (A–E) for 18,000+ products from Rimi and Maxima supermarkets. Helps users find healthier food choices using official EU nutritional labelling data. Available in Latvian and English.
+
+## Browse products
+
+- [All products (Latvian)](/lv): Full catalogue sorted by Nutri-Score
+- [All products (English)](/en): English version of the full catalogue
+- [Rimi products](/lv?store=rimi): Products available at Rimi supermarket
+- [Maxima products](/lv?store=maxima): Products available at Maxima supermarket
+
+## Product categories
+
+- [Bread and pastry](/lv/category/maize-un-konditoreja-10): Bread, pastries and bakery products
+- [Dairy and eggs](/lv/category/piena-produkti-un-olas-1): Milk, cheese, yoghurt and eggs
+- [Drinks](/lv/category/dzerieni-8): Beverages including juices, water and soft drinks
+- [For vegans and vegetarians](/lv/category/veganiem-un-vegetariesiem-4): Plant-based and vegetarian products
+- [Frozen foods](/lv/category/saldetie-edieni-2): Frozen meals, vegetables and ice cream
+- [Fruits and vegetables](/lv/category/augli-un-darzeni-6): Fresh and packaged produce
+- [Meat, fish and ready meals](/lv/category/gala-zivis-un-gatava-kulinarija-9): Meat, seafood and prepared dishes
+- [Packaged food](/lv/category/iepakota-partika-7): Canned, jarred and shelf-stable groceries
+- [Sweets and snacks](/lv/category/saldumi-un-uzkodas-3): Confectionery, chocolate and savoury snacks
+
+## About
+
+- [About Nutri-Score](/lv/about-nutriscore): What Nutri-Score is and how the A–E grading works
+- [What Latvians Eat](/lv/ko-ed-latvija): Statistics and insights on food consumption in Latvia
+- [About the Project](/lv/about-project): Background and goals of ABCDE.lv
+
+## Technical
+
+- [Sitemap](/sitemap.xml): Complete list of all product and category pages
+- [robots.txt](/robots.txt): Crawling permissions
