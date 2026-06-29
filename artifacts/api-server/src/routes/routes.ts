@@ -10,6 +10,7 @@ import { normalizeLvText } from "../utils/textNormalization";
 import { categorySlug, productSlug, extractIdFromSlug } from "../utils/slugify";
 import { handleImageProxy } from "../imageProxy";
 import type { Store } from "@workspace/db";
+import { injectSeoTags } from "../seo";
 
 // Define API route schemas
 const getCategoriesQuerySchema = z.object({
@@ -1541,13 +1542,30 @@ Sitemap: https://abcde.lv/sitemap.xml
   ];
   let indexHtmlCache: string | null = null;
 
+  // Make Vite-bundled CSS non-blocking: browser defers load so it can't block FCP.
+  // The critical inline styles in index.html already paint above-the-fold content,
+  // so this is safe. Only targets /assets/*.css (content-hashed Vite bundles).
+  function makeCssNonBlocking(html: string): string {
+    return html.replace(
+      /(<link rel="stylesheet"([^>]*href="\/assets\/[^"]*\.css"[^>]*)>)/g,
+      (match, _full, attrs) => {
+        if (attrs.includes("media=")) return match;
+        const deferred = match.replace(
+          'rel="stylesheet"',
+          `rel="stylesheet" media="print" onload="this.media='all'"`
+        );
+        return `${deferred}<noscript>${match}</noscript>`;
+      }
+    );
+  }
+
   async function getIndexHtml(): Promise<string | null> {
     if (indexHtmlCache) return indexHtmlCache;
     for (const candidate of INDEX_CANDIDATES) {
       try {
-        const html = await readFile(candidate, "utf-8");
-        indexHtmlCache = html;
-        return html;
+        const raw = await readFile(candidate, "utf-8");
+        indexHtmlCache = makeCssNonBlocking(raw);
+        return indexHtmlCache;
       } catch { /* try next */ }
     }
     return null;
@@ -1728,6 +1746,49 @@ Sitemap: https://abcde.lv/sitemap.xml
 
   app.get("/lv/category/:slug", serveCategoryPage);
   app.get("/en/category/:slug", serveCategoryPage);
+
+  // Homepage SSR — serves /lv and /en with server-injected initial product data
+  // and an early LCP image preload tag. React reads __ABCDE_INITIAL_DATA__ from
+  // the DOM and skips its first API round-trip (see home.tsx: getServerInitialData).
+  async function serveHomepage(req: Request, res: Response): Promise<void> {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    try {
+      const initialData = await storage.getProducts({
+        page: 1,
+        pageSize: 12,
+        sortBy: "name",
+        sortOrder: "asc",
+      });
+
+      const photos: Array<{ photoUrl?: string; isPrimary?: boolean | null }> =
+        initialData.products[0]?.photos ?? [];
+      const firstPhoto = photos.find((p) => p.isPrimary) ?? photos[0];
+      const lcpImageUrl: string | null = firstPhoto?.photoUrl ?? null;
+
+      const html = injectSeoTags(
+        baseHtml,
+        req.path,
+        undefined,
+        lcpImageUrl,
+        initialData,
+      );
+
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      res.send(html);
+    } catch {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "no-store");
+      res.send(baseHtml);
+    }
+  }
+
+  app.get("/lv", serveHomepage);
+  app.get("/lv/", serveHomepage);
+  app.get("/en", serveHomepage);
+  app.get("/en/", serveHomepage);
 
   const httpServer = createServer(app);
   return httpServer;

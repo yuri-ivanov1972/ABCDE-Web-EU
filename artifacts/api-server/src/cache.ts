@@ -35,7 +35,7 @@ class TTLCache<T> {
   }
 }
 
-const PRODUCTS_TTL_MS = 3 * 60 * 1000;
+const PRODUCTS_TTL_MS = 15 * 60 * 1000;
 const CATEGORIES_TTL_MS = 30 * 60 * 1000;
 
 export const productsCache = new TTLCache<{ products: any[]; totalCount: number }>();

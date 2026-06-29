@@ -1,6 +1,7 @@
 import app from "./app";
 import { registerRoutes } from "./routes/routes";
 import { logger } from "./lib/logger";
+import { storage } from "./storage";
 
 const rawPort = process.env["PORT"];
 
@@ -26,4 +27,11 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Pre-warm the default homepage products query so the first visitor
+  // gets a cache hit instead of a cold 3+ second DB round-trip.
+  storage
+    .getProducts({ page: 1, pageSize: 12, sortBy: "name", sortOrder: "asc" })
+    .then(() => logger.info("Homepage products cache warmed"))
+    .catch((err: unknown) => logger.warn({ err }, "Cache warm failed — will warm on first request"));
 });
