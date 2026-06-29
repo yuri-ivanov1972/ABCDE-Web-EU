@@ -1788,6 +1788,49 @@ Sitemap: https://abcde.lv/sitemap.xml
     const esc = (s: string) =>
       s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+    const isEn = lang === "en";
+    const t = {
+      aboutNutriScore: isEn ? "About Nutri-Score" : "Par Nutri-Score",
+      whatLatviansEat: isEn ? "What do Latvians eat?" : "Ko ēd Latvijā?",
+      aboutProject: isEn ? "About the project" : "Par projektu",
+      searchPlaceholder: isEn ? "Search products..." : "Meklēt produktus...",
+      allProducts: isEn ? "All products" : "Visi produkti",
+      langToggle: isEn ? "LV" : "English",
+      langHref: isEn ? "/lv" : "/en",
+      eatHref: isEn ? "/en/what-latvians-eat" : "/lv/ko-ed-latvija",
+    };
+
+    // SVG search icon (inline, no external dependency)
+    const searchIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+
+    const header = `<header style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:50">
+  <div style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
+    <div style="max-width:1280px;margin:0 auto;padding:6px 16px;display:flex;justify-content:center;gap:24px">
+      <a href="/${esc(lang)}/about-nutriscore" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.aboutNutriScore}</a>
+      <a href="${esc(t.eatHref)}" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.whatLatviansEat}</a>
+      <a href="/${esc(lang)}/about-project" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${t.aboutProject}</a>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+    <a href="/${esc(lang)}" style="display:flex;align-items:center;flex-shrink:0;text-decoration:none">
+      <img src="/nutri-score-logo.png" alt="NUTRI-SCORE" width="150" height="78" loading="eager" style="height:5.2rem;width:auto" />
+    </a>
+    <div style="flex-grow:1;max-width:512px">
+      <div style="position:relative">
+        <input type="text" placeholder="${esc(t.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchIcon}</span>
+      </div>
+    </div>
+    <a href="${esc(t.langHref)}" style="font-size:14px;color:#374151;text-decoration:none;flex-shrink:0">${t.langToggle}</a>
+  </div>
+  <div style="padding:0 16px 12px">
+    <div style="position:relative">
+      <input type="text" placeholder="${esc(t.searchPlaceholder)}" style="width:100%;padding:8px 40px 8px 16px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#374151;background:#fff;box-sizing:border-box" disabled />
+      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex">${searchIcon}</span>
+    </div>
+  </div>
+</header>`;
+
     // Only pre-render the 4 above-fold cards (2-col × 2-row mobile grid)
     const cards = products.slice(0, 4).map((p, i) => {
       const raw = (p.photos?.find((ph) => ph.isPrimary) ?? p.photos?.[0])?.photoUrl ?? "";
@@ -1812,8 +1855,10 @@ Sitemap: https://abcde.lv/sitemap.xml
 </div>`;
     }).join("\n");
 
-    return `<div style="background:#f3f4f6;min-height:100vh">
+    return `${header}
+<div style="background:#f3f4f6;min-height:100vh">
   <div style="max-width:1280px;margin:0 auto;padding:16px">
+    <h1 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 16px 0">${t.allProducts}</h1>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       ${cards}
     </div>
