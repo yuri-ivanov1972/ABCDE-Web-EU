@@ -1,0 +1,1 @@
+- [Homepage redirect and LCP](homepage-redirect-lcp.md) — / must redirect via inline script in index.html, not React router; Express SSR handles /lv and /en.

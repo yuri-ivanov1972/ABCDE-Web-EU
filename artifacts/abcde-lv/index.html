@@ -10,6 +10,14 @@
          Rule: canonical always points to the /lv/ (default language) version. -->
     <script>
       (function () {
+        // Redirect bare / → /lv immediately, before any bundle downloads.
+        // This fires during HTML parsing so Lighthouse (and users) land on the
+        // SSR-enriched /lv page rather than seeing a blank React-redirect screen.
+        if (window.location.pathname === '/') {
+          var lang = (navigator.language || 'lv').slice(0, 2);
+          window.location.replace('/' + (lang === 'en' ? 'en' : 'lv'));
+        }
+
         var BASE = 'https://abcde.lv';
         var DEFAULT_LANG = 'lv';
         var LANGS = ['lv', 'en'];
