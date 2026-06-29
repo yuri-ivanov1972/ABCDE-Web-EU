@@ -1751,8 +1751,14 @@ Sitemap: https://abcde.lv/sitemap.xml
   // and an early LCP image preload tag. React reads __ABCDE_INITIAL_DATA__ from
   // the DOM and skips its first API round-trip (see home.tsx: getServerInitialData).
   async function serveHomepage(req: Request, res: Response): Promise<void> {
-    const baseHtml = await getIndexHtml();
+    let baseHtml = await getIndexHtml();
     if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    // In dev, inject the Vite React Refresh preamble the same way injectIntoHtml
+    // does for product/category pages — without it, React won't mount in dev mode.
+    if (DEV_VITE_PREAMBLE) {
+      baseHtml = baseHtml.replace("</head>", `${DEV_VITE_PREAMBLE}</head>`);
+    }
 
     try {
       const initialData = await storage.getProducts({
