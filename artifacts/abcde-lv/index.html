@@ -11,11 +11,10 @@
     <script>
       (function () {
         // Redirect bare / → /lv immediately, before any bundle downloads.
-        // This fires during HTML parsing so Lighthouse (and users) land on the
-        // SSR-enriched /lv page rather than seeing a blank React-redirect screen.
+        // Always use /lv (default language) — do not use navigator.language,
+        // which sends crawlers and Lighthouse to /en and causes canonical issues.
         if (window.location.pathname === '/') {
-          var lang = (navigator.language || 'lv').slice(0, 2);
-          window.location.replace('/' + (lang === 'en' ? 'en' : 'lv'));
+          window.location.replace('/lv');
         }
 
         var BASE = 'https://abcde.lv';
@@ -43,11 +42,18 @@
           document.head.appendChild(el);
         }
 
-        injectLink({ rel: 'canonical', href: canonical });
-        for (var i = 0; i < LANGS.length; i++) {
-          injectLink({ rel: 'alternate', hreflang: LANGS[i], href: BASE + '/' + LANGS[i] + rest });
+        // Skip client-side canonical injection for pages that Express serves with SSR —
+        // those pages already have canonical injected server-side (injectSeoTags).
+        // Injecting twice causes Google Search Console "no valid rel=canonical" errors.
+        // SSR routes: /lv, /en, /lv/product/*, /en/product/*, /lv/category/*, /en/category/*
+        var isSSRRoute = /^\/(lv|en)(\/product\/|\/category\/|\/|$)/.test(path);
+        if (!isSSRRoute) {
+          injectLink({ rel: 'canonical', href: canonical });
+          for (var i = 0; i < LANGS.length; i++) {
+            injectLink({ rel: 'alternate', hreflang: LANGS[i], href: BASE + '/' + LANGS[i] + rest });
+          }
+          injectLink({ rel: 'alternate', hreflang: 'x-default', href: canonical });
         }
-        injectLink({ rel: 'alternate', hreflang: 'x-default', href: canonical });
       })();
     </script>
 

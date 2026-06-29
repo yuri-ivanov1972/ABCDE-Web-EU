@@ -1764,8 +1764,9 @@ Sitemap: https://abcde.lv/sitemap.xml
       const initialData = await storage.getProducts({
         page: 1,
         pageSize: 12,
-        sortBy: "name",
+        sortBy: "nutriScore",
         sortOrder: "asc",
+        store: "rimi",
       });
 
       const photos: Array<{ photoUrl?: string; isPrimary?: boolean | null }> =
