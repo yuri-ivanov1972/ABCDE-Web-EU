@@ -1873,8 +1873,8 @@ Sitemap: https://abcde.lv/sitemap.xml
     const baseHtml = await getIndexHtml();
     if (!baseHtml) { res.status(404).send("Not found"); return; }
 
-    const title = "Veselīgākais saldējums Latvijā? Analīze: 280 produkti | ABCDE.lv";
-    const description = "Analizēti 280 saldējumi no Rimi Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.";
+    const title = "Veselīgākais saldējums Latvijā? Nutri-Score analīze | ABCDE.lv";
+    const description = "Saldējumu Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.";
     const canonical = "https://abcde.lv/lv/raksti/saldejums";
 
     const metaTags = [

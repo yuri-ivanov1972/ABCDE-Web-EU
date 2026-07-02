@@ -206,9 +206,9 @@ export function generateStaticPageMetadata(cleanPath: string, lang: string): Pag
       };
     case '/raksti/saldejums':
       return {
-        title: 'Veselīgākais saldējums Latvijā? Analīze: 280 produkti | ABCDE.lv',
+        title: 'Veselīgākais saldējums Latvijā? Nutri-Score analīze | ABCDE.lv',
         description:
-          'Analizēti 280 saldējumi no Rimi Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.',
+          'Saldējumu Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.',
       };
     case '/scan':
       return {
