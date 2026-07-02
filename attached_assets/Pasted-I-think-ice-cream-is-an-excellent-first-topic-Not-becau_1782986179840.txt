@@ -1,0 +1,225 @@
+I think ice cream is an excellent first topic.
+
+Not because it is the largest category, but because it satisfies almost every requirement for SEO:
+
+High seasonal search volume (as your Google Trends link shows, searches surge every summer).
+Strong consumer interest ("Which ice cream is healthiest?").
+Large enough category for meaningful comparisons.
+Lots of media potential.
+Highly shareable on social media.
+
+However, I would not make the article about sugar, saturated fat and additives alone.
+
+That would look like hundreds of existing nutrition articles.
+
+Instead, use what almost nobody else has:
+
+You have the entire Latvian product database.
+
+The article should answer a question no one else can.
+
+I would make it data-driven
+
+Instead of
+
+"Sugar in ice cream"
+
+make it
+
+Analysis of 146 large ice creams sold in Latvia
+
+or
+
+Which ice creams sold in Latvia are actually the healthiest?
+
+Immediately the article becomes original.
+
+Structure
+1. Executive summary
+
+Start with something journalists could quote.
+
+Example:
+
+We analysed 146 large-pack ice creams available in Latvia.
+
+The difference between products is enormous:
+
+sugar varies almost 3×
+saturated fat varies 4×
+additive count ranges from 0 to more than 10
+only X% receive Nutri-Score A or B
+X% are NOVA 4
+
+Five bullet points.
+
+Many readers won't continue, but they'll remember these.
+
+2. Overall statistics
+
+Interesting charts:
+
+Average sugar
+
+Distribution
+
+Lowest sugar
+
+Highest sugar
+
+Average saturated fat
+
+Average additives
+
+Nutri-Score distribution
+
+NOVA distribution
+
+This establishes authority.
+
+3. Top healthiest ice creams
+
+Instead of ranking by Nutri-Score alone, create an ABC Health Score that combines:
+
+Nutri-Score
+NOVA
+sugar
+saturated fat
+additives
+
+Readers love rankings.
+
+4. Lowest sugar
+
+Top 10
+
+Include
+
+photo
+sugar
+Nutri-Score
+NOVA
+additives
+5. Lowest saturated fat
+
+Same format.
+
+6. Fewest additives
+
+This is surprisingly attractive.
+
+Many people search:
+
+ice cream without additives
+
+7. Products to limit
+
+Don't call them "worst".
+
+Say
+
+Highest sugar
+
+Highest saturated fat
+
+Most additives
+
+Most ultra-processed
+
+That keeps the tone objective.
+
+8. Interesting findings
+
+These are what make articles go viral.
+
+Examples:
+
+Some premium ice creams contain twice as much sugar as cheaper ones.
+
+Expensive doesn't necessarily mean healthier.
+
+Fruit flavour doesn't automatically mean less sugar.
+
+Vanilla is often healthier than cookie flavours.
+
+These are memorable insights.
+
+SEO gold
+
+Then automatically generate related pages:
+
+Healthiest vanilla ice creams
+Lowest sugar chocolate ice creams
+Ice creams with no emulsifiers
+Ice creams without palm oil
+Lowest calorie ice creams
+Highest protein ice creams
+Ice creams with Nutri-Score A
+Ice creams with Nutri-Score B
+Ice creams without carrageenan
+Ice creams without artificial colours
+
+Each becomes a landing page.
+
+Even better
+
+Since you already have all the data, make the article interactive.
+
+Instead of static tables:
+
+☑ Sort by sugar
+
+☑ Sort by additives
+
+☑ Sort by saturated fat
+
+☑ Sort by Nutri-Score
+
+☑ Sort by NOVA
+
+Google increasingly rewards pages where users spend time interacting.
+
+The title matters enormously
+
+Instead of
+
+Ice cream comparison
+
+I would target search intent.
+
+Examples:
+
+Which ice creams sold in Latvia are the healthiest? Analysis of 146 products
+Healthiest ice cream in Latvia: ranking by sugar, saturated fat and additives
+We compared 146 ice creams. The results may surprise you.
+Which ice cream should you buy? Complete comparison of Latvian products
+One suggestion that I think could become a signature feature of abcde.lv
+
+Don't stop at one article.
+
+Create a repeatable "Food Category Report" format. Every report follows the same structure, making it easy to generate and familiar to readers:
+
+Executive summary
+Key statistics
+Best choices
+Products with the least sugar/salt/saturated fat
+Products with the most additives
+Nutri-Score distribution
+NOVA distribution
+Main conclusions
+Interactive ranking
+
+Then publish one report every week:
+
+Ice cream
+Yogurts
+Breakfast cereals
+Bread
+Sausages
+Cheese
+Pizza
+Soft drinks
+Mayonnaise
+Chocolate
+
+Within a year, you would have around 50 evergreen, data-driven landing pages that are difficult for competitors to replicate because they're based on your proprietary database. Those pages would attract seasonal traffic, earn backlinks from journalists looking for original statistics, and strengthen the authority of abcde.lv as the definitive source for objective comparisons of food sold in Latvia.
