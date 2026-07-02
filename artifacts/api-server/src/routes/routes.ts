@@ -1399,7 +1399,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       // Get all product IDs from Rimi that have Nutri-Score, excluding hidden categories
       const rimiProductsResult = await rimiDb.execute(sql`
-        SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm
+        SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm, p.created_at
         FROM products p
         JOIN nutritionfacts nf ON p.product_id = nf.product_id
         WHERE nf.nutri_score_grade IS NOT NULL
@@ -1414,7 +1414,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       let maximaProducts: any[] = [];
       if (maximaDb) {
         const maximaProductsResult = await maximaDb.execute(sql`
-          SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm
+          SELECT DISTINCT ON (p.product_id) p.product_id, p.name, p.name_norm, p.created_at
           FROM products p
           JOIN nutritionfacts nf ON p.product_id = nf.product_id
           WHERE nf.nutri_score_grade IS NOT NULL
@@ -1491,14 +1491,32 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += '  </url>\n';
       }
 
-      // Add product pages — only /lv/ as primary <loc> (both Rimi and Maxima)
+      // Format a DB timestamp value as a YYYY-MM-DD string for lastmod.
+      // Falls back to currentDate if the value is absent or unparseable.
+      const toDateStr = (val: unknown): string => {
+        if (!val) return currentDate;
+        try {
+          const d = new Date(val as string);
+          if (isNaN(d.getTime())) return currentDate;
+          return d.toISOString().split('T')[0];
+        } catch {
+          return currentDate;
+        }
+      };
+
+      // Add product pages — only /lv/ as primary <loc> (both Rimi and Maxima).
+      // lastmod uses created_at so Google gets an accurate signal: newer products
+      // have a recent date, established products show their original creation date.
+      // The scraper touches updated_at daily (price/availability checks) so that
+      // column would always equal today and mislead Google's crawl prioritisation.
       for (const product of allProducts) {
         const productId = (product as any).product_id;
         const productName = (product as any).name || '';
         const pSlug = productSlug(productName, productId);
+        const productLastmod = toDateStr((product as any).created_at);
         xml += '  <url>\n';
         xml += `    <loc>${baseUrl}/lv/product/${pSlug}</loc>\n`;
-        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += `    <lastmod>${productLastmod}</lastmod>\n`;
         xml += '    <changefreq>weekly</changefreq>\n';
         xml += '    <priority>0.5</priority>\n';
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/product/${pSlug}" />\n`;
