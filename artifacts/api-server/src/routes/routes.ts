@@ -1478,7 +1478,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         { pathLv: '/ko-ed-latvija', pathEn: '/what-latvians-eat', priority: '0.7', changefreq: 'weekly' },
         { path: '/about-project', priority: '0.6', changefreq: 'monthly' },
         { path: '/scan', priority: '0.7', changefreq: 'monthly' },
-        { pathLv: '/raksti/saldejums', pathEn: '/raksti/saldejums', priority: '0.7', changefreq: 'monthly' }
+        { pathLv: '/raksti/saldejums', pathEn: undefined, priority: '0.7', changefreq: 'monthly' }
       ];
       
       // Get all categories, excluding hidden ones
@@ -1563,7 +1563,9 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
         xml += `    <priority>${page.priority}</priority>\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv${lvPath}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en${enPath}" />\n`;
+        if (enPath !== undefined) {
+          xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en${enPath}" />\n`;
+        }
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv${lvPath}" />\n`;
         xml += '  </url>\n';
       }
@@ -1859,6 +1861,11 @@ Sitemap: https://abcde.lv/sitemap.xml
 
   app.get("/lv/category/:slug", serveCategoryPage);
   app.get("/en/category/:slug", serveCategoryPage);
+
+  // Article: /en/raksti/saldejums redirects to the LV canonical
+  app.get("/en/raksti/saldejums", (_req: Request, res: Response): void => {
+    res.redirect(301, "https://abcde.lv/lv/raksti/saldejums");
+  });
 
   // Article page: /lv/raksti/saldejums — ice cream analysis
   // Serves index.html with injected title + meta description for search crawlers.

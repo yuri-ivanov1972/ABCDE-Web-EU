@@ -504,22 +504,21 @@ const IceCreamReport = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="text-xs text-gray-500 border-b bg-gray-50">
+                      <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
                       <th className="px-3 py-1.5 text-right">g/100g</th>
+                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {top10HighSugar.map((p, i) => (
-                      <tr key={`hs-${p.productId}-${i}`} className="border-t hover:bg-gray-50">
-                        <td className="px-3 py-1.5">
-                          <Link href={`/lv/product/${p.slug}`} className="text-xs text-primary hover:underline line-clamp-2">
-                            {p.name}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-1.5 text-xs text-right font-medium whitespace-nowrap">
-                          {round1(p.carbsSugars!)}
-                        </td>
-                      </tr>
+                      <ProductRow
+                        key={`hs-${p.productId}-${i}`}
+                        rank={i + 1}
+                        product={p}
+                        value={round1(p.carbsSugars!)}
+                        unit="g"
+                      />
                     ))}
                   </tbody>
                 </table>
@@ -532,22 +531,21 @@ const IceCreamReport = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="text-xs text-gray-500 border-b bg-gray-50">
+                      <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
                       <th className="px-3 py-1.5 text-right">g/100g</th>
+                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {top10HighSatFat.map((p, i) => (
-                      <tr key={`hsf-${p.productId}-${i}`} className="border-t hover:bg-gray-50">
-                        <td className="px-3 py-1.5">
-                          <Link href={`/lv/product/${p.slug}`} className="text-xs text-primary hover:underline line-clamp-2">
-                            {p.name}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-1.5 text-xs text-right font-medium whitespace-nowrap">
-                          {round1(p.fatSaturated!)}
-                        </td>
-                      </tr>
+                      <ProductRow
+                        key={`hsf-${p.productId}-${i}`}
+                        rank={i + 1}
+                        product={p}
+                        value={round1(p.fatSaturated!)}
+                        unit="g"
+                      />
                     ))}
                   </tbody>
                 </table>
@@ -560,22 +558,21 @@ const IceCreamReport = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="text-xs text-gray-500 border-b bg-gray-50">
+                      <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
-                      <th className="px-3 py-1.5 text-right">E-vielas</th>
+                      <th className="px-3 py-1.5 text-right">Skaits</th>
+                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {top10MostAdditives.map((p, i) => (
-                      <tr key={`ma-${p.productId}-${i}`} className="border-t hover:bg-gray-50">
-                        <td className="px-3 py-1.5">
-                          <Link href={`/lv/product/${p.slug}`} className="text-xs text-primary hover:underline line-clamp-2">
-                            {p.name}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-1.5 text-xs text-right font-medium">
-                          {p.additiveCount}
-                        </td>
-                      </tr>
+                      <ProductRow
+                        key={`ma-${p.productId}-${i}`}
+                        rank={i + 1}
+                        product={p}
+                        value={String(p.additiveCount)}
+                        unit=""
+                      />
                     ))}
                   </tbody>
                 </table>
