@@ -1363,6 +1363,100 @@ Sitemap: https://abcde.lv/sitemap.xml
     }
   });
 
+  // ── Category Report: Ice Cream ───────────────────────────────────────────
+  // Returns all products from Porcijas saldējumi (145) + Lielo iepakojumu
+  // saldējumi (146) with full nutrition, NOVA, photo, and derived ingredient /
+  // additive counts. Used by the /lv/raksti/saldejums article page.
+  // Designed as a template for future category reports.
+
+  /** Count top-level comma-separated ingredients (ignoring commas inside parens). */
+  function countTopLevelIngredients(text: string): number | null {
+    if (!text.trim()) return null;
+    let depth = 0;
+    let count = 1;
+    for (const ch of text) {
+      if (ch === '(' || ch === '[') depth++;
+      else if (ch === ')' || ch === ']') depth--;
+      else if (ch === ',' && depth === 0) count++;
+    }
+    return count;
+  }
+
+  /** Count E-number additives (E100–E1999) in an ingredients string. */
+  function countAdditives(text: string): number {
+    return (text.match(/\bE\d{3,4}[a-z]?\b/gi) || []).length;
+  }
+
+  app.get("/api/reports/ice-cream", async (_req: Request, res: Response) => {
+    try {
+      const rows = await rimiDb.execute(sql`
+        SELECT
+          p.product_id,
+          p.name,
+          p.nova_score,
+          p.quantity_value,
+          p.quantity_unit,
+          nf.energy_kcal,
+          nf.fat_total,
+          nf.fat_saturated,
+          nf.carbs_total,
+          nf.carbs_sugars,
+          nf.protein,
+          nf.salt,
+          nf.fiber,
+          nf.nutri_score_grade,
+          nf.nutri_score_points,
+          nf.ingredients_text,
+          c.name_lv  AS category_name_lv,
+          c.name_en  AS category_name_en,
+          pp.photo_url
+        FROM products p
+        JOIN nutritionfacts nf       ON nf.product_id = p.product_id
+        JOIN normalized_categories c ON c.category_id = p.category_id
+        LEFT JOIN productphotos pp   ON pp.product_id = p.product_id
+                                    AND pp.is_primary = true
+        WHERE p.category_id IN (145, 146)
+        ORDER BY p.product_id
+      `);
+
+      const rawRows = Array.isArray(rows) ? rows : (rows as any).rows ?? [];
+
+      const products = rawRows.map((row: any) => {
+        const slug = productSlug(row.name ?? '', row.product_id);
+        const ingredientsText: string = row.ingredients_text ?? '';
+        return {
+          productId:        row.product_id,
+          name:             row.name,
+          slug,
+          categoryNameLv:   row.category_name_lv,
+          categoryNameEn:   row.category_name_en,
+          photoUrl:         row.photo_url ?? null,
+          novaScore:        row.nova_score !== null ? Number(row.nova_score) : null,
+          nutriScoreGrade:  row.nutri_score_grade ?? null,
+          nutriScorePoints: row.nutri_score_points !== null ? Number(row.nutri_score_points) : null,
+          energyKcal:       row.energy_kcal    !== null ? Number(row.energy_kcal)    : null,
+          fatTotal:         row.fat_total      !== null ? Number(row.fat_total)      : null,
+          fatSaturated:     row.fat_saturated  !== null ? Number(row.fat_saturated)  : null,
+          carbsTotal:       row.carbs_total    !== null ? Number(row.carbs_total)    : null,
+          carbsSugars:      row.carbs_sugars   !== null ? Number(row.carbs_sugars)   : null,
+          protein:          row.protein        !== null ? Number(row.protein)        : null,
+          salt:             row.salt           !== null ? Number(row.salt)           : null,
+          fiber:            row.fiber          !== null ? Number(row.fiber)          : null,
+          quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
+          quantityUnit:     row.quantity_unit  ?? null,
+          ingredientCount:  countTopLevelIngredients(ingredientsText),
+          additiveCount:    countAdditives(ingredientsText),
+        };
+      });
+
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
+      res.json({ products, total: products.length });
+    } catch (error) {
+      console.error('[reports/ice-cream] error:', error);
+      res.status(500).json({ message: 'Failed to fetch ice cream report data' });
+    }
+  });
+
   // Sitemap.xml endpoint for SEO
   app.get("/sitemap.xml", async (_req: Request, res: Response) => {
     try {
