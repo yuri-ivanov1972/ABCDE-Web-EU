@@ -1477,7 +1477,8 @@ Sitemap: https://abcde.lv/sitemap.xml
         { path: '/about-nutriscore', priority: '0.8', changefreq: 'monthly' },
         { pathLv: '/ko-ed-latvija', pathEn: '/what-latvians-eat', priority: '0.7', changefreq: 'weekly' },
         { path: '/about-project', priority: '0.6', changefreq: 'monthly' },
-        { path: '/scan', priority: '0.7', changefreq: 'monthly' }
+        { path: '/scan', priority: '0.7', changefreq: 'monthly' },
+        { pathLv: '/raksti/saldejums', pathEn: '/raksti/saldejums', priority: '0.7', changefreq: 'monthly' }
       ];
       
       // Get all categories, excluding hidden ones
@@ -1858,6 +1859,35 @@ Sitemap: https://abcde.lv/sitemap.xml
 
   app.get("/lv/category/:slug", serveCategoryPage);
   app.get("/en/category/:slug", serveCategoryPage);
+
+  // Article page: /lv/raksti/saldejums — ice cream analysis
+  // Serves index.html with injected title + meta description for search crawlers.
+  app.get("/lv/raksti/saldejums", async (_req: Request, res: Response): Promise<void> => {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    const title = "Veselīgākais saldējums Latvijā? Analīze: 280 produkti | ABCDE.lv";
+    const description = "Analizēti 280 saldējumi no Rimi Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.";
+    const canonical = "https://abcde.lv/lv/raksti/saldejums";
+
+    const metaTags = [
+      `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
+      `  <meta name="description" content="${escapeAttr(description)}" />`,
+      `  <meta property="og:type" content="article" />`,
+      `  <meta property="og:site_name" content="ABCDE.lv" />`,
+      `  <meta property="og:title" content="${escapeAttr(title)}" />`,
+      `  <meta property="og:description" content="${escapeAttr(description)}" />`,
+      `  <meta property="og:url" content="${escapeAttr(canonical)}" />`,
+      `  <meta name="twitter:card" content="summary" />`,
+      `  <meta name="twitter:title" content="${escapeAttr(title)}" />`,
+      `  <meta name="twitter:description" content="${escapeAttr(description)}" />`,
+    ].join("\n");
+
+    const html = injectIntoHtml(baseHtml, title, metaTags);
+    res.set("Content-Type", "text/html; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    res.send(html);
+  });
 
   // --------------------------------------------------------------------------
   // Server-side pre-render helpers — replicate frontend photoUrl.ts logic so

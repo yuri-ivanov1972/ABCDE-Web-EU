@@ -13,6 +13,7 @@ const ScanPage = lazy(() => import('@/pages/scan'));
 const AboutNutriScore = lazy(() => import('@/pages/about-nutriscore'));
 const AboutProject = lazy(() => import('@/pages/about-project'));
 const WhatLatviansEat = lazy(() => import('@/pages/what-latvians-eat'));
+const IceCreamReport = lazy(() => import('@/pages/ice-cream-report'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 const Debug = lazy(() => import('@/pages/debug'));
 
@@ -208,6 +209,21 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
           return (
             <Suspense fallback={<PageLoader />}>
               <WhatLatviansEat />
+            </Suspense>
+          );
+        }}
+      </Route>
+
+      {/* Ice cream analysis article - LV only */}
+      <Route path="/:lang/raksti/saldejums">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language)) {
+            return <Redirect to={`/${DEFAULT_LANGUAGE}/raksti/saldejums`} replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <IceCreamReport />
             </Suspense>
           );
         }}

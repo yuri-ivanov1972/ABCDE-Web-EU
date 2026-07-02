@@ -1,1 +1,2 @@
 - [Homepage redirect and LCP](homepage-redirect-lcp.md) — / must redirect via inline script in index.html, not React router; Express SSR handles /lv and /en.
+- [react-helmet-async title children](helmet-title-children.md) — title must be a single string child; mixing string literals with {number} crashes Helmet in v3.

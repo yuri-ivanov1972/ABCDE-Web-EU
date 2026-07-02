@@ -204,6 +204,12 @@ export function generateStaticPageMetadata(cleanPath: string, lang: string): Pag
           ? 'ABCDE.lv misija - palīdzēt cilvēkiem izdarīt veselīgākas pārtikas izvēles, nodrošinot caurskatāmu uzturvērtības informāciju.'
           : 'ABCDE.lv mission - help people make healthier food choices by providing transparent nutritional information.',
       };
+    case '/raksti/saldejums':
+      return {
+        title: 'Veselīgākais saldējums Latvijā? Analīze: 280 produkti | ABCDE.lv',
+        description:
+          'Analizēti 280 saldējumi no Rimi Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.',
+      };
     case '/scan':
       return {
         title: isLv
