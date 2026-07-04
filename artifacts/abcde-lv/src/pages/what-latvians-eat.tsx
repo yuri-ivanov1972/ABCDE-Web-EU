@@ -198,7 +198,6 @@ const StatsBlock = ({
 
 const WhatLatviansEat = () => {
   const { t, i18n } = useTranslation(['stats', 'common']);
-  const currentLang = i18n.language?.split('-')[0] || 'lv';
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -207,11 +206,6 @@ const WhatLatviansEat = () => {
   const { data, isLoading, error } = useQuery<StatsResponse>({
     queryKey: ['/api/stats/nutri-score-distribution']
   });
-
-  const baseUrl = 'https://abcde.lv';
-  const lvPath = '/ko-ed-latvija';
-  const enPath = '/what-latvians-eat';
-  const currentPath = currentLang === 'en' ? enPath : lvPath;
 
   if (isLoading) {
     return (
@@ -238,10 +232,6 @@ const WhatLatviansEat = () => {
       <Helmet>
         <title>{t('stats:title')} | ABCDE.lv</title>
         <meta name="description" content={t('stats:description')} />
-        <link rel="canonical" href={`${baseUrl}/lv${lvPath}`} />
-        <link rel="alternate" hrefLang="lv" href={`${baseUrl}/lv${lvPath}`} />
-        <link rel="alternate" hrefLang="en" href={`${baseUrl}/en${enPath}`} />
-        <link rel="alternate" hrefLang="x-default" href={`${baseUrl}/lv${lvPath}`} />
       </Helmet>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">

@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
 import { getPathWithoutLanguage } from '@/i18n';
-import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 import { getProducts, getCategoryById } from '@/api';
 import { Filters, NutriScoreGrade, ProductsResponse, SortOption, SortOrder, Store } from '@/types';
@@ -239,18 +237,8 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     }
   };
 
-  const canonicalPath = category?.slug ? `/category/${category.slug}` : (categoryId ? `/category/${categoryId}` : '/');
-  const currentLang = i18n.language?.split('-')[0] || 'lv';
-  const hreflangUrls = getHreflangUrls(canonicalPath);
-
   return (
     <>
-      <Helmet>
-        <link rel="canonical" href={getCanonicalUrl(canonicalPath, currentLang)} />
-        {hreflangUrls.map(({ lang, url }) => (
-          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-        ))}
-      </Helmet>
       <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row">
         {/* Mobile Menu - shown/hidden based on state */}
         <MobileMenu 

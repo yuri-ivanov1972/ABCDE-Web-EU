@@ -1,16 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
 import { Scanner } from '@/components/scanner/scanner';
 import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 export default function ScanPage() {
-  const { t, i18n } = useTranslation('scan');
-  const currentLang = i18n.language?.split('-')[0] || 'lv';
-  const hreflangUrls = getHreflangUrls('/scan');
+  const { t } = useTranslation('scan');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -24,12 +20,6 @@ export default function ScanPage() {
 
   return (
     <>
-      <Helmet>
-        <link rel="canonical" href={getCanonicalUrl('/scan', currentLang)} />
-        {hreflangUrls.map(({ lang, url }) => (
-          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-        ))}
-      </Helmet>
       <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b">

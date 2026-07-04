@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
 import { getProductById, getCategoryById, getCategoryPath, checkHealthierProducts } from '@/api';
 import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink, Search } from 'lucide-react';
 import LangLink from '@/components/routing/LangLink';
@@ -12,7 +11,6 @@ import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Category } from '@/types';
-import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 import { getPhotoSrc, getPhotoSrcSet } from '@/lib/photoUrl';
 import NotFound from '@/pages/not-found';
 import mediumA from '@assets/RVB_A_1768766381068.png';
@@ -237,20 +235,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
     'E': mediumE
   };
 
-  const currentLang = i18n.language?.split('-')[0] || 'lv';
   const productUrlSlug = product.slug || String(productId);
   const currentCategory = categoryPath?.[categoryPath.length - 1];
   const categoryUrlSlug = currentCategory?.slug || (product.categoryId ? String(product.categoryId) : null);
-  const hreflangUrls = getHreflangUrls(`/product/${productUrlSlug}`);
 
   return (
     <>
-      <Helmet>
-        <link rel="canonical" href={getCanonicalUrl(`/product/${productUrlSlug}`, currentLang)} />
-        {hreflangUrls.map(({ lang, url }) => (
-          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-        ))}
-      </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Back link */}
         <div className="mb-6">

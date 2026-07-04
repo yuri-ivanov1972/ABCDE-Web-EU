@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { Helmet } from 'react-helmet-async';
 import { Search, ExternalLink } from 'lucide-react';
 import { getProductByRimiUrl } from '@/api';
 import { addLanguageToPath, getLanguageFromPath } from '@/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import NutriScoreBadge from '@/components/ui/nutri-score-badge';
-import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 const ProductSearch: React.FC = () => {
   const [url, setUrl] = useState('');
   const [rimiUrl, setRimiUrl] = useState<string | null>(null);
   const [currentLocation, navigate] = useLocation();
-  const currentLang = getLanguageFromPath(currentLocation) || 'lv';
-  const hreflangUrls = getHreflangUrls('/product-search');
 
   // Query for fetching product by URL
   const { data: product, isLoading, error, refetch } = useQuery({
@@ -42,12 +38,6 @@ const ProductSearch: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <link rel="canonical" href={getCanonicalUrl('/product-search', currentLang)} />
-        {hreflangUrls.map(({ lang, url }) => (
-          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-        ))}
-      </Helmet>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Meklēt produktu pēc Rimi URL</h1>

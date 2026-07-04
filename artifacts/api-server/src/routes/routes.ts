@@ -1699,6 +1699,8 @@ Sitemap: https://abcde.lv/sitemap.xml
     const { title, description, canonical, imageUrl } = opts;
     const lines = [
       `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
+      `  <link rel="alternate" hrefLang="lv" href="${escapeAttr(canonical)}" />`,
+      `  <link rel="alternate" hrefLang="x-default" href="${escapeAttr(canonical)}" />`,
       `  <meta property="og:type" content="product" />`,
       `  <meta property="og:site_name" content="ABCDE.lv" />`,
       `  <meta property="og:title" content="${escapeAttr(title)}" />`,
@@ -1802,7 +1804,9 @@ Sitemap: https://abcde.lv/sitemap.xml
   }
 
   app.get("/lv/product/:slug", serveProductPage);
-  app.get("/en/product/:slug", serveProductPage);
+  app.get("/en/product/:slug", (req: Request, res: Response) => {
+    res.redirect(301, `/lv/product/${req.params.slug}`);
+  });
 
   // Category page handler (shared by /lv/category/:slug and /en/category/:slug)
   async function serveCategoryPage(req: Request, res: Response): Promise<void> {
@@ -1838,6 +1842,8 @@ Sitemap: https://abcde.lv/sitemap.xml
 
       const metaTags = [
         `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
+        `  <link rel="alternate" hrefLang="lv" href="${escapeAttr(canonical)}" />`,
+        `  <link rel="alternate" hrefLang="x-default" href="${escapeAttr(canonical)}" />`,
         `  <meta property="og:type" content="website" />`,
         `  <meta property="og:site_name" content="ABCDE.lv" />`,
         `  <meta property="og:title" content="${escapeAttr(categoryName)}" />`,
@@ -1860,7 +1866,9 @@ Sitemap: https://abcde.lv/sitemap.xml
   }
 
   app.get("/lv/category/:slug", serveCategoryPage);
-  app.get("/en/category/:slug", serveCategoryPage);
+  app.get("/en/category/:slug", (req: Request, res: Response) => {
+    res.redirect(301, `/lv/category/${req.params.slug}`);
+  });
 
   // Article: /en/raksti/saldejums redirects to the LV canonical
   app.get("/en/raksti/saldejums", (_req: Request, res: Response): void => {

@@ -4,12 +4,9 @@ import { Helmet } from 'react-helmet-async';
 import LangLink from '@/components/routing/LangLink';
 import { ChevronLeft, ExternalLink, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getCanonicalUrl, getHreflangUrls } from '@/lib/canonical';
 
 export default function AboutProject() {
-  const { t, i18n } = useTranslation('aboutProject');
-  const currentLang = i18n.language?.split('-')[0] || 'lv';
-  const hreflangUrls = getHreflangUrls('/about-project');
+  const { t } = useTranslation('aboutProject');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,10 +17,6 @@ export default function AboutProject() {
       <Helmet>
         <title>{t('meta.title')}</title>
         <meta name="description" content={t('meta.description')} />
-        <link rel="canonical" href={getCanonicalUrl('/about-project', currentLang)} />
-        {hreflangUrls.map(({ lang, url }) => (
-          <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-        ))}
       </Helmet>
       <div className="min-h-screen bg-background">
         <div className="border-b">
