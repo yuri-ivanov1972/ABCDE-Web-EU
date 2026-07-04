@@ -1875,6 +1875,38 @@ Sitemap: https://abcde.lv/sitemap.xml
     res.redirect(301, "https://abcde.lv/lv/raksti/saldejums");
   });
 
+  // EN static info pages — inject noindex so Google ignores them.
+  // injectSeoTags() already adds <meta name="robots" content="noindex, follow" />
+  // whenever lang === 'en', so we just need Express to handle these paths.
+  const EN_STATIC_PATHS = [
+    "/en/about-nutriscore",
+    "/en/about-project",
+    "/en/scan",
+    "/en/product-search",
+    "/en/ko-ed-latvija",
+    "/en/what-latvians-eat",
+    "/en/404",
+  ];
+
+  async function serveEnStaticPage(req: Request, res: Response): Promise<void> {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    let html = baseHtml;
+    if (DEV_VITE_PREAMBLE) {
+      html = html.replace("</head>", `${DEV_VITE_PREAMBLE}</head>`);
+    }
+    html = injectSeoTags(html, req.path);
+
+    res.set("Content-Type", "text/html; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=900");
+    res.send(html);
+  }
+
+  for (const enPath of EN_STATIC_PATHS) {
+    app.get(enPath, serveEnStaticPage);
+  }
+
   // Article page: /lv/raksti/saldejums — ice cream analysis
   // Serves index.html with injected title + meta description for search crawlers.
   app.get("/lv/raksti/saldejums", async (_req: Request, res: Response): Promise<void> => {
