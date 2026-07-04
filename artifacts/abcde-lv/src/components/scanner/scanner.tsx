@@ -45,6 +45,7 @@ export function Scanner({ onCapture }: ScannerProps) {
     text?: string;
     product?: {
       productId: number;
+      slug?: string;
       name: string;
       sku: string;
       rimiUrl: string | null;
@@ -476,7 +477,7 @@ export function Scanner({ onCapture }: ScannerProps) {
               data-testid="button-view-product"
             >
               <a 
-                href={`/${i18n.language}/product/${scanResult.product.productId}`}
+                href={`/${i18n.language}/product/${scanResult.product.slug ?? scanResult.product.productId}`}
                 onClick={() => {
                   // Track when user clicks to view product details after scanning
                   trackProductViewAfterScan({

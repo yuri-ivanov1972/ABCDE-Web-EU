@@ -1042,6 +1042,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         photoAccessToken: createdScan?.photoAccessToken || null,
         product: matchedProduct ? {
           productId: matchedProduct.productId,
+          slug: productSlug(matchedProduct.name, matchedProduct.productId),
           name: matchedProduct.name,
           sku: matchedProduct.sku,
           rimiUrl: matchedProduct.rimiUrl,
