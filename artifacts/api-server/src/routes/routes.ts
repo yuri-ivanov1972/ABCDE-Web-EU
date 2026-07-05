@@ -1393,7 +1393,7 @@ Sitemap: https://abcde.lv/sitemap.xml
 
   app.get("/api/reports/ice-cream", async (_req: Request, res: Response) => {
     try {
-      const rows = await rimiDb.execute(sql`
+      const rimiQuery = rimiDb.execute(sql`
         SELECT
           p.product_id,
           p.name,
@@ -1423,17 +1423,50 @@ Sitemap: https://abcde.lv/sitemap.xml
         ORDER BY p.product_id
       `);
 
-      const rawRows = Array.isArray(rows) ? rows : (rows as any).rows ?? [];
+      const maximaQuery = maximaDb ? maximaDb.execute(sql`
+        SELECT
+          p.product_id,
+          p.name,
+          p.nova_score,
+          p.quantity_value,
+          p.quantity_unit,
+          nf.energy_kcal,
+          nf.fat_total,
+          nf.fat_saturated,
+          nf.carbs_total,
+          nf.carbs_sugars,
+          nf.protein,
+          nf.salt,
+          nf.fiber,
+          nf.nutri_score_grade,
+          nf.nutri_score_points,
+          nf.ingredients_text,
+          pp.photo_url
+        FROM products p
+        JOIN nutritionfacts nf ON nf.product_id = p.product_id
+        LEFT JOIN productphotos pp ON pp.product_id = p.product_id
+                                  AND pp.is_primary = true
+        WHERE p.rimi_category_code IN (145, 146)
+        ORDER BY p.product_id
+      `) : Promise.resolve(null);
 
-      const products = rawRows.map((row: any) => {
+      const [rimiResult, maximaResult] = await Promise.all([rimiQuery, maximaQuery]);
+
+      const rimiRawRows = Array.isArray(rimiResult) ? rimiResult : (rimiResult as any)?.rows ?? [];
+      const maximaRawRows = maximaResult
+        ? (Array.isArray(maximaResult) ? maximaResult : (maximaResult as any)?.rows ?? [])
+        : [];
+
+      function mapRow(row: any, store: 'rimi' | 'maxima') {
         const slug = productSlug(row.name ?? '', row.product_id);
         const ingredientsText: string = row.ingredients_text ?? '';
         return {
           productId:        row.product_id,
           name:             row.name,
           slug,
-          categoryNameLv:   row.category_name_lv,
-          categoryNameEn:   row.category_name_en,
+          store,
+          categoryNameLv:   row.category_name_lv ?? null,
+          categoryNameEn:   row.category_name_en ?? null,
           photoUrl:         row.photo_url ?? null,
           novaScore:        row.nova_score !== null ? Number(row.nova_score) : null,
           nutriScoreGrade:  row.nutri_score_grade ?? null,
@@ -1451,7 +1484,12 @@ Sitemap: https://abcde.lv/sitemap.xml
           ingredientCount:  countTopLevelIngredients(ingredientsText),
           additiveCount:    countAdditives(ingredientsText),
         };
-      });
+      }
+
+      const products = [
+        ...rimiRawRows.map((row: any) => mapRow(row, 'rimi')),
+        ...maximaRawRows.map((row: any) => mapRow(row, 'maxima')),
+      ];
 
       res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
       res.json({ products, total: products.length });
@@ -1942,7 +1980,7 @@ Sitemap: https://abcde.lv/sitemap.xml
     if (!baseHtml) { res.status(404).send("Not found"); return; }
 
     const title = "Veselīgākais saldējums Latvijā? Nutri-Score analīze | ABCDE.lv";
-    const description = "Saldējumu Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.";
+    const description = "Saldējumu Nutri-Score sadalījums no Rimi un Maxima, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.";
     const canonical = "https://abcde.lv/lv/raksti/saldejums";
 
     const metaTags = [

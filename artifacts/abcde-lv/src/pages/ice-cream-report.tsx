@@ -14,6 +14,7 @@ interface IceCreamProduct {
   productId: number;
   name: string;
   slug: string;
+  store: string | null;
   photoUrl: string | null;
   novaScore: number | null;
   nutriScoreGrade: string | null;
@@ -64,6 +65,19 @@ function buildPhotoSrc(url: string, width: number): string {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
+function StoreBadge({ store }: { store: string | null }) {
+  if (!store) return null;
+  const isRimi = store === 'rimi';
+  return (
+    <span
+      className="inline-block text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+      style={{ background: isRimi ? '#D33731' : '#24488B' }}
+    >
+      {isRimi ? 'Rimi' : 'Maxima'}
+    </span>
+  );
+}
+
 function ProductRow({
   rank,
   product,
@@ -95,12 +109,15 @@ function ProductRow({
           ) : (
             <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0" />
           )}
-          <Link
-            href={`/lv/product/${product.slug}`}
-            className="text-sm text-primary hover:underline leading-snug line-clamp-2"
-          >
-            {product.name}
-          </Link>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <Link
+              href={`/lv/product/${product.slug}`}
+              className="text-sm text-primary hover:underline leading-snug line-clamp-2"
+            >
+              {product.name}
+            </Link>
+            <StoreBadge store={product.store} />
+          </div>
         </div>
       </td>
       <td className="px-3 py-2 text-sm font-semibold text-right whitespace-nowrap">
@@ -147,7 +164,7 @@ function ProductTable({
               const v = getValue(p);
               return (
                 <ProductRow
-                  key={`${p.productId}-${i}`}
+                  key={`${p.store}-${p.productId}-${i}`}
                   rank={i + 1}
                   product={p}
                   value={v !== null ? round1(v) : '—'}
@@ -285,7 +302,7 @@ const IceCreamReport = () => {
     <>
       <Helmet>
         <title>{`Veselīgākais saldējums Latvijā? Analīze: ${total} produkti | ABCDE.lv`}</title>
-        <meta name="description" content={`Analizēti ${total} saldējumi no Rimi Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.`} />
+        <meta name="description" content={`Analizēti ${total} saldējumi no Rimi un Maxima Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt.`} />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
@@ -304,11 +321,11 @@ const IceCreamReport = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
           Veselīgākais saldējums Latvijā?<br />
           <span className="text-gray-600 font-normal text-2xl">
-            Pārbaudīts: {total} saldējumi no Rimi
+            Pārbaudīts: {total} saldējumi no Rimi un Maxima
           </span>
         </h1>
         <p className="text-gray-500 text-sm mb-6">
-          Publicēts 2025. gadā · Dati: Rimi Latvija · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi
+          Publicēts 2025. gadā · Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi
         </p>
 
         {/* ── Executive summary ── */}
@@ -318,7 +335,7 @@ const IceCreamReport = () => {
             <li className="flex gap-2">
               <span className="font-bold shrink-0">·</span>
               <span>
-                Analizēti <strong>{total} saldējumi</strong> no divām Rimi kategorijām (porcijas un lielie iepakojumi).
+                Analizēti <strong>{total} saldējumi</strong> no Rimi un Maxima (Barbora) — porcijas un lielie iepakojumi.
               </span>
             </li>
             <li className="flex gap-2">
@@ -513,7 +530,7 @@ const IceCreamReport = () => {
                   <tbody>
                     {top10HighSugar.map((p, i) => (
                       <ProductRow
-                        key={`hs-${p.productId}-${i}`}
+                        key={`hs-${p.store}-${p.productId}-${i}`}
                         rank={i + 1}
                         product={p}
                         value={round1(p.carbsSugars!)}
@@ -540,7 +557,7 @@ const IceCreamReport = () => {
                   <tbody>
                     {top10HighSatFat.map((p, i) => (
                       <ProductRow
-                        key={`hsf-${p.productId}-${i}`}
+                        key={`hsf-${p.store}-${p.productId}-${i}`}
                         rank={i + 1}
                         product={p}
                         value={round1(p.fatSaturated!)}
@@ -567,7 +584,7 @@ const IceCreamReport = () => {
                   <tbody>
                     {top10MostAdditives.map((p, i) => (
                       <ProductRow
-                        key={`ma-${p.productId}-${i}`}
+                        key={`ma-${p.store}-${p.productId}-${i}`}
                         rank={i + 1}
                         product={p}
                         value={String(p.additiveCount)}
@@ -585,11 +602,11 @@ const IceCreamReport = () => {
         <section className="border-t pt-6 mt-6">
           <h2 className="text-base font-semibold text-gray-700 mb-2">Par datiem</h2>
           <p className="text-sm text-gray-500 leading-relaxed">
-            Analīzē iekļauti <strong>{total} saldējumi</strong> no Rimi kategorijām "Porcijas
-            saldējumi" un "Lielo iepakojumu saldējumi". Dati iegūti no ABCDE.lv datubāzes, kas
-            regulāri atjaunina informāciju no Rimi.lv. Uzturvērtības norādītas uz 100 g produkta.
-            Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. E-vielu skaits
-            noteikts automātiski no sastāvdaļu saraksta — dažos gadījumos var būt neprecizitātes.
+            Analīzē iekļauti <strong>{total} saldējumi</strong> no Rimi un Maxima (Barbora) kategorijām
+            "Porcijas saldējumi" un "Lielo iepakojumu saldējumi". Dati iegūti no ABCDE.lv datubāzes, kas
+            regulāri atjaunina informāciju no Rimi.lv un Barbora.lv. Uzturvērtības norādītas uz 100 g
+            produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. E-vielu
+            skaits noteikts automātiski no sastāvdaļu saraksta — dažos gadījumos var būt neprecizitātes.
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Visus saldējumus var{' '}
