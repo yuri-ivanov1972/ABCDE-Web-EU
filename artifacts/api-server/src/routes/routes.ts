@@ -1420,6 +1420,14 @@ Sitemap: https://abcde.lv/sitemap.xml
         LEFT JOIN productphotos pp   ON pp.product_id = p.product_id
                                     AND pp.is_primary = true
         WHERE p.category_id IN (145, 146)
+          AND p.product_id IN (
+            SELECT product_id FROM (
+              SELECT DISTINCT ON (product_id) product_id, is_available
+              FROM product_price_history
+              ORDER BY product_id, recorded_at DESC
+            ) latest
+            WHERE latest.is_available = true
+          )
         ORDER BY p.product_id
       `);
 
@@ -1447,6 +1455,14 @@ Sitemap: https://abcde.lv/sitemap.xml
         LEFT JOIN productphotos pp ON pp.product_id = p.product_id
                                   AND pp.is_primary = true
         WHERE p.rimi_category_code IN (145, 146)
+          AND p.product_id IN (
+            SELECT product_id FROM (
+              SELECT DISTINCT ON (product_id) product_id, is_available
+              FROM product_price_history
+              ORDER BY product_id, recorded_at DESC
+            ) latest
+            WHERE latest.is_available = true
+          )
         ORDER BY p.product_id
       `) : Promise.resolve(null);
 
