@@ -2159,6 +2159,22 @@ Sitemap: https://abcde.lv/sitemap.xml
   app.get("/en", serveHomepage);
   app.get("/en/", serveHomepage);
 
+  // SPA catch-all: any /lv/* path not matched above gets the base index.html.
+  // The proxy routes /lv* to this Express server, so without this catch-all
+  // pages like /lv/ko-ed-latvija, /lv/about-nutriscore, /lv/scan, etc. return 404.
+  // Wouter handles the route client-side after React boots.
+  app.get("/lv/{*path}", async (_req: Request, res: Response): Promise<void> => {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+    let html = baseHtml;
+    if (DEV_VITE_PREAMBLE) {
+      html = html.replace("</head>", `${DEV_VITE_PREAMBLE}</head>`);
+    }
+    res.set("Content-Type", "text/html; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=900");
+    res.send(html);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
