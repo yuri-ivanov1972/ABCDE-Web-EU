@@ -1564,9 +1564,6 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
         xml += `    <priority>${page.priority}</priority>\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv${lvPath}" />\n`;
-        if (enPath !== undefined) {
-          xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en${enPath}" />\n`;
-        }
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv${lvPath}" />\n`;
         xml += '  </url>\n';
       }
@@ -1584,7 +1581,6 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += '    <changefreq>weekly</changefreq>\n';
         xml += `    <priority>${catPriority}</priority>\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/category/${catSlug}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/category/${catSlug}" />\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/category/${catSlug}" />\n`;
         xml += '  </url>\n';
       }
@@ -1618,7 +1614,6 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += '    <changefreq>weekly</changefreq>\n';
         xml += '    <priority>0.5</priority>\n';
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/product/${pSlug}" />\n`;
-        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/product/${pSlug}" />\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv/product/${pSlug}" />\n`;
         xml += '  </url>\n';
       }
