@@ -174,6 +174,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const robotsTxt = `User-agent: *
 Allow: /
 
+# Block English locale — Latvian (LV) is the canonical language for this site
+Disallow: /en/
+
 # Block query parameter variations to avoid duplicate content
 # These create duplicate pages with different filters/pagination
 Disallow: /*?store
