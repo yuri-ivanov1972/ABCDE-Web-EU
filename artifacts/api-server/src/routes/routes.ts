@@ -1907,6 +1907,7 @@ Sitemap: https://abcde.lv/sitemap.xml
   for (const enPath of EN_STATIC_PATHS) {
     app.get(enPath, serveEnStaticPage);
   }
+  app.get("/en/{*path}", serveEnStaticPage);
 
   // LV static info pages — inject page-specific title, description, and canonical.
   // These paths are also caught by the SPA catch-all below, but that handler
