@@ -1908,6 +1908,34 @@ Sitemap: https://abcde.lv/sitemap.xml
     app.get(enPath, serveEnStaticPage);
   }
 
+  // LV static info pages — inject page-specific title, description, and canonical.
+  // These paths are also caught by the SPA catch-all below, but that handler
+  // serves bare index.html with no SEO tags. Register them explicitly here so
+  // injectSeoTags() can inject the correct title/description/canonical before
+  // the page is served to crawlers.
+  const LV_STATIC_PATHS = [
+    "/lv/ko-ed-latvija",
+    "/lv/about-nutriscore",
+    "/lv/about-project",
+    "/lv/scan",
+    "/lv/product-search",
+  ];
+
+  async function serveLvStaticPage(req: Request, res: Response): Promise<void> {
+    const baseHtml = await getIndexHtml();
+    if (!baseHtml) { res.status(404).send("Not found"); return; }
+
+    const html = injectSeoTags(baseHtml, req.path);
+
+    res.set("Content-Type", "text/html; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=900");
+    res.send(html);
+  }
+
+  for (const lvPath of LV_STATIC_PATHS) {
+    app.get(lvPath, serveLvStaticPage);
+  }
+
   // Article page: /lv/raksti/saldejums — ice cream analysis
   // Serves index.html with injected title + meta description for search crawlers.
   app.get("/lv/raksti/saldejums", async (_req: Request, res: Response): Promise<void> => {
