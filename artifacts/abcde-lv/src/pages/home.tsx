@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getPathWithoutLanguage } from '@/i18n';
 
 import { getProducts, getCategoryById } from '@/api';
+import { trackSearch } from '@/lib/analytics';
 import { Filters, NutriScoreGrade, ProductsResponse, SortOption, SortOrder, Store } from '@/types';
 
 // Read server-injected initial product data (eliminates the first API round-trip)
@@ -138,6 +139,18 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
     staleTime: 5 * 60 * 1000,
   });
   
+  // Track search results count when a non-empty search produces a response
+  useEffect(() => {
+    if (searchQuery && !isLoading && data?.totalCount !== undefined) {
+      trackSearch({
+        searchTerm: searchQuery,
+        resultsCount: data.totalCount,
+        language: i18n.language,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, data?.totalCount]);
+
   // Calculate total pages based on API response data
   const calculatedPages = data?.totalCount ? Math.ceil(data.totalCount / 12) : 1;
   // Use real page count from API response to ensure proper pagination with filters

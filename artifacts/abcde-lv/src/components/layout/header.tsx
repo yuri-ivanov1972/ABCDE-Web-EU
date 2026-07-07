@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import nutriScoreLogo from '@assets/RVB_neutre_1768766381066.png';
-import { trackPetitionClick } from '@/lib/analytics';
+import { trackPetitionClick, trackSearch, trackSearchCleared } from '@/lib/analytics';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -24,8 +24,10 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Normalize search query by trimming whitespace
     const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery) {
+      trackSearch({ searchTerm: trimmedQuery, language: i18n.language });
+    }
     onSearch(trimmedQuery);
   };
 
@@ -73,8 +75,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
                   type="button"
                   className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
                   onClick={() => {
+                    trackSearchCleared({ language: i18n.language });
                     setSearchQuery('');
-                    onSearch(''); // Clear search results
+                    onSearch('');
                   }}
                   aria-label={t('header:search.clear')}
                 >
@@ -159,8 +162,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
                   type="button"
                   className="absolute right-10 top-1/2 transform -translate-y-1/2 p-2 -m-2 text-gray-400 hover:text-primary flex items-center justify-center"
                   onClick={() => {
+                    trackSearchCleared({ language: i18n.language });
                     setSearchQuery('');
-                    onSearch(''); // Clear search results
+                    onSearch('');
                   }}
                   aria-label={t('header:search.clear')}
                   data-testid="clear-search-button"

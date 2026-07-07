@@ -131,6 +131,35 @@ export function trackScanFailure(params: {
 }
 
 /**
+ * Track a header search submission
+ * Fire immediately on submit (results_count unknown) then again when results load
+ */
+export function trackSearch(params: {
+  searchTerm: string;
+  resultsCount?: number;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'search',
+    search_term: params.searchTerm,
+    search_results_count: params.resultsCount ?? -1,
+    language: params.language || 'unknown',
+  });
+}
+
+/**
+ * Track when the user clears the search field
+ */
+export function trackSearchCleared(params: {
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'search_cleared',
+    language: params.language || 'unknown',
+  });
+}
+
+/**
  * Track when user clicks "Look for better options" button on product details page
  */
 export function trackHealthierAlternativesClick(params: {
