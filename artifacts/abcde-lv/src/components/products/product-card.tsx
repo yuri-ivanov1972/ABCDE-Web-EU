@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
             width={300}
             height={200}
             loading={priority ? 'eager' : 'lazy'}
-            fetchpriority={priority ? 'high' : 'auto'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding={priority ? "sync" : "async"}
             className="w-full h-full object-cover"
           />

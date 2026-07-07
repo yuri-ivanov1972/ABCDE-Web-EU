@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
           {/* Logo */}
           <div className="flex items-center shrink-0">
             <LangLink href="/" className="flex items-center">
-              <img src={nutriScoreLogo} alt={t('header:logo.alt')} width={300} height={157} fetchpriority="high" className="h-[5.2rem] md:h-[6.5rem] w-auto" />
+              <img src={nutriScoreLogo} alt={t('header:logo.alt')} width={300} height={157} fetchPriority="high" className="h-[5.2rem] md:h-[6.5rem] w-auto" />
             </LangLink>
           </div>
 

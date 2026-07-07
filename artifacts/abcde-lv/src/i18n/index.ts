@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { initReactI18next, setDefaults } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // ── Latvian ──────────────────────────────────────────────────────────────────
@@ -115,15 +115,16 @@ if (!i18n.isInitialized) {
       returnEmptyString: false,
       returnNull: false,
 
-      // useSuspense: false — prevents i18next from throwing a Promise (React Suspense)
-      // when init isn't complete yet. With bundled translations, init finishes in <1ms
-      // anyway, but the Suspense mechanism still activates the <PageLoader> full-screen
-      // spinner in LanguageRouter, which causes the 0.37 CLS (spinner→content shift).
-      // With useSuspense: false, useTranslation() returns ready=false immediately and
-      // components handle the brief !ready state with a layout-stable skeleton instead.
-      useSuspense: false,
     });
 }
+
+// useSuspense: false — prevents i18next from throwing a Promise (React Suspense)
+// when init isn't complete yet. With bundled translations, init finishes in <1ms
+// anyway, but the Suspense mechanism still activates the <PageLoader> full-screen
+// spinner in LanguageRouter, which causes the 0.37 CLS (spinner→content shift).
+// With useSuspense: false, useTranslation() returns ready=false immediately and
+// components handle the brief !ready state with a layout-stable skeleton instead.
+setDefaults({ useSuspense: false });
 
 // Helper function to get current language from URL
 export const getLanguageFromPath = (pathname?: string): SupportedLanguage => {
