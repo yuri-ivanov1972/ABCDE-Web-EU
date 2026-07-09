@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getProductById, getCategoryById, getCategoryPath, checkHealthierProducts } from '@/api';
 import { ChevronRight, ChevronDown, ArrowLeft, ExternalLink, Search } from 'lucide-react';
 import LangLink from '@/components/routing/LangLink';
-import { trackPetitionClick, trackHealthierAlternativesClick } from '@/lib/analytics';
+import { trackPetitionClick, trackHealthierAlternativesClick, trackViewOnStore } from '@/lib/analytics';
 import NutrientBar from '@/components/ui/nutrient-bar';
 import IngredientIndicator from '@/components/ui/ingredient-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -467,6 +467,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:text-primary/90 font-medium flex items-center"
+                  onClick={() => {
+                    trackViewOnStore({
+                      store: 'rimi',
+                      productId: productId,
+                      productName: product.name || '',
+                      nutriScore: product.nutrition?.nutriScoreGrade || undefined,
+                      language: i18n.language || 'unknown',
+                    });
+                  }}
                 >
                   {t('product:viewOnRimi')}
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -481,6 +490,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:text-primary/90 font-medium flex items-center"
+                  onClick={() => {
+                    trackViewOnStore({
+                      store: 'maxima',
+                      productId: productId,
+                      productName: product.name || '',
+                      nutriScore: product.nutrition?.nutriScoreGrade || undefined,
+                      language: i18n.language || 'unknown',
+                    });
+                  }}
                 >
                   {t('product:viewOnBarbora')}
                   <ChevronRight className="h-4 w-4 ml-1" />

@@ -160,6 +160,27 @@ export function trackSearchCleared(params: {
 }
 
 /**
+ * Track when user clicks through to view the product on the retailer's site
+ * (Rimi or Barbora/Maxima)
+ */
+export function trackViewOnStore(params: {
+  store: 'rimi' | 'maxima';
+  productId: number;
+  productName: string;
+  nutriScore?: string;
+  language?: string;
+}) {
+  pushToDataLayer({
+    event: 'view_on_retailer',
+    store: params.store,
+    product_id: params.productId,
+    product_name: params.productName,
+    nutri_score: params.nutriScore || 'unknown',
+    language: params.language || 'unknown',
+  });
+}
+
+/**
  * Track when user clicks "Look for better options" button on product details page
  */
 export function trackHealthierAlternativesClick(params: {
