@@ -16,6 +16,7 @@ import lvIngredients from '../locales/lv/ingredients.json';
 import lvAboutNutriScore from '../locales/lv/aboutNutriScore.json';
 import lvAboutProject from '../locales/lv/aboutProject.json';
 import lvStats from '../locales/lv/stats.json';
+import lvIceCream from '../locales/lv/iceCream.json';
 
 // ── English ──────────────────────────────────────────────────────────────────
 import enCommon from '../locales/en/common.json';
@@ -31,6 +32,7 @@ import enIngredients from '../locales/en/ingredients.json';
 import enAboutNutriScore from '../locales/en/aboutNutriScore.json';
 import enAboutProject from '../locales/en/aboutProject.json';
 import enStats from '../locales/en/stats.json';
+import enIceCream from '../locales/en/iceCream.json';
 
 // Supported languages
 export const SUPPORTED_LANGUAGES = ['lv', 'en'] as const;
@@ -43,7 +45,7 @@ export const DEFAULT_LANGUAGE: SupportedLanguage = 'lv';
 export const NAMESPACES = [
   'common', 'header', 'home', 'product', 'filters', 'categories',
   'pagination', 'errors', 'scan', 'ingredients', 'aboutNutriScore',
-  'aboutProject', 'stats',
+  'aboutProject', 'stats', 'iceCream',
 ] as const;
 
 // Language detection configuration
@@ -78,6 +80,7 @@ if (!i18n.isInitialized) {
           aboutNutriScore: lvAboutNutriScore,
           aboutProject: lvAboutProject,
           stats: lvStats,
+          iceCream: lvIceCream,
         },
         en: {
           common: enCommon,
@@ -93,6 +96,7 @@ if (!i18n.isInitialized) {
           aboutNutriScore: enAboutNutriScore,
           aboutProject: enAboutProject,
           stats: enStats,
+          iceCream: enIceCream,
         },
       },
 

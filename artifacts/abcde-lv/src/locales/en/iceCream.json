@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "title": "Healthiest Ice Cream in Latvia? Analysis: {{total}} products | ABCDE.lv",
+    "description": "Analysis of {{total}} ice creams from Rimi and Maxima in Latvia. Nutri-Score distribution, sugar and fat comparison, TOP 10 with lowest sugar and additives."
+  },
+  "breadcrumb": {
+    "articles": "Articles",
+    "analysis": "Ice Cream Analysis"
+  },
+  "title": {
+    "headline": "Healthiest Ice Cream in Latvia?",
+    "subtitle": "Analysed: {{total}} ice creams from Rimi and Maxima"
+  },
+  "dataSources": "Data: Rimi Latvia and Maxima (Barbora) · Categories: Portion ice creams, Large package ice creams",
+  "error": "Failed to load data. Please try again.",
+  "summary": {
+    "heading": "Key Findings",
+    "total": "Analysed <strong>{{total}} ice creams</strong> from Rimi and Maxima (Barbora) — single servings and large packages.",
+    "nsDE": "<strong>Nutri-Score D or E</strong> is given to {{count}} products ({{pct}}%) — only {{nsAb}} product receives rating B or higher.",
+    "nova4": "<strong>All {{pct}}%</strong> ({{count}}/{{total}}) are NOVA 4 — ultra-processed products.",
+    "sugar": "<strong>Sugar per 100 g</strong> ranges from <strong>{{min}} g</strong> to <strong>{{max}} g</strong> — more than {{mult}}× difference.",
+    "satFat": "<strong>Saturated fat</strong> ranges from <strong>{{min}} g</strong> to <strong>{{max}} g</strong> per 100 g — more than {{mult}}× difference."
+  },
+  "cards": {
+    "products": "Products analysed",
+    "avgSugar": "Avg. sugar",
+    "avgSatFat": "Avg. sat. fat",
+    "nova4sub": "ultra-processed",
+    "per100g": "per 100 g"
+  },
+  "nsSection": {
+    "heading": "Nutri-Score Distribution",
+    "products": "products",
+    "body": "None of the {{total}} analysed ice creams receive Nutri-Score A. Only one product receives B. The majority ({{nsDECount}} products, {{nsDEPct}}%) are in category D or E. This means that ice cream as a food category is one where \"healthy\" is a relative concept — the best options are those with the least sugar and saturated fat."
+  },
+  "novaSection": {
+    "heading": "NOVA Groups",
+    "calloutHeading": "All {{total}} ice creams are NOVA 4 — ultra-processed products.",
+    "calloutBody": "NOVA 4 means the product contains industrial ingredients not available in a regular kitchen — emulsifiers, stabilisers, flavourings, colourings. This classification, regardless of sugar or fat content, indicates a high degree of processing. Ice cream is by definition an industrial product, so NOVA 4 is no surprise — but it is important to know when choosing food products for children."
+  },
+  "top10LowSugar": {
+    "heading": "TOP 10: Lowest sugar per 100 g",
+    "tableTitle": "Lowest sugar content (g/100 g)",
+    "tableDesc": "Ice creams with the lowest sugar per 100 g",
+    "note": "Products with the least sugar are often unsweetened or contain artificial sweeteners. Check the ingredient list before choosing."
+  },
+  "top10LowSatFat": {
+    "heading": "TOP 10: Lowest saturated fat per 100 g",
+    "tableTitle": "Lowest saturated fat (g/100 g)",
+    "tableDesc": "Ice creams with the lowest saturated fat content",
+    "note": "Saturated fat mainly comes from cream and coconut oil. Frozen juice bars and sorbet usually contain significantly less saturated fat than traditional cream ice cream."
+  },
+  "top10FewAdditives": {
+    "heading": "TOP 10: Fewest concerning additives",
+    "tableTitle": "Fewest concerning additives",
+    "tableDesc": "Ice creams with the fewest Limit + Caution + Avoid additives",
+    "colHeader": "Additives",
+    "note": "The count includes ingredients classified as \"Limit\", \"Caution\", or \"Avoid\" from the ingredient analysis database — the same number shown on product cards. Products without ingredient analysis data are not included."
+  },
+  "highValues": {
+    "heading": "Highest values — use in moderation",
+    "desc": "These products are not the \"worst\" — but they contain the highest values of sugar, fat, or additives. Use this information to make an informed choice.",
+    "highSugar": "Highest sugar",
+    "highSatFat": "Highest sat. fat",
+    "mostAdditives": "Most concerning additives",
+    "count": "Count"
+  },
+  "table": {
+    "product": "Product"
+  },
+  "methodology": {
+    "heading": "About the data",
+    "body": "The analysis includes {{total}} ice creams from Rimi and Maxima (Barbora) in the categories \"Portion ice creams\" and \"Large package ice creams\". Data sourced from the ABCDE.lv database, which regularly updates information from Rimi.lv and Barbora.lv. Nutritional values are given per 100 g of product. Nutri-Score and NOVA groups are calculated according to European standard methodology. The additive count reflects the number of \"Limit\", \"Caution\", and \"Avoid\" ingredients from the ABCDE.lv ingredient analysis — the same number shown on product cards.",
+    "browseText": "All ice creams can be",
+    "browseLink": "browsed here",
+    "browseFilter": ", filtered by Nutri-Score, sugar, and other parameters."
+  },
+  "lastUpdated": "Last updated",
+  "footer": {
+    "link": "Healthiest Ice Cream?"
+  }
+}

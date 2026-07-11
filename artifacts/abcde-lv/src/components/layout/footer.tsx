@@ -8,7 +8,8 @@ const Footer: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const isEn = i18n.language?.startsWith('en');
   const statsPath = isEn ? '/what-latvians-eat' : '/ko-ed-latvija';
-  const showArticles = !isEn;
+  const iceCreamPath = isEn ? '/articles/ice-cream' : '/raksti/saldejums';
+  const iceCreamLabel = isEn ? 'Healthiest Ice Cream?' : 'Veselīgākais saldējums?';
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories', { level: 1 }],
@@ -60,13 +61,11 @@ const Footer: React.FC = () => {
                   {t('footer.aboutProject')}
                 </LangLink>
               </li>
-              {showArticles && (
-                <li>
-                  <LangLink href="/raksti/saldejums" className="text-sm text-gray-600 hover:text-primary transition-colors">
-                    Veselīgākais saldējums?
-                  </LangLink>
-                </li>
-              )}
+              <li>
+                <LangLink href={iceCreamPath} className="text-sm text-gray-600 hover:text-primary transition-colors">
+                  {iceCreamLabel}
+                </LangLink>
+              </li>
             </ul>
           </div>
         </div>

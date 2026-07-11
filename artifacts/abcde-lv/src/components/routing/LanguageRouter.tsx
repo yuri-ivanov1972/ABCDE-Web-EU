@@ -214,12 +214,27 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         }}
       </Route>
 
-      {/* Ice cream analysis article - LV only; redirect EN to LV */}
+      {/* Ice cream analysis article - LV path */}
       <Route path="/:lang/raksti/saldejums">
         {(params) => {
           const language = params?.lang as SupportedLanguage;
           if (!SUPPORTED_LANGUAGES.includes(language) || language !== 'lv') {
             return <Redirect to="/lv/raksti/saldejums" replace />;
+          }
+          return (
+            <Suspense fallback={<PageLoader />}>
+              <IceCreamReport />
+            </Suspense>
+          );
+        }}
+      </Route>
+
+      {/* Ice cream analysis article - EN path */}
+      <Route path="/:lang/articles/ice-cream">
+        {(params) => {
+          const language = params?.lang as SupportedLanguage;
+          if (!SUPPORTED_LANGUAGES.includes(language) || language !== 'en') {
+            return <Redirect to="/en/articles/ice-cream" replace />;
           }
           return (
             <Suspense fallback={<PageLoader />}>

@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "title": "Veselīgākais saldējums Latvijā? Analīze: {{total}} produkti | ABCDE.lv",
+    "description": "Analizēti {{total}} saldējumi no Rimi un Maxima Latvijā. Nutri-Score sadalījums, cukura un tauku salīdzinājums, TOP 10 ar mazāko cukuru un piedevām. Uzzini, kuru saldējumu pirkt."
+  },
+  "breadcrumb": {
+    "articles": "Raksti",
+    "analysis": "Saldējumu analīze"
+  },
+  "title": {
+    "headline": "Veselīgākais saldējums Latvijā?",
+    "subtitle": "Pārbaudīts: {{total}} saldējumi no Rimi un Maxima"
+  },
+  "dataSources": "Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi",
+  "error": "Datus ielādēt neizdevās. Mēģini vēlreiz.",
+  "summary": {
+    "heading": "Galvenie secinājumi",
+    "total": "Analizēti <strong>{{total}} saldējumi</strong> no Rimi un Maxima (Barbora) — porcijas un lielie iepakojumi.",
+    "nsDE": "<strong>Nutri-Score D vai E</strong> saņem {{count}} produkti ({{pct}}%) — tikai {{nsAb}} produkts saņem vērtējumu B vai augstāku.",
+    "nova4": "<strong>Visi {{pct}}%</strong> ({{count}}/{{total}}) ir NOVA 4 — augsti pārstrādāti produkti.",
+    "sugar": "<strong>Cukurs 100 g</strong> svārstās no <strong>{{min}} g</strong> līdz <strong>{{max}} g</strong> — tas ir vairāk nekā {{mult}}× atšķirība.",
+    "satFat": "<strong>Piesātinātās taukskābes</strong> svārstās no <strong>{{min}} g</strong> līdz <strong>{{max}} g</strong> uz 100 g — vairāk nekā {{mult}}× starpība."
+  },
+  "cards": {
+    "products": "Produkti analīzē",
+    "avgSugar": "Vid. cukurs",
+    "avgSatFat": "Vid. piesātinātie tauki",
+    "nova4sub": "augsti pārstrādāti",
+    "per100g": "uz 100 g"
+  },
+  "nsSection": {
+    "heading": "Nutri-Score sadalījums",
+    "products": "produkti",
+    "body": "Neviens no {{total}} analizētajiem saldējumiem nesaņem Nutri-Score A. Tikai viens produkts saņem B. Lielākā daļa ({{nsDECount}} produkti jeb {{nsDEPct}}%) atrodas D vai E kategorijā. Tas nozīmē, ka saldējums kopumā ir pārtikas produktu kategorija, kurā \"veselīgs\" ir relatīvs jēdziens — labākie varianti ir tie ar mazāko cukuru un piesātinātajām taukskābēm."
+  },
+  "novaSection": {
+    "heading": "NOVA grupas",
+    "calloutHeading": "Visi {{total}} saldējumi ir NOVA 4 — augsti pārstrādāti produkti.",
+    "calloutBody": "NOVA 4 nozīmē, ka produkts satur industriālas sastāvdaļas, kuras nav pieejamas parastā virtuvē — emulgatori, stabilizatori, aromatizētāji, krāsvielas. Šī klasifikācija neatkarīgi no cukura vai tauku daudzuma norāda uz augstu pārstrādes pakāpi. Saldējums pēc definīcijas ir industriāls produkts, tāpēc NOVA 4 nav pārsteigums — bet to ir svarīgi zināt, izvēloties pārtikas produktus bērniem."
+  },
+  "top10LowSugar": {
+    "heading": "TOP 10: Mazākais cukurs uz 100 g",
+    "tableTitle": "Mazākais cukura saturs (g/100 g)",
+    "tableDesc": "Saldējumi ar vismazāko cukura daudzumu uz 100 g",
+    "note": "Produkti ar mazāko cukuru bieži ir bez papildu saldumiem vai satur mākslīgos saldinātājus. Pārbaudi sastāvdaļu sarakstu pirms izvēles."
+  },
+  "top10LowSatFat": {
+    "heading": "TOP 10: Mazākās piesātinātās taukskābes uz 100 g",
+    "tableTitle": "Mazākās piesātinātās taukskābes (g/100 g)",
+    "tableDesc": "Saldējumi ar vismazāko piesātināto taukskābju daudzumu",
+    "note": "Piesātinātās taukskābes galvenokārt nāk no krējuma un kokosriekstu eļļas. Saldētas sulas un sorbets parasti satur ievērojami mazāk piesātināto tauku nekā tradicionālais krēmsaldējums."
+  },
+  "top10FewAdditives": {
+    "heading": "TOP 10: Mazākais aizdomīgo piedevu skaits",
+    "tableTitle": "Mazākais aizdomīgo piedevu skaits",
+    "tableDesc": "Saldējumi ar vismazāko Ierobežot + Uzmanīgi + Izvairīties piedevu skaitu",
+    "colHeader": "Piedevas",
+    "note": "Skaits ietver sastāvdaļas, kas klasificētas kā \"Ierobežot\", \"Uzmanīgi\" vai \"Izvairīties\" no ingredientu analīzes datubāzes — tas pats skaitlis, kas redzams produktu kartītēs. Produkti bez ingredientu analīzes datiem šajā sarakstā nav iekļauti."
+  },
+  "highValues": {
+    "heading": "Augstākās vērtības — lietot mēreni",
+    "desc": "Šie produkti nav \"sliktākie\" — bet tie satur visaugstākās cukura, tauku vai piedevu vērtības. Izmanto šo informāciju, lai izdarītu apzinātu izvēli.",
+    "highSugar": "Augstākais cukurs",
+    "highSatFat": "Augstākās pies. taukskābes",
+    "mostAdditives": "Visvairāk aizdomīgo piedevu",
+    "count": "Skaits"
+  },
+  "table": {
+    "product": "Produkts"
+  },
+  "methodology": {
+    "heading": "Par datiem",
+    "body": "Analīzē iekļauti {{total}} saldējumi no Rimi un Maxima (Barbora) kategorijām \"Porcijas saldējumi\" un \"Lielo iepakojumu saldējumi\". Dati iegūti no ABCDE.lv datubāzes, kas regulāri atjaunina informāciju no Rimi.lv un Barbora.lv. Uzturvērtības norādītas uz 100 g produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. Piedevu skaits atspoguļo \"Ierobežot\", \"Uzmanīgi\" un \"Izvairīties\" sastāvdaļu skaitu no ABCDE.lv ingredientu analīzes — tas pats skaitlis, kas redzams produktu kartītēs.",
+    "browseText": "Visus saldējumus var",
+    "browseLink": "pārlūkot šeit",
+    "browseFilter": ", filtrējot pēc Nutri-Score, cukura un citiem parametriem."
+  },
+  "lastUpdated": "Pēdējoreiz atjaunots",
+  "footer": {
+    "link": "Veselīgākais saldējums?"
+  }
+}
