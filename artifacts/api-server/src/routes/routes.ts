@@ -1463,7 +1463,14 @@ Sitemap: https://abcde.lv/sitemap.xml
         ORDER BY p.product_id
       `) : Promise.resolve(null);
 
-      const [rimiResult, maximaResult] = await Promise.all([rimiQuery, maximaQuery]);
+      const lastUpdatedQuery = rimiDb.execute(sql`
+        SELECT MAX(pph.recorded_at) AS last_updated
+        FROM product_price_history pph
+        JOIN products p ON p.product_id = pph.product_id
+        WHERE p.category_id IN (145, 146)
+      `);
+
+      const [rimiResult, maximaResult, lastUpdatedResult] = await Promise.all([rimiQuery, maximaQuery, lastUpdatedQuery]);
 
       const rimiRawRows = Array.isArray(rimiResult) ? rimiResult : (rimiResult as any)?.rows ?? [];
       const maximaRawRows = maximaResult
@@ -1539,8 +1546,13 @@ Sitemap: https://abcde.lv/sitemap.xml
         ...maximaRawRows.map((row: any) => mapRow(row, 'maxima')),
       ];
 
+      const lastUpdatedRows = Array.isArray(lastUpdatedResult) ? lastUpdatedResult : (lastUpdatedResult as any)?.rows ?? [];
+      const lastUpdated: string | null = lastUpdatedRows[0]?.last_updated
+        ? new Date(lastUpdatedRows[0].last_updated).toISOString()
+        : null;
+
       res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
-      res.json({ products, total: products.length });
+      res.json({ products, total: products.length, lastUpdated });
     } catch (error) {
       console.error('[reports/ice-cream] error:', error);
       res.status(500).json({ message: 'Failed to fetch ice cream report data' });

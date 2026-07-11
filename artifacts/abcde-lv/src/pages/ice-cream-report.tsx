@@ -31,6 +31,7 @@ interface IceCreamProduct {
 interface ReportResponse {
   products: IceCreamProduct[];
   total: number;
+  lastUpdated: string | null;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -327,7 +328,7 @@ const IceCreamReport = () => {
           </span>
         </h1>
         <p className="text-gray-500 text-sm mb-6">
-          Publicēts 2025. gadā · Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi
+          Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi
         </p>
 
         {/* ── Executive summary ── */}
@@ -619,6 +620,11 @@ const IceCreamReport = () => {
             </Link>
             , filtrējot pēc Nutri-Score, cukura un citiem parametriem.
           </p>
+          {data.lastUpdated && (
+            <p className="text-xs text-gray-400 mt-4">
+              Pēdējoreiz atjaunots: {new Date(data.lastUpdated).toLocaleDateString('lv-LV', { day: '2-digit', month: '2-digit', year: 'numeric' })}.
+            </p>
+          )}
         </section>
 
       </main>
