@@ -505,7 +505,7 @@ const IceCreamReport = () => {
             title="Mazākais aizdomīgo piedevu skaits"
             products={top10FewAdditives}
             getValue={p => p.additiveCount}
-            unit="piedevas"
+            unit=""
             description="Saldējumi ar vismazāko Ierobežot + Uzmanīgi + Izvairīties piedevu skaitu"
             formatValue={String}
           />
