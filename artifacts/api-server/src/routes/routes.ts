@@ -2,8 +2,11 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { createHmac, timingSafeEqual } from "crypto";
 import { storage } from "../storage";
 import { z } from "zod/v4";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
 import { sql } from "drizzle-orm";
 import { rimiDb, maximaDb, rimiPool, maximaPool } from "../db";
 import { normalizeLvText } from "../utils/textNormalization";
@@ -898,12 +901,132 @@ Sitemap: https://abcde.lv/sitemap.xml
     return bestMatch.product;
   };
 
-  // Scan product endpoint - accepts base64 image
-  const scanRequestSchema = z.object({
-    image: z.string().min(1, "Image data is required")
+  // ── Scan-token infrastructure ──────────────────────────────────────────────
+  // Short-lived HMAC-signed tokens gate the expensive POST /api/scan endpoint.
+  // A caller must first obtain a token via GET /api/scan/token, then present it
+  // in the X-Scan-Token header.  This prevents anonymous bots from driving paid
+  // Vision API quota and DB storage growth without first making a separate
+  // authenticated round-trip.
+  //
+  // Secret: SCAN_TOKEN_SECRET env var, or a random UUID generated at startup
+  // (tokens are per-process; they survive rolling deploys on the same process).
+  const SCAN_TOKEN_SECRET =
+    process.env.SCAN_TOKEN_SECRET || crypto.randomUUID();
+  const SCAN_TOKEN_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+  // In-memory single-use registry: Set<tokenId> — prevents token replay.
+  // Entries are pruned when the token TTL has elapsed, so memory stays bounded.
+  const usedScanTokens = new Set<string>();
+
+  function issueScanToken(ip: string): string {
+    const ts = Date.now();
+    const id = crypto.randomUUID();
+    const payload = `${ts}.${id}.${createHmac("sha256", SCAN_TOKEN_SECRET).update(ip).digest("hex").slice(0, 8)}`;
+    const sig = createHmac("sha256", SCAN_TOKEN_SECRET).update(payload).digest("base64url");
+    return `${payload}.${sig}`;
+  }
+
+  function validateScanToken(token: string, ip: string): { valid: boolean; error?: string } {
+    const parts = token.split(".");
+    if (parts.length !== 4) return { valid: false, error: "Malformed token" };
+    const [tsStr, id, ipSig, sig] = parts;
+    const ts = parseInt(tsStr, 10);
+    if (isNaN(ts)) return { valid: false, error: "Malformed token" };
+    if (Date.now() - ts > SCAN_TOKEN_TTL_MS) return { valid: false, error: "Token expired" };
+
+    const payload = `${tsStr}.${id}.${ipSig}`;
+    const expected = createHmac("sha256", SCAN_TOKEN_SECRET).update(payload).digest("base64url");
+    const sigBuf = Buffer.from(sig, "base64url");
+    const expBuf = Buffer.from(expected, "base64url");
+    if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+      return { valid: false, error: "Invalid token signature" };
+    }
+
+    // Validate the IP fingerprint embedded in the token
+    const expectedIpSig = createHmac("sha256", SCAN_TOKEN_SECRET).update(ip).digest("hex").slice(0, 8);
+    if (ipSig !== expectedIpSig) return { valid: false, error: "Token not valid for this client" };
+
+    // Single-use check
+    if (usedScanTokens.has(id)) return { valid: false, error: "Token already used" };
+    usedScanTokens.add(id);
+    // Prune the used-token set after the TTL so memory stays bounded
+    setTimeout(() => usedScanTokens.delete(id), SCAN_TOKEN_TTL_MS);
+
+    return { valid: true };
+  }
+
+  // Token-issue endpoint: rate-limited to 5 requests per IP per 15 minutes.
+  const scanTokenRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many token requests. Please try again later." },
+    keyGenerator: (req) => req.ip ?? "unknown",
   });
 
-  app.post("/api/scan", async (req: Request, res: Response) => {
+  app.get("/api/scan/token", scanTokenRateLimiter, (req: Request, res: Response) => {
+    const ip = req.ip ?? "unknown";
+    const token = issueScanToken(ip);
+    res.json({ token });
+  });
+
+  // Scan product endpoint - accepts base64 image
+  // ~5 MB of base64-encoded image data (≈ 3.75 MB raw). Keeps single-request
+  // cost bounded even if the JSON body-size limit is raised later.
+  const MAX_IMAGE_BASE64_BYTES = 5 * 1024 * 1024;
+
+  const scanRequestSchema = z.object({
+    image: z
+      .string()
+      .min(1, "Image data is required")
+      .max(MAX_IMAGE_BASE64_BYTES, "Image too large (max 5 MB base64)")
+  });
+
+  // Rate-limit the scan endpoint: 10 scans per IP per 15 minutes.
+  // This bounds paid Vision API calls and DB storage growth from a single source.
+  const scanRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many scan requests. Please try again later." },
+    keyGenerator: (req) => req.ip ?? "unknown",
+  });
+
+  // Restrict cross-origin access to the scan endpoint to the canonical domain only.
+  // This prevents third-party sites from embedding abcde.lv as a free OCR backend.
+  const ALLOWED_SCAN_ORIGINS = [
+    "https://abcde.lv",
+    "https://www.abcde.lv",
+  ];
+  const scanCors = cors({
+    origin(origin, callback) {
+      const isAllowed =
+        ALLOWED_SCAN_ORIGINS.includes(origin ?? "") ||
+        process.env.NODE_ENV !== "production" ||
+        (origin !== undefined && (origin.includes("replit.dev") || origin.startsWith("http://localhost")));
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS: origin not allowed for scan endpoint"));
+      }
+    },
+    methods: ["POST", "OPTIONS"],
+  });
+
+  app.post("/api/scan", scanCors, scanRateLimiter, async (req: Request, res: Response) => {
+    // Require a valid server-issued scan token.  The caller must first call
+    // GET /api/scan/token to obtain a token and then pass it here.
+    const rawToken = req.headers["x-scan-token"];
+    if (!rawToken || typeof rawToken !== "string") {
+      return res.status(401).json({ success: false, message: "Scan token required" });
+    }
+    const tokenCheck = validateScanToken(rawToken, req.ip ?? "unknown");
+    if (!tokenCheck.valid) {
+      return res.status(401).json({ success: false, message: tokenCheck.error ?? "Invalid scan token" });
+    }
     try {
       const result = scanRequestSchema.safeParse(req.body);
       
@@ -939,8 +1062,6 @@ Sitemap: https://abcde.lv/sitemap.xml
       } catch (e) {
         console.log('Could not parse image dimensions');
       }
-      
-      // Photo data is stored directly in the database (no Object Storage dependency)
       
       // Cleanup old scans (30+ days) asynchronously
       storage.cleanupOldScans(30).catch(err => {
@@ -1027,11 +1148,13 @@ Sitemap: https://abcde.lv/sitemap.xml
       // Get the full text for display purposes
       const fullText = textAnnotations[0]?.description || textSegments.join(' ');
       
-      // Save scan metadata to database (always save, even if photo wasn't stored)
+      // Save scan metadata to database.
+      // photoData (raw base64) is intentionally NOT stored — persisting the full
+      // image blob in an unbounded text column is the primary storage-growth
+      // vector.  OCR text is still kept for debugging and match history.
       let createdScan;
       try {
         createdScan = await storage.createScan({
-          photoData: image,
           ocrText: fullText,
           productId: matchedProduct?.productId || null,
           matchConfidence: matchedProduct ? "85.00" : null,

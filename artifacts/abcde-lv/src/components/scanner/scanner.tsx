@@ -3,7 +3,6 @@ import { Camera, RotateCcw, AlertCircle, Scan, ExternalLink } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
-import { apiRequest } from '@/lib/queryClient';
 import { trackProductScanned, trackProductViewAfterScan, trackCameraPermission, trackScanFailure } from '@/lib/analytics';
 import mediumA from '@assets/medium_A_1762616394620.png';
 import mediumB from '@assets/medium_B_1762616394619.png';
@@ -298,7 +297,28 @@ export function Scanner({ onCapture }: ScannerProps) {
     setError('');
 
     try {
-      const response = await apiRequest('POST', '/api/scan', { image: capturedImage });
+      // Obtain a short-lived server-issued scan token before uploading the image.
+      // The server requires this token to prevent anonymous bot abuse of the
+      // paid Vision API.
+      const tokenRes = await fetch('/api/scan/token');
+      if (!tokenRes.ok) {
+        throw new Error('Failed to obtain scan token');
+      }
+      const { token: scanToken } = await tokenRes.json() as { token: string };
+
+      const response = await fetch('/api/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Scan-Token': scanToken,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ image: capturedImage }),
+      });
+      if (!response.ok) {
+        const errText = (await response.text()) || response.statusText;
+        throw new Error(`${response.status}: ${errText}`);
+      }
       const data = await response.json() as { 
         success: boolean; 
         message: string; 
