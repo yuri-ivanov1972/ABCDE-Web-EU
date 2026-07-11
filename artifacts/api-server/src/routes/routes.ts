@@ -1472,10 +1472,19 @@ Sitemap: https://abcde.lv/sitemap.xml
 
       const [rimiResult, maximaResult, lastUpdatedResult] = await Promise.all([rimiQuery, maximaQuery, lastUpdatedQuery]);
 
-      const rimiRawRows = Array.isArray(rimiResult) ? rimiResult : (rimiResult as any)?.rows ?? [];
-      const maximaRawRows = maximaResult
+      const dedupeBySku = (rows: any[]) => {
+        const seen = new Set<string>();
+        return rows.filter((r: any) => {
+          if (!r.sku || seen.has(r.sku)) return false;
+          seen.add(r.sku);
+          return true;
+        });
+      };
+
+      const rimiRawRows = dedupeBySku(Array.isArray(rimiResult) ? rimiResult : (rimiResult as any)?.rows ?? []);
+      const maximaRawRows = dedupeBySku(maximaResult
         ? (Array.isArray(maximaResult) ? maximaResult : (maximaResult as any)?.rows ?? [])
-        : [];
+        : []);
 
       // Fetch per-product concern counts (avoid + limit + caution) from ingredient_product_mapping
       const rimiSkus = (rimiRawRows as any[]).map(r => r.sku as string).filter(Boolean);
