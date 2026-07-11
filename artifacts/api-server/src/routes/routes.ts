@@ -1498,7 +1498,7 @@ Sitemap: https://abcde.lv/sitemap.xml
           quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
           quantityUnit:     row.quantity_unit  ?? null,
           ingredientCount:  countTopLevelIngredients(ingredientsText),
-          additiveCount:    countAdditives(ingredientsText),
+          additiveCount:    ingredientsText ? countAdditives(ingredientsText) : null,
         };
       }
 

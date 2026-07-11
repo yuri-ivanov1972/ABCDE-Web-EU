@@ -25,7 +25,7 @@ interface IceCreamProduct {
   protein: number | null;
   salt: number | null;
   ingredientCount: number | null;
-  additiveCount: number;
+  additiveCount: number | null;
 }
 
 interface ReportResponse {
@@ -282,8 +282,10 @@ const IceCreamReport = () => {
     .sort((a, b) => a.fatSaturated! - b.fatSaturated!)
     .slice(0, 10);
 
-  const top10FewAdditives = [...products]
-    .sort((a, b) => a.additiveCount - b.additiveCount)
+  const withAdditives = products.filter(p => p.additiveCount !== null);
+
+  const top10FewAdditives = [...withAdditives]
+    .sort((a, b) => a.additiveCount! - b.additiveCount!)
     .slice(0, 10);
 
   const top10HighSugar = [...withSugar]
@@ -294,8 +296,8 @@ const IceCreamReport = () => {
     .sort((a, b) => b.fatSaturated! - a.fatSaturated!)
     .slice(0, 10);
 
-  const top10MostAdditives = [...products]
-    .sort((a, b) => b.additiveCount - a.additiveCount)
+  const top10MostAdditives = [...withAdditives]
+    .sort((a, b) => b.additiveCount! - a.additiveCount!)
     .slice(0, 10);
 
   return (
@@ -587,7 +589,7 @@ const IceCreamReport = () => {
                         key={`ma-${p.store}-${p.productId}-${i}`}
                         rank={i + 1}
                         product={p}
-                        value={String(p.additiveCount)}
+                        value={p.additiveCount !== null ? String(p.additiveCount) : '—'}
                         unit=""
                       />
                     ))}
