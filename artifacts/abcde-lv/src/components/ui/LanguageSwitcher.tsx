@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { Globe } from 'lucide-react';
-import { getLanguageFromPath, getPathWithoutLanguage, addLanguageToPath, type SupportedLanguage, SUPPORTED_LANGUAGES } from '@/i18n';
+import { getLanguageFromPath, getPathWithoutLanguage, addLanguageToPath, translatePath, type SupportedLanguage, SUPPORTED_LANGUAGES } from '@/i18n';
 
 interface LanguageSwitcherProps {
   className?: string;
@@ -21,8 +21,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', sho
     // Get current path without language prefix
     const pathWithoutLang = getPathWithoutLanguage(location);
     
+    // Translate slug if this route uses language-specific URL segments
+    const translatedPath = translatePath(pathWithoutLang, targetLanguage);
+
     // Create new path with target language
-    const newPath = addLanguageToPath(pathWithoutLang, targetLanguage);
+    const newPath = addLanguageToPath(translatedPath, targetLanguage);
     
     // Change i18next language
     i18n.changeLanguage(targetLanguage);

@@ -155,6 +155,21 @@ export const addLanguageToPath = (path: string, language: SupportedLanguage): st
   return `/${language}${cleanPath === '/' ? '' : cleanPath}`;
 };
 
+// Routes whose URL slug differs between languages.
+// Keys are path-without-lang; values map each language to the correct slug.
+const ROUTE_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> = {
+  '/raksti/saldejums':  { lv: '/raksti/saldejums',  en: '/articles/ice-cream' },
+  '/articles/ice-cream': { lv: '/raksti/saldejums', en: '/articles/ice-cream' },
+  '/ko-ed-latvija':     { lv: '/ko-ed-latvija',     en: '/what-latvians-eat'  },
+  '/what-latvians-eat': { lv: '/ko-ed-latvija',     en: '/what-latvians-eat'  },
+};
+
+// Return the path slug for the given target language, falling back to the
+// original path when no translation entry exists (same slug for all langs).
+export const translatePath = (pathWithoutLang: string, targetLang: SupportedLanguage): string => {
+  return ROUTE_TRANSLATIONS[pathWithoutLang]?.[targetLang] ?? pathWithoutLang;
+};
+
 // Helper function to check if language is RTL (for future use)
 export const isRTL = (language: SupportedLanguage): boolean => {
   const rtlLanguages: SupportedLanguage[] = [];
