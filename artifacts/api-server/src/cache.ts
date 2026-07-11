@@ -5,6 +5,11 @@ interface CacheEntry<T> {
 
 class TTLCache<T> {
   private store = new Map<string, CacheEntry<T>>();
+  private readonly maxSize: number;
+
+  constructor(maxSize = 200) {
+    this.maxSize = maxSize;
+  }
 
   get(key: string): T | null {
     const entry = this.store.get(key);
@@ -17,6 +22,19 @@ class TTLCache<T> {
   }
 
   set(key: string, data: T, ttlMs: number): void {
+    if (this.store.size >= this.maxSize) {
+      // First pass: evict expired entries
+      const now = Date.now();
+      for (const [k, v] of this.store) {
+        if (now > v.expiresAt) this.store.delete(k);
+        if (this.store.size < this.maxSize) break;
+      }
+      // If still at capacity, evict the oldest (first inserted) entry
+      if (this.store.size >= this.maxSize) {
+        const oldest = this.store.keys().next().value;
+        if (oldest !== undefined) this.store.delete(oldest);
+      }
+    }
     this.store.set(key, { data, expiresAt: Date.now() + ttlMs });
   }
 
@@ -38,7 +56,7 @@ class TTLCache<T> {
 const PRODUCTS_TTL_MS = 15 * 60 * 1000;
 const CATEGORIES_TTL_MS = 30 * 60 * 1000;
 
-export const productsCache = new TTLCache<{ products: any[]; totalCount: number }>();
-export const categoriesCache = new TTLCache<any>();
+export const productsCache = new TTLCache<{ products: any[]; totalCount: number }>(200);
+export const categoriesCache = new TTLCache<any>(200);
 
 export { PRODUCTS_TTL_MS, CATEGORIES_TTL_MS };

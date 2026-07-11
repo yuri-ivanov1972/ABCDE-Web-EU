@@ -12,6 +12,11 @@ import { normalizeLvText, createSearchPattern } from "./utils/textNormalization"
 import { productsCache, PRODUCTS_TTL_MS } from "./cache";
 import { categorySlug, productSlug } from "./utils/slugify";
 
+// Security: hard caps on how many rows can be fetched in a single request.
+// These bound worst-case DB and memory work regardless of page/pageSize inputs.
+const MAX_COMBINED_FETCH = 2000;   // max rows per-store in combined (Rimi+Maxima) pagination
+const SEARCH_CANDIDATE_LIMIT = 1000; // max rows per-store fetched before in-memory merge+sort
+
 // Categories to exclude from display (Gatavots Rimi and its subcategory)
 export const EXCLUDED_CATEGORY_IDS = [5, 40];
 
@@ -717,9 +722,10 @@ export class DatabaseStorage implements IStorage {
       // Step 4: Execute main query with JOIN, WHERE, ORDER BY, and pagination
       const offset = (page - 1) * pageSize;
       
-      // For combined store view, fetch more products to enable proper merged pagination
+      // For combined store view, fetch more products to enable proper merged pagination.
+      // Capped at MAX_COMBINED_FETCH to bound per-request DB and memory work.
       const isCombinedMode = store === undefined && maximaDb !== null;
-      const queryLimit = isCombinedMode ? offset + pageSize : pageSize;
+      const queryLimit = isCombinedMode ? Math.min(offset + pageSize, MAX_COMBINED_FETCH) : pageSize;
       const queryOffset = isCombinedMode ? 0 : offset;
       
       const mainQuery = await withRetry(async () => {
@@ -888,9 +894,9 @@ export class DatabaseStorage implements IStorage {
           allProducts = maximaResult.products;
           finalTotalCount = maximaResult.count;
         } else {
-          // Combined view: fetch enough products from Maxima to cover the current page
-          // We need offset + pageSize products from each store to properly paginate
-          const combinedLimit = offset + pageSize;
+          // Combined view: fetch enough products from Maxima to cover the current page.
+          // Capped at MAX_COMBINED_FETCH to bound per-request DB and memory work.
+          const combinedLimit = Math.min(offset + pageSize, MAX_COMBINED_FETCH);
           
           const maximaResult = await this.getMaximaProducts(
             allCategoriesToInclude, nutriScores, hasNutrientFilters, sortBy, sortOrder, combinedLimit, 0, madeInLatvia
@@ -1306,7 +1312,9 @@ export class DatabaseStorage implements IStorage {
       // For search, we need to fetch ALL results from both databases, merge, sort, then paginate
       // This is necessary because we can't correctly paginate across two separate databases
       
-      // First, get ALL Rimi search results (without pagination)
+      // Fetch Rimi search results bounded by SEARCH_CANDIDATE_LIMIT.
+      // Full-materialization before merge+sort is unavoidable for cross-DB pagination,
+      // but we cap the candidate window to prevent full-catalog scans.
       const allRimiQuery = await withRetry(async () => {
         let query = rimiDb
           .select({
@@ -1342,7 +1350,7 @@ export class DatabaseStorage implements IStorage {
           query = query.where(and(...whereConditions)) as any;
         }
         
-        return query;
+        return (query as any).limit(SEARCH_CANDIDATE_LIMIT);
       });
       
       // Fetch Rimi photos and categories
@@ -1435,7 +1443,7 @@ export class DatabaseStorage implements IStorage {
             maximaNutritionConditions.push(inArray(nutritionFacts.nutriScoreGrade, nutriScores));
           }
           
-          // Get ALL Maxima search results (without pagination)
+          // Fetch Maxima search results bounded by SEARCH_CANDIDATE_LIMIT.
           const allMaximaQuery = await maximaDb
             .select({
               productId: maximaProducts.productId,
@@ -1465,7 +1473,8 @@ export class DatabaseStorage implements IStorage {
             })
             .from(maximaProducts)
             .innerJoin(nutritionFacts, eq(maximaProducts.productId, nutritionFacts.productId))
-            .where(and(...maximaSearchConditions, ...maximaNutritionConditions));
+            .where(and(...maximaSearchConditions, ...maximaNutritionConditions))
+            .limit(SEARCH_CANDIDATE_LIMIT);
           
           // Fetch Maxima photos and categories
           const maximaProductIds = allMaximaQuery.map(p => p.productId);
