@@ -20,8 +20,8 @@ const getCategoriesQuerySchema = z.object({
 
 const getProductsQuerySchema = z.object({
   categoryId: z.coerce.number().optional(),
-  page: z.coerce.number().optional().default(1),
-  pageSize: z.coerce.number().optional().default(12),
+  page: z.coerce.number().int().min(1).max(500).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(12),
   nutriScores: z.string().optional().transform(val => val ? val.split(',') : undefined),
   sugarMin: z.coerce.number().optional(),
   sugarMax: z.coerce.number().optional(),
@@ -33,7 +33,7 @@ const getProductsQuerySchema = z.object({
   saltMax: z.coerce.number().optional(),
   sortBy: z.enum(['name', 'nutriScore', 'sugar', 'fat', 'protein', 'salt']).optional().default('name'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
-  search: z.string().optional(),
+  search: z.string().min(2).max(200).optional(),
   madeInLatvia: z.string().optional().transform(val => val === 'true'),
   store: z.enum(['rimi', 'maxima']).optional()
 });
@@ -589,6 +589,10 @@ Sitemap: https://abcde.lv/sitemap.xml
       res.set('Cache-Control', 'public, max-age=180, stale-while-revalidate=60');
       res.json(result);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid query parameters", errors: error.issues.map(i => i.message) });
+        return;
+      }
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
     }
@@ -1069,7 +1073,7 @@ Sitemap: https://abcde.lv/sitemap.xml
 
   // Mobile API: Match products from raw OCR text (no image upload needed)
   const mobileMatchTextSchema = z.object({
-    textSegments: z.array(z.string()).min(1, "At least one text segment is required"),
+    textSegments: z.array(z.string().max(200)).min(1, "At least one text segment is required").max(20, "Too many text segments"),
     language: z.string().optional().default('lv'),
   });
 
