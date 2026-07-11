@@ -223,8 +223,12 @@ Sitemap: https://abcde.lv/sitemap.xml
   // Note: Non-language-prefixed SPA path redirects are handled in server/index.ts
   // as a catch-all middleware before Vite serves HTML
 
-  // Debug route to check database connectivity
+  // Debug route to check database connectivity — development only
   app.get("/api/debug/db-status", async (_req: Request, res: Response) => {
+    if (process.env.NODE_ENV !== "development") {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
     try {
       let categoriesConnected = false;
       let productsConnected = false;

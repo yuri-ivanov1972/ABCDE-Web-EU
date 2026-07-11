@@ -244,20 +244,22 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         }}
       </Route>
       
-      {/* Debug route with language prefix */}
-      <Route path="/:lang/debug">
-        {(params) => {
-          const language = params?.lang as SupportedLanguage;
-          if (!SUPPORTED_LANGUAGES.includes(language)) {
-            return <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />;
-          }
-          return (
-            <Suspense fallback={<PageLoader />}>
-              <Debug />
-            </Suspense>
-          );
-        }}
-      </Route>
+      {/* Debug route with language prefix — development only */}
+      {import.meta.env.DEV && (
+        <Route path="/:lang/debug">
+          {(params) => {
+            const language = params?.lang as SupportedLanguage;
+            if (!SUPPORTED_LANGUAGES.includes(language)) {
+              return <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />;
+            }
+            return (
+              <Suspense fallback={<PageLoader />}>
+                <Debug />
+              </Suspense>
+            );
+          }}
+        </Route>
+      )}
       
       {/* Home route with language prefix */}
       <Route path="/:lang">
@@ -311,9 +313,11 @@ const LanguageRouter: React.FC<LanguageRouterProps> = ({ searchQuery = '', isMob
         <Redirect to={`/${DEFAULT_LANGUAGE}/what-latvians-eat`} replace />
       </Route>
       
-      <Route path="/debug">
-        <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />
-      </Route>
+      {import.meta.env.DEV && (
+        <Route path="/debug">
+          <Redirect to={`/${DEFAULT_LANGUAGE}/debug`} replace />
+        </Route>
+      )}
       
       {/* Legacy routes catch-all for specific patterns only */}
       <Route path="/(category|product|search|product-search|scan|debug)/:rest*">
