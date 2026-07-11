@@ -263,6 +263,8 @@ const IceCreamReport = () => {
   const maxSugar = Math.max(...sugars);
   const avgSatFat = satFats.reduce((a, b) => a + b, 0) / satFats.length;
   const maxSatFat = Math.max(...satFats);
+  const minSatFatPositive = Math.min(...satFats.filter(v => v > 0));
+  const satFatMultiplier = Math.round(maxSatFat / minSatFatPositive);
 
   const nova4Count = products.filter(p => p.novaScore === 4).length;
   const nova4Pct = Math.round((nova4Count / total) * 100);
@@ -364,8 +366,8 @@ const IceCreamReport = () => {
             <li className="flex gap-2">
               <span className="font-bold shrink-0">·</span>
               <span>
-                <strong>Piesātinātās taukskābes</strong> svārstās no 0 līdz{' '}
-                <strong>{round1(maxSatFat)} g</strong> uz 100 g — vairāk nekā 28× starpība.
+                <strong>Piesātinātās taukskābes</strong> svārstās no <strong>{round1(minSatFatPositive)} g</strong> līdz{' '}
+                <strong>{round1(maxSatFat)} g</strong> uz 100 g — vairāk nekā {satFatMultiplier}× starpība.
               </span>
             </li>
           </ul>
