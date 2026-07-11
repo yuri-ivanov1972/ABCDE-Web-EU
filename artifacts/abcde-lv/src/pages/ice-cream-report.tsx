@@ -84,11 +84,13 @@ function ProductRow({
   product,
   value,
   unit,
+  showNutriScore = true,
 }: {
   rank: number;
   product: IceCreamProduct;
   value: string;
   unit: string;
+  showNutriScore?: boolean;
 }) {
   const grade = product.nutriScoreGrade as NutriScoreGrade | undefined;
   const photoSrc = product.photoUrl ? buildPhotoSrc(product.photoUrl, 80) : null;
@@ -124,9 +126,11 @@ function ProductRow({
       <td className="px-3 py-2 text-sm font-semibold text-right whitespace-nowrap">
         {value} {unit}
       </td>
-      <td className="px-3 py-2 text-right">
-        {grade ? <NutriScoreBadge score={grade} size="small" /> : <span className="text-gray-300 text-xs">—</span>}
-      </td>
+      {showNutriScore && (
+        <td className="px-3 py-2 text-right">
+          {grade ? <NutriScoreBadge score={grade} size="small" /> : <span className="text-gray-300 text-xs">—</span>}
+        </td>
+      )}
     </tr>
   );
 }
@@ -539,7 +543,6 @@ const IceCreamReport = () => {
                       <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
                       <th className="px-3 py-1.5 text-right">g/100g</th>
-                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -550,6 +553,7 @@ const IceCreamReport = () => {
                         product={p}
                         value={round1(p.carbsSugars!)}
                         unit="g"
+                        showNutriScore={false}
                       />
                     ))}
                   </tbody>
@@ -566,7 +570,6 @@ const IceCreamReport = () => {
                       <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
                       <th className="px-3 py-1.5 text-right">g/100g</th>
-                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -577,6 +580,7 @@ const IceCreamReport = () => {
                         product={p}
                         value={round1(p.fatSaturated!)}
                         unit="g"
+                        showNutriScore={false}
                       />
                     ))}
                   </tbody>
@@ -593,7 +597,6 @@ const IceCreamReport = () => {
                       <th className="px-3 py-1.5 text-left w-8">#</th>
                       <th className="px-3 py-1.5 text-left">Produkts</th>
                       <th className="px-3 py-1.5 text-right">Skaits</th>
-                      <th className="px-3 py-1.5 text-right">NS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -604,6 +607,7 @@ const IceCreamReport = () => {
                         product={p}
                         value={p.additiveCount !== null ? String(p.additiveCount) : '—'}
                         unit=""
+                        showNutriScore={false}
                       />
                     ))}
                   </tbody>
