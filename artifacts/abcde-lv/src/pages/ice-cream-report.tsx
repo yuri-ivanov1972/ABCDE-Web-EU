@@ -261,7 +261,8 @@ const IceCreamReport = () => {
   const avgSugar = sugars.reduce((a, b) => a + b, 0) / sugars.length;
   const minSugar = Math.min(...sugars);
   const maxSugar = Math.max(...sugars);
-  const avgSatFat = satFats.reduce((a, b) => a + b, 0) / satFats.length;
+  const satFatsPositive = satFats.filter(v => v > 0);
+  const avgSatFat = satFatsPositive.reduce((a, b) => a + b, 0) / satFatsPositive.length;
   const maxSatFat = Math.max(...satFats);
   const minSatFatPositive = Math.min(...satFats.filter(v => v > 0));
   const satFatMultiplier = Math.round(maxSatFat / minSatFatPositive);
