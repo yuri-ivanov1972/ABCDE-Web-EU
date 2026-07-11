@@ -1522,7 +1522,15 @@ Sitemap: https://abcde.lv/sitemap.xml
           quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
           quantityUnit:     row.quantity_unit  ?? null,
           ingredientCount:  countTopLevelIngredients(ingredientsText),
-          additiveCount:    additiveCounts.has(row.sku) ? (additiveCounts.get(row.sku) ?? null) : null,
+          additiveCount:    (() => {
+            if (!additiveCounts.has(row.sku)) return null;
+            if (ingredientsText.includes('sastāvdaļu saraksts atrodams tikai uz produkta iepakojuma')) return null;
+            // Exclude allergen-only text (no real ingredient list): check for common Latvian ingredient words
+            const lv = ingredientsText.toLowerCase();
+            const hasRealIngredients = ['cukurs','ūden','eļļ','tauk','milti','sīrup','krēj','kakao','sāls ','piena','emulg','stabiliz'].some(w => lv.includes(w));
+            if (!hasRealIngredients) return null;
+            return additiveCounts.get(row.sku) ?? null;
+          })(),
         };
       }
 
