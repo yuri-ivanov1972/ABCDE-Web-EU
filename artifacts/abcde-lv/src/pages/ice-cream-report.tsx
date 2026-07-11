@@ -216,7 +216,7 @@ const IceCreamReport = () => {
 
   const { data, isLoading, error } = useQuery<ReportResponse>({
     queryKey: ['/api/reports/ice-cream'],
-    staleTime: 60 * 60 * 1000, // 1 hour — matches server cache
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const canonical = `${BASE_URL}/lv/raksti/saldejums`;

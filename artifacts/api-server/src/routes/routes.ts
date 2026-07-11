@@ -1531,7 +1531,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         ...maximaRawRows.map((row: any) => mapRow(row, 'maxima')),
       ];
 
-      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
+      res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
       res.json({ products, total: products.length });
     } catch (error) {
       console.error('[reports/ice-cream] error:', error);
