@@ -1389,7 +1389,7 @@ Sitemap: https://abcde.lv/sitemap.xml
   app.get("/api/reports/ice-cream", async (_req: Request, res: Response) => {
     try {
       const rimiQuery = rimiDb.execute(sql`
-        SELECT
+        SELECT DISTINCT ON (p.product_id)
           p.product_id,
           p.sku,
           p.name,
@@ -1428,7 +1428,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       `);
 
       const maximaQuery = maximaDb ? maximaDb.execute(sql`
-        SELECT
+        SELECT DISTINCT ON (p.product_id)
           p.product_id,
           p.sku,
           p.name,
