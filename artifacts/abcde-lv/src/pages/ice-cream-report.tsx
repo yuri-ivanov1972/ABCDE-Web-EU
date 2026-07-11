@@ -259,8 +259,10 @@ const IceCreamReport = () => {
   const satFats = products.map(p => p.fatSaturated).filter((v): v is number => v !== null);
 
   const avgSugar = sugars.reduce((a, b) => a + b, 0) / sugars.length;
-  const minSugar = Math.min(...sugars);
+  const sugarsPositive = sugars.filter(v => v > 0);
+  const minSugar = Math.min(...sugarsPositive);
   const maxSugar = Math.max(...sugars);
+  const sugarMultiplier = Math.round(maxSugar / minSugar);
   const satFatsPositive = satFats.filter(v => v > 0);
   const avgSatFat = satFatsPositive.reduce((a, b) => a + b, 0) / satFatsPositive.length;
   const maxSatFat = Math.max(...satFats);
@@ -361,7 +363,7 @@ const IceCreamReport = () => {
               <span className="font-bold shrink-0">·</span>
               <span>
                 <strong>Cukurs 100 g</strong> svārstās no <strong>{round1(minSugar)} g</strong> līdz{' '}
-                <strong>{round1(maxSugar)} g</strong> — tas ir vairāk nekā 6× atšķirība.
+                <strong>{round1(maxSugar)} g</strong> — tas ir vairāk nekā {sugarMultiplier}× atšķirība.
               </span>
             </li>
             <li className="flex gap-2">
