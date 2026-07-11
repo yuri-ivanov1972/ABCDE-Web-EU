@@ -138,6 +138,7 @@ function ProductTable({
   unit,
   description,
   formatValue = round1,
+  columnHeader,
 }: {
   title: string;
   products: IceCreamProduct[];
@@ -145,6 +146,7 @@ function ProductTable({
   unit: string;
   description?: string;
   formatValue?: (v: number) => string | number;
+  columnHeader?: string;
 }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">
@@ -158,7 +160,7 @@ function ProductTable({
             <tr className="text-xs text-gray-500 border-b">
               <th className="px-3 py-2 text-left w-8">#</th>
               <th className="px-3 py-2 text-left">Produkts</th>
-              <th className="px-3 py-2 text-right">{unit.toUpperCase()}</th>
+              <th className="px-3 py-2 text-right">{columnHeader ?? unit.toUpperCase()}</th>
               <th className="px-3 py-2 text-right">NS</th>
             </tr>
           </thead>
@@ -506,6 +508,7 @@ const IceCreamReport = () => {
             products={top10FewAdditives}
             getValue={p => p.additiveCount}
             unit=""
+            columnHeader="Piedevas"
             description="Saldējumi ar vismazāko Ierobežot + Uzmanīgi + Izvairīties piedevu skaitu"
             formatValue={String}
           />
