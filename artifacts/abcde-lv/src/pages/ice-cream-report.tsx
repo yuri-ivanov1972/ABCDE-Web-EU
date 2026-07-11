@@ -137,12 +137,14 @@ function ProductTable({
   getValue,
   unit,
   description,
+  formatValue = round1,
 }: {
   title: string;
   products: IceCreamProduct[];
   getValue: (p: IceCreamProduct) => number | null;
   unit: string;
   description?: string;
+  formatValue?: (v: number) => string | number;
 }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">
@@ -168,7 +170,7 @@ function ProductTable({
                   key={`${p.store}-${p.productId}-${i}`}
                   rank={i + 1}
                   product={p}
-                  value={v !== null ? round1(v) : '—'}
+                  value={v !== null ? formatValue(v) : '—'}
                   unit={v !== null ? unit : ''}
                 />
               );
@@ -505,6 +507,7 @@ const IceCreamReport = () => {
             getValue={p => p.additiveCount}
             unit="piedevas"
             description="Saldējumi ar vismazāko Ierobežot + Uzmanīgi + Izvairīties piedevu skaitu"
+            formatValue={String}
           />
           <p className="text-sm text-gray-500 mt-2">
             Skaits ietver sastāvdaļas, kas klasificētas kā "Ierobežot", "Uzmanīgi" vai "Izvairīties"
