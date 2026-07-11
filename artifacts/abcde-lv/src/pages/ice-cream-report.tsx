@@ -491,18 +491,19 @@ const IceCreamReport = () => {
         {/* ── TOP 10 few additives ── */}
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">
-            TOP 10: Mazākais E-vielu skaits
+            TOP 10: Mazākais aizdomīgo piedevu skaits
           </h2>
           <ProductTable
-            title="Mazākais E-vielu (piedevu) skaits"
+            title="Mazākais aizdomīgo piedevu skaits"
             products={top10FewAdditives}
             getValue={p => p.additiveCount}
-            unit="E-vielas"
-            description="Saldējumi ar vismazāko E-vielu skaitu sastāvdaļu sarakstā"
+            unit="piedevas"
+            description="Saldējumi ar vismazāko Ierobežot + Uzmanīgi + Izvairīties piedevu skaitu"
           />
           <p className="text-sm text-gray-500 mt-2">
-            E-vielas nav automātiski kaitīgas — daudzas ir dabiskas (piemēram, E300 ir C vitamīns).
-            Tomēr lielāks E-vielu skaits parasti norāda uz augstāku industriālās pārstrādes pakāpi.
+            Skaits ietver sastāvdaļas, kas klasificētas kā "Ierobežot", "Uzmanīgi" vai "Izvairīties"
+            no ingredientu analīzes datubāzes — tas pats skaitlis, kas redzams produktu kartītēs.
+            Produkti bez ingredientu analīzes datiem šajā sarakstā nav iekļauti.
           </p>
         </section>
 
@@ -572,7 +573,7 @@ const IceCreamReport = () => {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-800 mb-2 text-sm">Visvairāk E-vielu</h3>
+              <h3 className="font-semibold text-gray-800 mb-2 text-sm">Visvairāk aizdomīgo piedevu</h3>
               <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
                 <table className="w-full">
                   <thead>
@@ -607,8 +608,9 @@ const IceCreamReport = () => {
             Analīzē iekļauti <strong>{total} saldējumi</strong> no Rimi un Maxima (Barbora) kategorijām
             "Porcijas saldējumi" un "Lielo iepakojumu saldējumi". Dati iegūti no ABCDE.lv datubāzes, kas
             regulāri atjaunina informāciju no Rimi.lv un Barbora.lv. Uzturvērtības norādītas uz 100 g
-            produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. E-vielu
-            skaits noteikts automātiski no sastāvdaļu saraksta — dažos gadījumos var būt neprecizitātes.
+            produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. Piedevu
+            skaits atspoguļo "Ierobežot", "Uzmanīgi" un "Izvairīties" sastāvdaļu skaitu no ABCDE.lv
+            ingredientu analīzes — tas pats skaitlis, kas redzams produktu kartītēs.
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Visus saldējumus var{' '}

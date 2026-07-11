@@ -5,7 +5,7 @@ import { join } from "path";
 import { storage } from "../storage";
 import { z } from "zod/v4";
 import { sql } from "drizzle-orm";
-import { rimiDb, maximaDb } from "../db";
+import { rimiDb, maximaDb, rimiPool, maximaPool } from "../db";
 import { normalizeLvText } from "../utils/textNormalization";
 import { categorySlug, productSlug, extractIdFromSlug } from "../utils/slugify";
 import { handleImageProxy } from "../imageProxy";
@@ -1386,16 +1386,12 @@ Sitemap: https://abcde.lv/sitemap.xml
     return count;
   }
 
-  /** Count E-number additives (E100–E1999) in an ingredients string. */
-  function countAdditives(text: string): number {
-    return (text.match(/\bE\d{3,4}[a-z]?\b/gi) || []).length;
-  }
-
   app.get("/api/reports/ice-cream", async (_req: Request, res: Response) => {
     try {
       const rimiQuery = rimiDb.execute(sql`
         SELECT
           p.product_id,
+          p.sku,
           p.name,
           p.nova_score,
           p.quantity_value,
@@ -1434,6 +1430,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       const maximaQuery = maximaDb ? maximaDb.execute(sql`
         SELECT
           p.product_id,
+          p.sku,
           p.name,
           p.nova_score,
           p.quantity_value,
@@ -1473,6 +1470,33 @@ Sitemap: https://abcde.lv/sitemap.xml
         ? (Array.isArray(maximaResult) ? maximaResult : (maximaResult as any)?.rows ?? [])
         : [];
 
+      // Fetch per-product concern counts (avoid + limit + caution) from ingredient_product_mapping
+      const rimiSkus = (rimiRawRows as any[]).map(r => r.sku as string).filter(Boolean);
+      const maximaSkus = (maximaRawRows as any[]).map(r => r.sku as string).filter(Boolean);
+
+      const concernQuery = (pool: typeof rimiPool, skus: string[]) => {
+        if (!pool || skus.length === 0) return Promise.resolve([] as any[]);
+        const phs = skus.map((_, i) => `$${i + 1}`).join(', ');
+        return pool.query(`
+          SELECT ipm.product_sku,
+                 COUNT(CASE WHEN ia.suspicion_level IN ('avoid','limit','caution') THEN 1 END)::int AS concern_count
+          FROM ingredient_product_mapping ipm
+          JOIN ingredient_analysis ia ON ipm.ingredient_id = ia.id
+          WHERE ipm.product_sku IN (${phs})
+          GROUP BY ipm.product_sku
+        `, skus).then(r => r.rows).catch(() => [] as any[]);
+      };
+
+      const [rimiConcernRows, maximaConcernRows] = await Promise.all([
+        concernQuery(rimiPool, rimiSkus),
+        maximaPool ? concernQuery(maximaPool, maximaSkus) : Promise.resolve([] as any[]),
+      ]);
+
+      const additiveCounts = new Map<string, number>();
+      for (const r of [...rimiConcernRows, ...maximaConcernRows]) {
+        additiveCounts.set(r.product_sku, Number(r.concern_count));
+      }
+
       function mapRow(row: any, store: 'rimi' | 'maxima') {
         const slug = productSlug(row.name ?? '', row.product_id);
         const ingredientsText: string = row.ingredients_text ?? '';
@@ -1498,7 +1522,7 @@ Sitemap: https://abcde.lv/sitemap.xml
           quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
           quantityUnit:     row.quantity_unit  ?? null,
           ingredientCount:  countTopLevelIngredients(ingredientsText),
-          additiveCount:    ingredientsText ? countAdditives(ingredientsText) : null,
+          additiveCount:    additiveCounts.has(row.sku) ? (additiveCounts.get(row.sku) ?? null) : null,
         };
       }
 
