@@ -70,7 +70,7 @@ function StoreBadge({ store }: { store: string | null }) {
   const isRimi = store === 'rimi';
   return (
     <span
-      className="inline-block text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+      className="inline-block w-fit text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
       style={{ background: isRimi ? '#D33731' : '#24488B' }}
     >
       {isRimi ? 'Rimi' : 'Maxima'}
