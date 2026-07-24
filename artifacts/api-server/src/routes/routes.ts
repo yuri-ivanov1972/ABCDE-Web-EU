@@ -1546,7 +1546,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         JOIN normalized_categories c ON c.category_id = p.category_id
         LEFT JOIN productphotos pp   ON pp.product_id = p.product_id
                                     AND pp.is_primary = true
-        WHERE p.category_id IN (145, 146)
+        WHERE p.category_id IN (144, 145, 146)
           AND p.product_id IN (
             SELECT product_id FROM (
               SELECT DISTINCT ON (product_id) product_id, is_available
@@ -1582,7 +1582,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         JOIN nutritionfacts nf ON nf.product_id = p.product_id
         LEFT JOIN productphotos pp ON pp.product_id = p.product_id
                                   AND pp.is_primary = true
-        WHERE p.rimi_category_code IN (145, 146)
+        WHERE p.rimi_category_code IN (144, 145, 146)
           AND p.product_id IN (
             SELECT product_id FROM (
               SELECT DISTINCT ON (product_id) product_id, is_available
@@ -1598,7 +1598,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         SELECT MAX(pph.recorded_at) AS last_updated
         FROM product_price_history pph
         JOIN products p ON p.product_id = pph.product_id
-        WHERE p.category_id IN (145, 146)
+        WHERE p.category_id IN (144, 145, 146)
       `);
 
       const [rimiResult, maximaResult, lastUpdatedResult] = await Promise.all([rimiQuery, maximaQuery, lastUpdatedQuery]);

@@ -11,7 +11,7 @@
     "headline": "Healthiest Ice Cream in Latvia?",
     "subtitle": "Analysed: {{total}} ice creams from Rimi and Maxima"
   },
-  "dataSources": "Data: Rimi Latvia and Maxima (Barbora) · Categories: Portion ice creams, Large package ice creams",
+  "dataSources": "Data: Rimi Latvia and Maxima (Barbora) · Categories: Portion ice creams, Large package ice creams, Frozen juice bars",
   "error": "Failed to load data. Please try again.",
   "summary": {
     "heading": "Key Findings",
@@ -70,7 +70,7 @@
   },
   "methodology": {
     "heading": "About the data",
-    "body": "The analysis includes {{total}} ice creams from Rimi and Maxima (Barbora) in the categories \"Portion ice creams\" and \"Large package ice creams\". Data sourced from the ABCDE.lv database, which regularly updates information from Rimi.lv and Barbora.lv. Nutritional values are given per 100 g of product. Nutri-Score and NOVA groups are calculated according to European standard methodology. The additive count reflects the number of \"Limit\", \"Caution\", and \"Avoid\" ingredients from the ABCDE.lv ingredient analysis — the same number shown on product cards.",
+    "body": "The analysis includes {{total}} ice creams from Rimi and Maxima (Barbora) in the categories \"Portion ice creams\", \"Large package ice creams\", and \"Frozen juice bars\". Data sourced from the ABCDE.lv database, which regularly updates information from Rimi.lv and Barbora.lv. Nutritional values are given per 100 g of product. Nutri-Score and NOVA groups are calculated according to European standard methodology. The additive count reflects the number of \"Limit\", \"Caution\", and \"Avoid\" ingredients from the ABCDE.lv ingredient analysis — the same number shown on product cards.",
     "browseText": "All ice creams can be",
     "browseLink": "browsed here",
     "browseFilter": ", filtered by Nutri-Score, sugar, and other parameters."

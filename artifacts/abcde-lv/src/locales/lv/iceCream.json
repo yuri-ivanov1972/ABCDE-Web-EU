@@ -11,7 +11,7 @@
     "headline": "Veselīgākais saldējums Latvijā?",
     "subtitle": "Pārbaudīts: {{total}} saldējumi no Rimi un Maxima"
   },
-  "dataSources": "Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi",
+  "dataSources": "Dati: Rimi Latvija un Maxima (Barbora) · Kategorijas: Porcijas saldējumi, Lielo iepakojumu saldējumi, Saldētas sulas saldējumi",
   "error": "Datus ielādēt neizdevās. Mēģini vēlreiz.",
   "summary": {
     "heading": "Galvenie secinājumi",
@@ -70,7 +70,7 @@
   },
   "methodology": {
     "heading": "Par datiem",
-    "body": "Analīzē iekļauti {{total}} saldējumi no Rimi un Maxima (Barbora) kategorijām \"Porcijas saldējumi\" un \"Lielo iepakojumu saldējumi\". Dati iegūti no ABCDE.lv datubāzes, kas regulāri atjaunina informāciju no Rimi.lv un Barbora.lv. Uzturvērtības norādītas uz 100 g produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. Piedevu skaits atspoguļo \"Ierobežot\", \"Uzmanīgi\" un \"Izvairīties\" sastāvdaļu skaitu no ABCDE.lv ingredientu analīzes — tas pats skaitlis, kas redzams produktu kartītēs.",
+    "body": "Analīzē iekļauti {{total}} saldējumi no Rimi un Maxima (Barbora) kategorijām \"Porcijas saldējumi\", \"Lielo iepakojumu saldējumi\" un \"Saldētas sulas saldējumi\". Dati iegūti no ABCDE.lv datubāzes, kas regulāri atjaunina informāciju no Rimi.lv un Barbora.lv. Uzturvērtības norādītas uz 100 g produkta. Nutri-Score un NOVA grupas aprēķinātas pēc Eiropas standarta metodikas. Piedevu skaits atspoguļo \"Ierobežot\", \"Uzmanīgi\" un \"Izvairīties\" sastāvdaļu skaitu no ABCDE.lv ingredientu analīzes — tas pats skaitlis, kas redzams produktu kartītēs.",
     "browseText": "Visus saldējumus var",
     "browseLink": "pārlūkot šeit",
     "browseFilter": ", filtrējot pēc Nutri-Score, cukura un citiem parametriem."
