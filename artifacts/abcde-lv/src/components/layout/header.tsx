@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import nutriScoreLogo from '@assets/RVB_neutre_1768766381066.png';
-import { trackSearch, trackSearchCleared } from '@/lib/analytics';
+import { trackSearch, trackSearchCleared, trackArticleLinkClick } from '@/lib/analytics';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -129,6 +129,11 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
               href={t('header:article.href')}
               className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight font-medium"
               data-testid="article-link"
+              onClick={() => trackArticleLinkClick({
+                linkUrl: t('header:article.href'),
+                linkText: t('header:article.text'),
+                language: i18n.language,
+              })}
             >
               {t('header:article.text')}
             </LangLink>

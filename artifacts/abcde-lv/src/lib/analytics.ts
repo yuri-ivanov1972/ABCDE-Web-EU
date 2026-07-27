@@ -99,6 +99,22 @@ export function trackPetitionClick(params: {
 }
 
 /**
+ * Track when the article link in the header is clicked
+ */
+export function trackArticleLinkClick(params: {
+  linkUrl: string;
+  linkText: string;
+  language: string;
+}) {
+  pushToDataLayer({
+    event: 'article_link_click',
+    link_url: params.linkUrl,
+    link_text: params.linkText,
+    language: params.language,
+  });
+}
+
+/**
  * Track when camera permission is granted or denied
  */
 export function trackCameraPermission(params: {
