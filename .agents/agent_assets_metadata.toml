@@ -6,3 +6,9 @@ id = "egG0KRTNI6c5iRiUpABk2"
 uri = "file://.local/outputs/ABCDE-Web-EU.pptx"
 type = "slides"
 title = "ABCDE Web EU.pptx"
+
+[[outputs]]
+id = "8e9Dj6XNSZmRPGE0kZFnP"
+uri = "file://ice-cream-export.csv"
+type = "table"
+title = "Ice Cream Products Export"

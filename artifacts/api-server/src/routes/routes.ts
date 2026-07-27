@@ -1540,7 +1540,8 @@ Sitemap: https://abcde.lv/sitemap.xml
           nf.ingredients_text,
           c.name_lv  AS category_name_lv,
           c.name_en  AS category_name_en,
-          pp.photo_url
+          pp.photo_url,
+          p.rimi_url
         FROM products p
         JOIN nutritionfacts nf       ON nf.product_id = p.product_id
         JOIN normalized_categories c ON c.category_id = p.category_id
@@ -1577,7 +1578,8 @@ Sitemap: https://abcde.lv/sitemap.xml
           nf.nutri_score_grade,
           nf.nutri_score_points,
           nf.ingredients_text,
-          pp.photo_url
+          pp.photo_url,
+          p.barbora_url
         FROM products p
         JOIN nutritionfacts nf ON nf.product_id = p.product_id
         LEFT JOIN productphotos pp ON pp.product_id = p.product_id
@@ -1668,6 +1670,7 @@ Sitemap: https://abcde.lv/sitemap.xml
           fiber:            row.fiber          !== null ? Number(row.fiber)          : null,
           quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
           quantityUnit:     row.quantity_unit  ?? null,
+          storeUrl:         store === 'rimi' ? (row.rimi_url ?? null) : (row.barbora_url ?? null),
           ingredientCount:  countTopLevelIngredients(ingredientsText),
           additiveCount:    (() => {
             if (!additiveCounts.has(row.sku)) return null;
