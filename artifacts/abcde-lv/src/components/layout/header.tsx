@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Search, X, ExternalLink, SlidersHorizontal } from 'lucide-react';
+import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import nutriScoreLogo from '@assets/RVB_neutre_1768766381066.png';
-import { trackPetitionClick, trackSearch, trackSearchCleared } from '@/lib/analytics';
+import { trackSearch, trackSearchCleared } from '@/lib/analytics';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -96,24 +96,14 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
 
           {/* Right side: Petition Link and Actions */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Petition Link */}
-            <a 
-              href={t('header:petition.url')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight"
-              data-testid="petition-link"
-              onClick={() => {
-                trackPetitionClick({
-                  linkUrl: t('header:petition.url'),
-                  linkText: t('header:petition.text').replace(/<br\/>/g, ' '),
-                  language: i18n.language || 'unknown',
-                });
-              }}
+            {/* Article Link */}
+            <LangLink
+              href={t('header:article.href')}
+              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight font-medium"
+              data-testid="article-link"
             >
-              <span dangerouslySetInnerHTML={{ __html: t('header:petition.text') }} />
-              <ExternalLink className="h-3 w-3 hidden md:inline ml-1" style={{ display: 'inline' }} />
-            </a>
+              {t('header:article.text')}
+            </LangLink>
 
             {/* Language Switcher + Mobile Filter Toggle */}
             <div className="flex items-center gap-2">
