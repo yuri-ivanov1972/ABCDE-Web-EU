@@ -307,29 +307,29 @@ const IceCreamReport = () => {
 
   const top10LowSugar = top5PerStore(
     [...withSugar].sort((a, b) => a.carbsSugars! - b.carbsSugars!)
-  );
+  ).sort((a, b) => a.carbsSugars! - b.carbsSugars!);
 
   const top10LowSatFat = top5PerStore(
     [...withSatFat].sort((a, b) => a.fatSaturated! - b.fatSaturated!)
-  );
+  ).sort((a, b) => a.fatSaturated! - b.fatSaturated!);
 
   const withAdditives = products.filter(p => p.additiveCount !== null);
 
   const top10FewAdditives = top5PerStore(
     [...withAdditives].sort((a, b) => a.additiveCount! - b.additiveCount!)
-  );
+  ).sort((a, b) => a.additiveCount! - b.additiveCount!);
 
   const top10HighSugar = top5PerStore(
     [...withSugar].sort((a, b) => b.carbsSugars! - a.carbsSugars!)
-  );
+  ).sort((a, b) => b.carbsSugars! - a.carbsSugars!);
 
   const top10HighSatFat = top5PerStore(
     [...withSatFat].sort((a, b) => b.fatSaturated! - a.fatSaturated!)
-  );
+  ).sort((a, b) => b.fatSaturated! - a.fatSaturated!);
 
   const top10MostAdditives = top5PerStore(
     [...withAdditives].sort((a, b) => b.additiveCount! - a.additiveCount!)
-  );
+  ).sort((a, b) => b.additiveCount! - a.additiveCount!);
 
   return (
     <>
