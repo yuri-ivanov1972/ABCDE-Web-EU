@@ -295,34 +295,41 @@ const IceCreamReport = () => {
 
   // ── Rankings ──────────────────────────────────────────────────────────────
 
+  // Return up to 5 products from Rimi and up to 5 from Maxima from a pre-sorted array.
+  function top5PerStore(sorted: IceCreamProduct[]): IceCreamProduct[] {
+    const rimi = sorted.filter(p => p.store === 'rimi').slice(0, 5);
+    const maxima = sorted.filter(p => p.store === 'maxima').slice(0, 5);
+    return [...rimi, ...maxima];
+  }
+
   const withSugar = products.filter(p => p.carbsSugars !== null);
   const withSatFat = products.filter(p => p.fatSaturated !== null);
 
-  const top10LowSugar = [...withSugar]
-    .sort((a, b) => a.carbsSugars! - b.carbsSugars!)
-    .slice(0, 10);
+  const top10LowSugar = top5PerStore(
+    [...withSugar].sort((a, b) => a.carbsSugars! - b.carbsSugars!)
+  );
 
-  const top10LowSatFat = [...withSatFat]
-    .sort((a, b) => a.fatSaturated! - b.fatSaturated!)
-    .slice(0, 10);
+  const top10LowSatFat = top5PerStore(
+    [...withSatFat].sort((a, b) => a.fatSaturated! - b.fatSaturated!)
+  );
 
   const withAdditives = products.filter(p => p.additiveCount !== null);
 
-  const top10FewAdditives = [...withAdditives]
-    .sort((a, b) => a.additiveCount! - b.additiveCount!)
-    .slice(0, 10);
+  const top10FewAdditives = top5PerStore(
+    [...withAdditives].sort((a, b) => a.additiveCount! - b.additiveCount!)
+  );
 
-  const top10HighSugar = [...withSugar]
-    .sort((a, b) => b.carbsSugars! - a.carbsSugars!)
-    .slice(0, 10);
+  const top10HighSugar = top5PerStore(
+    [...withSugar].sort((a, b) => b.carbsSugars! - a.carbsSugars!)
+  );
 
-  const top10HighSatFat = [...withSatFat]
-    .sort((a, b) => b.fatSaturated! - a.fatSaturated!)
-    .slice(0, 10);
+  const top10HighSatFat = top5PerStore(
+    [...withSatFat].sort((a, b) => b.fatSaturated! - a.fatSaturated!)
+  );
 
-  const top10MostAdditives = [...withAdditives]
-    .sort((a, b) => b.additiveCount! - a.additiveCount!)
-    .slice(0, 10);
+  const top10MostAdditives = top5PerStore(
+    [...withAdditives].sort((a, b) => b.additiveCount! - a.additiveCount!)
+  );
 
   return (
     <>
