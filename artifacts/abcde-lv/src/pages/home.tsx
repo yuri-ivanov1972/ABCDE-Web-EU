@@ -59,7 +59,7 @@ const Home: React.FC<HomeProps> = ({ initialSearchQuery = '', categoryId: propCa
   const [sortOption, setSortOption] = useState<SortOption>('nutriScore');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
-  const [selectedStore, setSelectedStore] = useState<Store | undefined>('rimi');
+  const [selectedStore, setSelectedStore] = useState<Store | undefined>(undefined);
   
   // Initialize search from props
   useEffect(() => {
