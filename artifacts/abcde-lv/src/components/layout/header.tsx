@@ -96,15 +96,6 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
 
           {/* Right side: Petition Link and Actions */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Article Link */}
-            <LangLink
-              href={t('header:article.href')}
-              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight font-medium"
-              data-testid="article-link"
-            >
-              {t('header:article.text')}
-            </LangLink>
-
             {/* Language Switcher + Mobile Filter Toggle */}
             <div className="flex items-center gap-2">
               {/* Language Switcher - Desktop */}
@@ -132,6 +123,15 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
                 )}
               </button>
             </div>
+
+            {/* Article Link */}
+            <LangLink
+              href={t('header:article.href')}
+              className="text-xs md:text-sm text-primary hover:text-primary/80 transition-colors text-right leading-tight font-medium"
+              data-testid="article-link"
+            >
+              {t('header:article.text')}
+            </LangLink>
           </div>
         </div>
 
