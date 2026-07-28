@@ -1671,6 +1671,7 @@ Sitemap: https://abcde.lv/sitemap.xml
           quantityValue:    row.quantity_value !== null ? Number(row.quantity_value) : null,
           quantityUnit:     row.quantity_unit  ?? null,
           storeUrl:         store === 'rimi' ? (row.rimi_url ?? null) : (row.barbora_url ?? null),
+          ingredientsText:  ingredientsText || null,
           ingredientCount:  countTopLevelIngredients(ingredientsText),
           additiveCount:    (() => {
             if (!additiveCounts.has(row.sku)) return null;
