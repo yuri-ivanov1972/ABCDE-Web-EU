@@ -1890,12 +1890,17 @@ Sitemap: https://abcde.lv/sitemap.xml
   //   development — pnpm runs from artifacts/api-server/ → "../../artifacts/abcde-lv/..."
   // We try all four candidates in priority order.
   const cwd = process.cwd();
-  const INDEX_CANDIDATES = [
-    join(cwd, "artifacts/abcde-lv/dist/public/index.html"),       // prod build (prod CWD)
+  const productionIndexCandidates = [
+    join(cwd, "artifacts/abcde-lv/dist/public/index.html"),        // prod build (prod CWD)
     join(cwd, "../../artifacts/abcde-lv/dist/public/index.html"),  // prod build (dev CWD)
+  ];
+  const sourceIndexCandidates = [
     join(cwd, "artifacts/abcde-lv/index.html"),                    // source HTML (prod CWD)
     join(cwd, "../../artifacts/abcde-lv/index.html"),              // source HTML (dev CWD)
   ];
+  const INDEX_CANDIDATES = process.env.NODE_ENV === "production"
+    ? [...productionIndexCandidates, ...sourceIndexCandidates]
+    : [...sourceIndexCandidates, ...productionIndexCandidates];
   let indexHtmlCache: string | null = null;
 
   // Make Vite-bundled CSS non-blocking: browser defers load so it can't block FCP.
@@ -1931,29 +1936,91 @@ Sitemap: https://abcde.lv/sitemap.xml
     return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function buildProductOgTags(opts: {
-    title: string;
+  function buildProductSeoTags(opts: {
+    pageTitle: string;
     description: string;
     canonical: string;
+    product: any;
     imageUrl?: string;
   }): string {
-    const { title, description, canonical, imageUrl } = opts;
+    const { pageTitle, description, canonical, product, imageUrl } = opts;
+    const grade = product.nutrition?.nutriScoreGrade ?? null;
+    const categoryName = product.category?.nameLv ?? null;
+    const additionalProperty = [
+      grade ? { "@type": "PropertyValue", name: "Nutri-Score", value: grade } : null,
+      product.nutrition?.energyKcal != null
+        ? { "@type": "PropertyValue", name: "Enerģētiskā vērtība", value: `${product.nutrition.energyKcal} kcal / 100 g` }
+        : null,
+      product.nutrition?.fatTotal != null
+        ? { "@type": "PropertyValue", name: "Tauki", value: `${product.nutrition.fatTotal} g / 100 g` }
+        : null,
+      product.nutrition?.carbsSugars != null
+        ? { "@type": "PropertyValue", name: "Cukuri", value: `${product.nutrition.carbsSugars} g / 100 g` }
+        : null,
+      product.nutrition?.salt != null
+        ? { "@type": "PropertyValue", name: "Sāls", value: `${product.nutrition.salt} g / 100 g` }
+        : null,
+    ].filter(Boolean);
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description,
+      url: canonical,
+      ...(product.sku ? { sku: product.sku } : {}),
+      ...(categoryName ? { category: categoryName } : {}),
+      ...(imageUrl ? { image: [imageUrl] } : {}),
+      ...(additionalProperty.length ? { additionalProperty } : {}),
+    };
     const lines = [
       `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
-      `  <link rel="alternate" hrefLang="lv" href="${escapeAttr(canonical)}" />`,
-      `  <link rel="alternate" hrefLang="x-default" href="${escapeAttr(canonical)}" />`,
+      `  <link rel="alternate" hreflang="lv" href="${escapeAttr(canonical)}" />`,
+      `  <link rel="alternate" hreflang="x-default" href="${escapeAttr(canonical)}" />`,
+      `  <meta name="description" content="${escapeAttr(description)}" />`,
       `  <meta property="og:type" content="product" />`,
       `  <meta property="og:site_name" content="ABCDE.lv" />`,
-      `  <meta property="og:title" content="${escapeAttr(title)}" />`,
+      `  <meta property="og:title" content="${escapeAttr(pageTitle)}" />`,
       `  <meta property="og:description" content="${escapeAttr(description)}" />`,
       `  <meta property="og:url" content="${escapeAttr(canonical)}" />`,
       imageUrl ? `  <meta property="og:image" content="${escapeAttr(imageUrl)}" />` : null,
       `  <meta name="twitter:card" content="${imageUrl ? "summary_large_image" : "summary"}" />`,
-      `  <meta name="twitter:title" content="${escapeAttr(title)}" />`,
+      `  <meta name="twitter:title" content="${escapeAttr(pageTitle)}" />`,
       `  <meta name="twitter:description" content="${escapeAttr(description)}" />`,
       imageUrl ? `  <meta name="twitter:image" content="${escapeAttr(imageUrl)}" />` : null,
+      `  <script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>`,
     ];
     return lines.filter(Boolean).join("\n");
+  }
+
+  function buildProductPrerenderedContent(product: any, canonical: string): string {
+    const esc = (value: unknown) => escapeAttr(String(value ?? ""));
+    const nutrition = product.nutrition ?? {};
+    const grade = nutrition.nutriScoreGrade ?? null;
+    const categoryName = product.category?.nameLv ?? null;
+    const storeName = product.store === "maxima" ? "Maxima" : "Rimi";
+    const facts = [
+      nutrition.energyKcal != null ? `Enerģētiskā vērtība: ${nutrition.energyKcal} kcal` : null,
+      nutrition.fatTotal != null ? `tauki: ${nutrition.fatTotal} g` : null,
+      nutrition.fatSaturated != null ? `piesātinātie tauki: ${nutrition.fatSaturated} g` : null,
+      nutrition.carbsSugars != null ? `cukuri: ${nutrition.carbsSugars} g` : null,
+      nutrition.salt != null ? `sāls: ${nutrition.salt} g` : null,
+    ].filter(Boolean).join("; ");
+    const ingredients = nutrition.ingredientsText
+      ? `<section><h2 style="font-size:1.1rem">Sastāvdaļas</h2><p>${esc(nutrition.ingredientsText)}</p></section>`
+      : "";
+    const serializedProduct = JSON.stringify(product).replace(/</g, "\\u003c");
+
+    return `<main data-ssr-product-page style="max-width:72rem;margin:0 auto;padding:2rem 1rem;color:#111827;font-family:system-ui,sans-serif">
+      <article>
+        <h1 style="font-size:1.875rem;line-height:1.2;margin:0 0 1rem">${esc(product.name)}</h1>
+        ${grade ? `<p style="font-size:1.25rem;font-weight:700;margin:.5rem 0">Nutri-Score: ${esc(grade)}</p>` : ""}
+        <p>${esc(categoryName ? `${categoryName} · ${storeName}` : storeName)}</p>
+        ${facts ? `<section><h2 style="font-size:1.1rem">Uzturvērtība uz 100 g</h2><p>${esc(facts)}.</p></section>` : ""}
+        ${ingredients}
+        <p><a href="${esc(canonical)}">ABCDE.lv produkta informācija</a></p>
+      </article>
+    </main>
+    <script id="__ABCDE_PRODUCT_DATA__" type="application/json">${serializedProduct}</script>`;
   }
 
   // In development, Express reads the raw index.html (without Vite's transformIndexHtml),
@@ -1972,7 +2039,28 @@ Sitemap: https://abcde.lv/sitemap.xml
       : "";
 
   function injectIntoHtml(baseHtml: string, pageTitle: string, metaTags: string): string {
-    return baseHtml
+    let html = baseHtml;
+
+    // The Vite shell contains generic site metadata. Remove only the tag types
+    // replaced by this route so crawlers receive one authoritative value.
+    if (metaTags.includes('rel="canonical"')) {
+      html = html.replace(/\s*<link\s+rel="canonical"[^>]*>/gi, "");
+    }
+    if (metaTags.includes('name="description"')) {
+      html = html.replace(/\s*<meta\s+name="description"[^>]*>/gi, "");
+    }
+    for (const property of ["og:type", "og:site_name", "og:title", "og:description", "og:url", "og:image"]) {
+      if (metaTags.includes(`property="${property}"`)) {
+        html = html.replace(new RegExp(`\\s*<meta\\s+property="${property}"[^>]*>`, "gi"), "");
+      }
+    }
+    for (const name of ["twitter:card", "twitter:title", "twitter:description", "twitter:image"]) {
+      if (metaTags.includes(`name="${name}"`)) {
+        html = html.replace(new RegExp(`\\s*<meta\\s+name="${name}"[^>]*>`, "gi"), "");
+      }
+    }
+
+    return html
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeAttr(pageTitle)}</title>`)
       .replace("</head>", `${DEV_VITE_PREAMBLE}${metaTags}\n</head>`);
   }
@@ -2022,18 +2110,31 @@ Sitemap: https://abcde.lv/sitemap.xml
         : null;
       const photo = (product.photos?.find((p: any) => p.isPrimary) ?? product.photos?.[0])?.photoUrl;
 
-      const descParts: string[] = [];
-      if (grade) descParts.push(`Nutri-Score ${grade}`);
-      descParts.push(store);
-      if (qty)   descParts.push(qty);
-      const description = descParts.join(" · ");
-
       const pSlug     = productSlug(name, product.productId);
       const canonical  = `https://abcde.lv/lv/product/${pSlug}`;
-      const pageTitle  = `${name} | ABCDE.lv`;
+      const pageTitle  = grade
+        ? `${name} — Nutri-Score ${grade} | ABCDE.lv`
+        : `${name} — uzturvērtība | ABCDE.lv`;
+      const descriptionParts = [
+        name,
+        grade ? `Nutri-Score ${grade}` : "produkta uzturvērtība",
+        product.nutrition?.energyKcal != null ? `${product.nutrition.energyKcal} kcal uz 100 g` : null,
+        product.nutrition?.carbsSugars != null ? `${product.nutrition.carbsSugars} g cukura uz 100 g` : null,
+        store,
+        qty,
+      ].filter(Boolean);
+      const description = `${descriptionParts.join(" · ")}. Salīdzini uzturvērtību un izvēlies veselīgāk.`;
 
-      const metaTags = buildProductOgTags({ title: name, description, canonical, imageUrl: photo });
-      const html     = injectIntoHtml(baseHtml, pageTitle, metaTags);
+      const metaTags = buildProductSeoTags({
+        pageTitle,
+        description,
+        canonical,
+        product,
+        imageUrl: photo,
+      });
+      const prerenderedContent = buildProductPrerenderedContent(product, canonical);
+      const html = injectIntoHtml(baseHtml, pageTitle, metaTags)
+        .replace('<div id="root"></div>', `<div id="root">${prerenderedContent}</div>`);
 
       res.set("Content-Type", "text/html; charset=utf-8");
       res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");

@@ -349,9 +349,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     height={81}
                     className="h-16 w-auto flex-shrink-0"
                   />
-                  <p className="text-sm text-gray-600 mt-1">
-                    {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
-                  </p>
+                  <div className="mt-1">
+                    <p className="font-semibold text-gray-900">
+                      Nutri-Score: {product.nutrition.nutriScoreGrade}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}
+                    </p>
+                  </div>
                 </div>
                 
                 {/* Better alternatives button/message for C, D, E grades */}
