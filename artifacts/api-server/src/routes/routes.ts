@@ -5,7 +5,7 @@ import { join } from "path";
 import { createHmac, timingSafeEqual } from "crypto";
 import { storage } from "../storage";
 import { z } from "zod/v4";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import cors from "cors";
 import { sql } from "drizzle-orm";
 import { rimiDb, maximaDb, rimiPool, maximaPool } from "../db";
@@ -962,7 +962,7 @@ Sitemap: https://abcde.lv/sitemap.xml
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, message: "Too many token requests. Please try again later." },
-    keyGenerator: (req) => req.ip ?? "unknown",
+    keyGenerator: (req) => ipKeyGenerator(req.ip ?? "unknown"),
   });
 
   app.get("/api/scan/token", scanTokenRateLimiter, (req: Request, res: Response) => {
@@ -991,7 +991,7 @@ Sitemap: https://abcde.lv/sitemap.xml
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, message: "Too many scan requests. Please try again later." },
-    keyGenerator: (req) => req.ip ?? "unknown",
+    keyGenerator: (req) => ipKeyGenerator(req.ip ?? "unknown"),
   });
 
   // Restrict cross-origin access to the scan endpoint to the canonical domain only.
