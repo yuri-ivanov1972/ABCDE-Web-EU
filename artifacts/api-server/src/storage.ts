@@ -107,6 +107,8 @@ export type ProductWithDetails = Product & {
   novaScore?: number | null;
 };
 
+type CategoryWithSlug = Category & { slug: string };
+
 export class DatabaseStorage implements IStorage {
   // Helper to build ingredient card map from query results
   private buildIngredientCardsFromRows(rows: any[]): Map<string, ProductIngredientCard> {
@@ -280,7 +282,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getCategoryById(id: number): Promise<Category | undefined> {
+  async getCategoryById(id: number): Promise<CategoryWithSlug | undefined> {
     // Return undefined for excluded categories
     if (EXCLUDED_CATEGORY_IDS.includes(id)) {
       return undefined;
@@ -292,7 +294,7 @@ export class DatabaseStorage implements IStorage {
     return category ? { ...category, slug: categorySlug(category.nameLv, category.categoryId) } : undefined;
   }
   
-  async getCategoryByCode(code: string): Promise<Category | undefined> {
+  async getCategoryByCode(code: string): Promise<CategoryWithSlug | undefined> {
     const [category] = await rimiDb
       .select()
       .from(categories)
@@ -443,6 +445,7 @@ export class DatabaseStorage implements IStorage {
           barboraUrl: maximaProducts.barboraUrl,
           quantityValue: maximaProducts.quantityValue,
           quantityUnit: maximaProducts.quantityUnit,
+          novaScore: maximaProducts.novaScore,
           createdAt: maximaProducts.createdAt,
           updatedAt: maximaProducts.updatedAt,
           nutriScoreGrade: nutritionFacts.nutriScoreGrade,
@@ -521,6 +524,7 @@ export class DatabaseStorage implements IStorage {
         rimiUrl: null,  // Maxima doesn't have rimiUrl
         quantityValue: row.quantityValue,
         quantityUnit: row.quantityUnit,
+        novaScore: row.novaScore,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         nutrition: nutritionMap[row.productId],
@@ -742,6 +746,7 @@ export class DatabaseStorage implements IStorage {
             rimiUrl: products.rimiUrl,
             quantityValue: products.quantityValue,
             quantityUnit: products.quantityUnit,
+            novaScore: products.novaScore,
             createdAt: products.createdAt,
             updatedAt: products.updatedAt,
             // Nutrition facts fields
@@ -842,6 +847,7 @@ export class DatabaseStorage implements IStorage {
           rimiUrl: row.rimiUrl,
           quantityValue: row.quantityValue,
           quantityUnit: row.quantityUnit,
+          novaScore: row.novaScore,
           createdAt: row.createdAt,
           updatedAt: row.updatedAt
         };
@@ -1354,14 +1360,14 @@ export class DatabaseStorage implements IStorage {
       });
       
       // Fetch Rimi photos and categories
-      const rimiProductIds = allRimiQuery.map(p => p.productId);
+      const rimiProductIds = allRimiQuery.map((p: { productId: number }) => p.productId);
       let rimiPhotosMap: Record<number, ProductPhoto[]> = {};
       let rimiCategoryMap: Record<number, Category> = {};
       
       if (rimiProductIds.length > 0) {
         const [rimiPhotos, rimiCategories] = await Promise.all([
           rimiDb.select().from(productPhotos).where(inArray(productPhotos.productId, rimiProductIds)),
-          rimiDb.select().from(categories).where(inArray(categories.categoryId, allRimiQuery.map(p => p.categoryId)))
+          rimiDb.select().from(categories).where(inArray(categories.categoryId, allRimiQuery.map((p: { categoryId: number }) => p.categoryId)))
         ]);
         
         rimiPhotosMap = rimiPhotos.reduce((map, photo) => {
@@ -1377,7 +1383,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Convert Rimi results to ProductWithDetails
-      let allProducts: ProductWithDetails[] = allRimiQuery.map(row => {
+      let allProducts: ProductWithDetails[] = allRimiQuery.map((row: any) => {
         const nutrition: NutritionFacts | undefined = row.nutritionId ? {
           nutritionId: row.nutritionId,
           productId: row.productId,
@@ -1405,6 +1411,7 @@ export class DatabaseStorage implements IStorage {
           rimiUrl: row.rimiUrl,
           quantityValue: row.quantityValue,
           quantityUnit: row.quantityUnit,
+          novaScore: row.novaScore,
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
           nutrition,
@@ -1454,6 +1461,7 @@ export class DatabaseStorage implements IStorage {
               barboraUrl: maximaProducts.barboraUrl,
               quantityValue: maximaProducts.quantityValue,
               quantityUnit: maximaProducts.quantityUnit,
+              novaScore: maximaProducts.novaScore,
               createdAt: maximaProducts.createdAt,
               updatedAt: maximaProducts.updatedAt,
               nutritionId: nutritionFacts.nutritionId,
@@ -1525,6 +1533,7 @@ export class DatabaseStorage implements IStorage {
               rimiUrl: null,
               quantityValue: row.quantityValue,
               quantityUnit: row.quantityUnit,
+              novaScore: row.novaScore,
               createdAt: row.createdAt,
               updatedAt: row.updatedAt,
               nutrition,

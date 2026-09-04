@@ -48,6 +48,10 @@ function classifyImageUrl(url: string | null | undefined): 'cloudinary' | 'barbo
   return 'none';
 }
 
+function routeParam(value: string | string[]): string {
+  return Array.isArray(value) ? value[0] ?? "" : value;
+}
+
 function buildLcpPreloadUrls(rawUrl: string, type: 'cloudinary' | 'barbora'): { src: string; srcset: string } {
   if (type === 'cloudinary') {
     const base = rawUrl
@@ -358,16 +362,16 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       const categories = await storage.getCategories(level);
       res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
-      res.json(categories);
+      return res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      res.status(500).json({ message: "Failed to fetch categories" });
+      return res.status(500).json({ message: "Failed to fetch categories" });
     }
   });
   
   app.get("/api/categories/:id", async (req: Request, res: Response) => {
     try {
-      const categoryId = extractIdFromSlug(req.params.id);
+      const categoryId = extractIdFromSlug(routeParam(req.params.id));
       
       if (!categoryId) {
         return res.status(400).json({ message: "Invalid category ID" });
@@ -379,16 +383,16 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(404).json({ message: "Category not found" });
       }
       
-      res.json(category);
+      return res.json(category);
     } catch (error) {
       console.error("Error fetching category:", error);
-      res.status(500).json({ message: "Failed to fetch category" });
+      return res.status(500).json({ message: "Failed to fetch category" });
     }
   });
   
   app.get("/api/categories/:id/path", async (req: Request, res: Response) => {
     try {
-      const categoryId = extractIdFromSlug(req.params.id);
+      const categoryId = extractIdFromSlug(routeParam(req.params.id));
       
       if (!categoryId) {
         return res.status(400).json({ message: "Invalid category ID" });
@@ -400,17 +404,17 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(404).json({ message: "Category path not found" });
       }
       
-      res.json(categoryPath);
+      return res.json(categoryPath);
     } catch (error) {
       console.error("Error fetching category path:", error);
-      res.status(500).json({ message: "Failed to fetch category path" });
+      return res.status(500).json({ message: "Failed to fetch category path" });
     }
   });
 
   // Check if healthier products exist in a category
   app.get("/api/categories/:id/has-healthier-products", async (req: Request, res: Response) => {
     try {
-      const categoryId = extractIdFromSlug(req.params.id);
+      const categoryId = extractIdFromSlug(routeParam(req.params.id));
       const currentGrade = req.query.currentGrade as string;
       const store = req.query.store as string | undefined;
       
@@ -520,14 +524,14 @@ Sitemap: https://abcde.lv/sitemap.xml
       
       const hasHealthierProducts = (rimiCount + maximaCount) > 0;
       
-      res.json({ 
+      return res.json({
         hasHealthierProducts,
         betterGrades,
         count: rimiCount + maximaCount
       });
     } catch (error) {
       console.error("Error checking for healthier products:", error);
-      res.status(500).json({ message: "Failed to check for healthier products" });
+      return res.status(500).json({ message: "Failed to check for healthier products" });
     }
   });
   
@@ -596,20 +600,20 @@ Sitemap: https://abcde.lv/sitemap.xml
         sort: {sortBy, sortOrder}
       })} returned ${result.products.length} products, total: ${result.totalCount}`);
       res.set('Cache-Control', 'public, max-age=180, stale-while-revalidate=60');
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid query parameters", errors: error.issues.map(i => i.message) });
         return;
       }
       console.error("Error fetching products:", error);
-      res.status(500).json({ message: "Failed to fetch products" });
+      return res.status(500).json({ message: "Failed to fetch products" });
     }
   });
   
   app.get("/api/products/:id", async (req: Request, res: Response) => {
     try {
-      const urlSlug = req.params.id;
+      const urlSlug = routeParam(req.params.id);
       const productId = extractIdFromSlug(urlSlug);
       const store = req.query.store as 'rimi' | 'maxima' | undefined;
       
@@ -634,16 +638,16 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(404).json({ message: "Product not found" });
       }
       
-      res.json(product);
+      return res.json(product);
     } catch (error) {
       console.error("Error fetching product:", error);
-      res.status(500).json({ message: "Failed to fetch product" });
+      return res.status(500).json({ message: "Failed to fetch product" });
     }
   });
   
   app.get("/api/products/sku/:sku", async (req: Request, res: Response) => {
     try {
-      const { sku } = req.params;
+      const sku = routeParam(req.params.sku);
       
       if (!sku) {
         return res.status(400).json({ message: "Invalid product SKU" });
@@ -655,17 +659,17 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(404).json({ message: "Product not found" });
       }
       
-      res.json(product);
+      return res.json(product);
     } catch (error) {
       console.error("Error fetching product by SKU:", error);
-      res.status(500).json({ message: "Failed to fetch product" });
+      return res.status(500).json({ message: "Failed to fetch product" });
     }
   });
   
   // Get product by Rimi URL
   app.get("/api/products/url/:url", async (req: Request, res: Response) => {
     try {
-      const { url } = req.params;
+      const url = routeParam(req.params.url);
       
       if (!url) {
         return res.status(400).json({ message: "Invalid product URL" });
@@ -680,10 +684,10 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(404).json({ message: "Product not found" });
       }
       
-      res.json(product);
+      return res.json(product);
     } catch (error) {
       console.error("Error fetching product by URL:", error);
-      res.status(500).json({ message: "Failed to fetch product" });
+      return res.status(500).json({ message: "Failed to fetch product" });
     }
   });
 
@@ -1040,7 +1044,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(400).json({ 
           success: false,
           message: "Invalid request data",
-          errors: result.error.errors
+          errors: result.error.issues
         });
       }
 
@@ -1120,7 +1124,12 @@ Sitemap: https://abcde.lv/sitemap.xml
         });
       }
 
-      const visionData = await visionResponse.json();
+      const visionData = await visionResponse.json() as {
+        responses?: Array<{
+          error?: { message?: string };
+          textAnnotations?: Array<{ description?: string }>;
+        }>;
+      };
       
       // Check for Vision API errors in the response
       const response = visionData.responses?.[0];
@@ -1173,7 +1182,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         // Continue even if DB save fails
       }
 
-      res.json({
+      return res.json({
         success: true,
         text: fullText,
         message: matchedProduct 
@@ -1193,7 +1202,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       });
     } catch (error) {
       console.error("Error processing scan:", error);
-      res.status(500).json({ 
+      return res.status(500).json({
         success: false,
         message: "Failed to process image" 
       });
@@ -1214,7 +1223,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         return res.status(400).json({ 
           success: false,
           message: "Invalid request data",
-          errors: result.error.errors
+          errors: result.error.issues
         });
       }
 
@@ -1243,7 +1252,7 @@ Sitemap: https://abcde.lv/sitemap.xml
 
       const isLv = language === 'lv';
 
-      res.json({
+      return res.json({
         success: true,
         message: `Product found: ${productDetails.name}`,
         product: {
@@ -1278,7 +1287,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       });
     } catch (error) {
       console.error("Error processing mobile match-text:", error);
-      res.status(500).json({ 
+      return res.status(500).json({
         success: false,
         message: "Failed to match product from text" 
       });
@@ -1288,7 +1297,8 @@ Sitemap: https://abcde.lv/sitemap.xml
   // Mobile API: Get product details by store and product ID
   app.get("/api/mobile/product/:store/:id", async (req: Request, res: Response) => {
     try {
-      const { store, id } = req.params;
+      const store = routeParam(req.params.store);
+      const id = routeParam(req.params.id);
 
       if (store !== 'rimi' && store !== 'maxima') {
         return res.status(400).json({
@@ -1314,7 +1324,7 @@ Sitemap: https://abcde.lv/sitemap.xml
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         product: {
           productId: product.productId,
@@ -1337,7 +1347,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       });
     } catch (error) {
       console.error("Error fetching mobile product:", error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "Failed to fetch product details."
       });
@@ -1448,10 +1458,10 @@ Sitemap: https://abcde.lv/sitemap.xml
       // Cache the result
       nutriScoreStatsCache = { data: responseData, timestamp: now };
 
-      res.json(responseData);
+      return res.json(responseData);
     } catch (error) {
       console.error("Error fetching Nutri-Score stats:", error);
-      res.status(500).json({ 
+      return res.status(500).json({
         success: false,
         message: "Failed to fetch statistics" 
       });
@@ -1461,7 +1471,7 @@ Sitemap: https://abcde.lv/sitemap.xml
   // Stream scan photo directly from storage using secure token
   app.get("/api/scan/photo/:token", async (req: Request, res: Response) => {
     try {
-      const token = req.params.token;
+      const token = routeParam(req.params.token);
       
       if (!token || token.length !== 36) {
         return res.status(400).json({
@@ -1492,15 +1502,16 @@ Sitemap: https://abcde.lv/sitemap.xml
       const buffer = Buffer.from(base64Data, 'base64');
       res.set('Content-Type', 'image/jpeg');
       res.set('Cache-Control', 'private, max-age=2592000');
-      res.send(buffer);
+      return res.send(buffer);
     } catch (error) {
       console.error("Error serving scan photo:", error);
       if (!res.headersSent) {
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           message: "Failed to serve photo"
         });
       }
+      return;
     }
   });
 
@@ -1776,7 +1787,7 @@ Sitemap: https://abcde.lv/sitemap.xml
       const rimiNormSet = new Set<string>(
         rimiProducts
           .map((p: any) => p.name_norm as string | null)
-          .filter((n): n is string => !!n)
+          .filter((n: string | null): n is string => !!n)
       );
 
       // Exclude Maxima products whose name_norm matches a Rimi product — those would be

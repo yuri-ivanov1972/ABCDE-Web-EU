@@ -66,17 +66,17 @@ export const scansPool = new Pool({
 });
 
 // Add connection error handling
-rimiPool.on('error', (err) => {
+rimiPool.on('error', (err: Error) => {
   console.error('Rimi database pool error:', err);
 });
 
 if (maximaPool) {
-  maximaPool.on('error', (err) => {
+  maximaPool.on('error', (err: Error) => {
     console.error('Maxima database pool error:', err);
   });
 }
 
-scansPool.on('error', (err) => {
+scansPool.on('error', (err: Error) => {
   console.error('Scans pool error:', err);
 });
 
