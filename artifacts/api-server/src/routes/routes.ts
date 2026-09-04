@@ -2072,13 +2072,12 @@ Sitemap: https://abcde.lv/sitemap.xml
   // Express 5 (path-to-regexp v8) no longer supports inline regex in named params
   // like /:lang(lv|en), so we register two explicit routes sharing one function.
   async function serveProductPage(req: Request, res: Response): Promise<void> {
-    const baseHtml = await getIndexHtml();
-    if (!baseHtml) { res.status(404).send("Not found"); return; }
-
     const slug = String(req.params.slug);
     const productId = extractIdFromSlug(slug);
 
     if (!productId) {
+      const baseHtml = await getIndexHtml();
+      if (!baseHtml) { res.status(404).send("Not found"); return; }
       res.set("Content-Type", "text/html; charset=utf-8");
       res.send(baseHtml);
       return;
@@ -2100,10 +2099,21 @@ Sitemap: https://abcde.lv/sitemap.xml
       const product = candidates.find(p => p.slug === slug) ?? candidates[0] ?? null;
 
       if (!product) {
+        const baseHtml = await getIndexHtml();
+        if (!baseHtml) { res.status(404).send("Not found"); return; }
         res.set("Content-Type", "text/html; charset=utf-8");
         res.send(baseHtml);
         return;
       }
+
+      const pSlug = productSlug(product.name, product.productId);
+      if (slug !== pSlug) {
+        res.redirect(301, `/lv/product/${pSlug}`);
+        return;
+      }
+
+      const baseHtml = await getIndexHtml();
+      if (!baseHtml) { res.status(404).send("Not found"); return; }
 
       const name  = product.name;
       const grade = product.nutrition?.nutriScoreGrade ?? null;
@@ -2113,7 +2123,6 @@ Sitemap: https://abcde.lv/sitemap.xml
         : null;
       const photo = (product.photos?.find((p: any) => p.isPrimary) ?? product.photos?.[0])?.photoUrl;
 
-      const pSlug     = productSlug(name, product.productId);
       const canonical  = `https://abcde.lv/lv/product/${pSlug}`;
       const pageTitle  = grade
         ? `${name} — Nutri-Score ${grade} | ABCDE.lv`
@@ -2143,6 +2152,8 @@ Sitemap: https://abcde.lv/sitemap.xml
       res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
       res.send(html);
     } catch {
+      const baseHtml = await getIndexHtml();
+      if (!baseHtml) { res.status(404).send("Not found"); return; }
       res.set("Content-Type", "text/html; charset=utf-8");
       res.send(baseHtml);
     }
