@@ -1946,31 +1946,34 @@ Sitemap: https://abcde.lv/sitemap.xml
     const { pageTitle, description, canonical, product, imageUrl } = opts;
     const grade = product.nutrition?.nutriScoreGrade ?? null;
     const categoryName = product.category?.nameLv ?? null;
-    const additionalProperty = [
-      grade ? { "@type": "PropertyValue", name: "Nutri-Score", value: grade } : null,
-      product.nutrition?.energyKcal != null
-        ? { "@type": "PropertyValue", name: "Enerģētiskā vērtība", value: `${product.nutrition.energyKcal} kcal / 100 g` }
-        : null,
-      product.nutrition?.fatTotal != null
-        ? { "@type": "PropertyValue", name: "Tauki", value: `${product.nutrition.fatTotal} g / 100 g` }
-        : null,
-      product.nutrition?.carbsSugars != null
-        ? { "@type": "PropertyValue", name: "Cukuri", value: `${product.nutrition.carbsSugars} g / 100 g` }
-        : null,
-      product.nutrition?.salt != null
-        ? { "@type": "PropertyValue", name: "Sāls", value: `${product.nutrition.salt} g / 100 g` }
-        : null,
-    ].filter(Boolean);
+    const nutrition = product.nutrition ?? {};
+    const hasNutritionData = grade
+      || nutrition.energyKcal != null
+      || nutrition.fatTotal != null
+      || nutrition.carbsSugars != null;
     const jsonLd = {
       "@context": "https://schema.org",
-      "@type": "Product",
-      name: product.name,
+      "@type": "WebPage",
+      name: pageTitle,
       description,
       url: canonical,
-      ...(product.sku ? { sku: product.sku } : {}),
-      ...(categoryName ? { category: categoryName } : {}),
-      ...(imageUrl ? { image: [imageUrl] } : {}),
-      ...(additionalProperty.length ? { additionalProperty } : {}),
+      inLanguage: "lv-LV",
+      ...(imageUrl ? {
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: imageUrl,
+        },
+      } : {}),
+      ...(hasNutritionData ? {
+        mainEntity: {
+          "@type": "NutritionInformation",
+          ...(grade ? { name: `Nutri-Score ${grade}` } : {}),
+          ...(nutrition.energyKcal != null ? { calories: `${nutrition.energyKcal} kcal` } : {}),
+          ...(nutrition.fatTotal != null ? { fatContent: `${nutrition.fatTotal} g` } : {}),
+          ...(nutrition.carbsSugars != null ? { sugarContent: `${nutrition.carbsSugars} g` } : {}),
+          ...(categoryName ? { description: `Produkta kategorija: ${categoryName}` } : {}),
+        },
+      } : {}),
     };
     const lines = [
       `  <link rel="canonical" href="${escapeAttr(canonical)}" />`,
