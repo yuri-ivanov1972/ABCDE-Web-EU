@@ -67,7 +67,13 @@ function buildLcpPreloadUrls(rawUrl: string, type: 'cloudinary' | 'barbora'): { 
   };
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+type ProductPageStorage = Pick<typeof storage, "getProductById">;
+
+export async function registerRoutes(
+  app: Express,
+  dependencies: { productPageStorage?: ProductPageStorage } = {},
+): Promise<Server> {
+  const productPageStorage = dependencies.productPageStorage ?? storage;
   // Image proxy — converts external Barbora CDN images to WebP with resizing and server-side caching
   app.get("/api/image-proxy", handleImageProxy);
 
@@ -2088,11 +2094,11 @@ Sitemap: https://abcde.lv/sitemap.xml
       // different products. Fetch from both stores in parallel, then pick the one
       // whose canonical slug matches the URL slug (fall back to the first found).
       const [rimiResult, maximaResult] = await Promise.allSettled([
-        storage.getProductById(productId),          // tries Rimi first, then Maxima
-        storage.getProductById(productId, "maxima"), // forces Maxima lookup
+        productPageStorage.getProductById(productId),          // tries Rimi first, then Maxima
+        productPageStorage.getProductById(productId, "maxima"), // forces Maxima lookup
       ]);
       const candidates = [rimiResult, maximaResult]
-        .filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof storage.getProductById>>> =>
+        .filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<ProductPageStorage["getProductById"]>>> =>
           r.status === "fulfilled" && r.value != null)
         .map(r => r.value!);
 
