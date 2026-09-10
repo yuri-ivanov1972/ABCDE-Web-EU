@@ -350,8 +350,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ lang, id }) => {
                     className="h-16 w-auto flex-shrink-0"
                   />
                   <div className="mt-1">
-                    <p className="font-semibold text-gray-900">
-                      Nutri-Score: {product.nutrition.nutriScoreGrade}
+                    <p>
+                      <LangLink
+                        href="/about-nutriscore"
+                        language="lv"
+                        className="font-semibold text-gray-900 underline decoration-gray-400 underline-offset-2 transition-colors hover:text-primary hover:decoration-primary focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      >
+                        Nutri-Score: {product.nutrition.nutriScoreGrade}
+                      </LangLink>
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       {t(`product:nutriScore.${product.nutrition.nutriScoreGrade}`)}

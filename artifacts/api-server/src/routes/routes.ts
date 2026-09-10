@@ -2033,7 +2033,7 @@ Sitemap: https://abcde.lv/sitemap.xml
     return `<main data-ssr-product-page style="max-width:72rem;margin:0 auto;padding:2rem 1rem;color:#111827;font-family:system-ui,sans-serif">
       <article>
         <h1 style="font-size:1.875rem;line-height:1.2;margin:0 0 1rem">${esc(product.name)}</h1>
-        ${grade ? `<p style="font-size:1.25rem;font-weight:700;margin:.5rem 0">Nutri-Score: ${esc(grade)}</p>` : ""}
+        ${grade ? `<p style="font-size:1.25rem;font-weight:700;margin:.5rem 0"><a href="https://abcde.lv/lv/about-nutriscore">Nutri-Score: ${esc(grade)}</a></p>` : ""}
         <p>${esc(categoryName ? `${categoryName} · ${storeName}` : storeName)}</p>
         ${facts ? `<section><h2 style="font-size:1.1rem">Uzturvērtība uz 100 g</h2><p>${esc(facts)}.</p></section>` : ""}
         ${ingredients}
