@@ -5,13 +5,14 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 const REDIRECT_DOMAINS = ["nutri-score.lv", "nutriscore.lv"];
+const NUTRI_SCORE_INFO_URL = "https://abcde.lv/lv/about-nutriscore";
 
 const app: Express = express();
 
 // 301-redirect alternate domains to the canonical domain
 app.use((req, res, next) => {
   if (REDIRECT_DOMAINS.includes(req.hostname)) {
-    res.redirect(301, `https://abcde.lv${req.originalUrl}`);
+    res.redirect(301, NUTRI_SCORE_INFO_URL);
     return;
   }
   next();

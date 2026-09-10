@@ -10,6 +10,12 @@
          Rule: canonical always points to the /lv/ (default language) version. -->
     <script>
       (function () {
+        var REDIRECT_DOMAINS = ['nutri-score.lv', 'nutriscore.lv'];
+        if (REDIRECT_DOMAINS.indexOf(window.location.hostname) !== -1) {
+          window.location.replace('https://abcde.lv/lv/about-nutriscore');
+          return;
+        }
+
         // Redirect bare / → /lv immediately, before any bundle downloads.
         // Always use /lv (default language) — do not use navigator.language,
         // which sends crawlers and Lighthouse to /en and causes canonical issues.
