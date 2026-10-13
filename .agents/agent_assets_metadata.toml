@@ -6,9 +6,25 @@ id = "egG0KRTNI6c5iRiUpABk2"
 uri = "file://.local/outputs/ABCDE-Web-EU.pptx"
 type = "slides"
 title = "ABCDE Web EU.pptx"
+logical_id = "762a0f68-e031-4791-ad57-e6bfd803b020"
 
 [[outputs]]
 id = "8e9Dj6XNSZmRPGE0kZFnP"
 uri = "file://ice-cream-export.csv"
 type = "table"
 title = "Ice Cream Products Export v2"
+logical_id = "2e145503-9d0f-4065-983d-e69764303ebb"
+
+[[outputs]]
+id = "zFKlMonN4c-eyWGvjQgSr"
+uri = "file://generated-artifacts/maxima-photo-audit/photos-needing-review.csv"
+type = "table"
+title = "Maxima photo audit — inconclusive entries"
+description = "Includes 232 access-denied entries and 7,546 skipped after the image host was paused. These are not confirmed broken photos. No product data was changed."
+logical_id = "147070b0-331d-4382-902e-f106b645019b"
+content_hash = "sha256:6e44295ada546452c0e5aef00d5dfd3d1db21b5e13e2bc063e1cb59534fe5599"
+size = 3089096
+mtime_ms = 1791922054110
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/147070b0-331d-4382-902e-f106b645019b/89f252c1-1ecd-4812-bd41-6024766c547a"
+storage_version_token = "1791922064512660"
+content_type = "text/csv"
