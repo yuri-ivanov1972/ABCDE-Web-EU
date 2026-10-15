@@ -47,6 +47,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// These optional AI discovery manifests are not published by this site.
+// Return a real 404 instead of letting the frontend serve index.html as JSON.
+app.get(
+  ["/.well-known/ai-catalog.json", "/.well-known/ard.json", "/ai-catalog.json"],
+  (_req, res) => {
+    res.set("Cache-Control", "public, max-age=300");
+    res.status(404).type("text/plain").send("Not Found\n");
+  },
+);
+
 app.use("/api", router);
 
 export default app;
