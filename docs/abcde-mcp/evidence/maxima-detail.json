@@ -1,0 +1,234 @@
+{
+  "productId": 7451,
+  "sku": "000000000001292571",
+  "name": "100% rudzu miltu tostermaize Latvijas Tost Maize LATVIJAS MAIZNIEKS 390g",
+  "name_norm": "100% rudzu miltu tostermaize latvijas tost maize latvijas maiznieks 390g",
+  "categoryId": 395,
+  "rimiUrl": null,
+  "quantityValue": "390",
+  "quantityUnit": "g",
+  "novaScore": 4,
+  "createdAt": "2026-01-04T16:39:29.955Z",
+  "updatedAt": "2026-10-20T23:09:43.515Z",
+  "nutrition": {
+    "nutritionId": 7430,
+    "productId": 7451,
+    "ingredientsText": "RUDZU milti (52%), ūdens, KVIEŠU lipeklis, maizes raugs, maizes uzlabotājs (RUDZU ieraugs (RUDZU milti, ierauga kultūra), emulgatori: taukskābju mono un diglicerīdi, E472e; biezinātājs: ksantāna sveķi; antioksidants: askorbīnskābe; ferementi), cukurs, rapšu eļļa, AUZU pārslas, pārtikas sāls, sarkanais RUDZU iesals (0,9%), hidrolizēts KVIEŠU lipeklis, fermentu koncentrāts.",
+    "energyKcal": 277,
+    "energyKj": 1167,
+    "fatTotal": "4.6",
+    "fatSaturated": "0.7",
+    "carbsTotal": "44.4",
+    "carbsSugars": "4.6",
+    "protein": "11.9",
+    "salt": "1.6",
+    "fiber": "2.2",
+    "nutriScoreGrade": "D",
+    "nutriScorePoints": 11,
+    "dataSourceDate": null
+  },
+  "photos": [
+    {
+      "photoId": 8102,
+      "productId": 7451,
+      "photoUrl": "https://cdn.barbora.lv/products/43965903-6e92-4965-a515-9f59349f90bc_m.png",
+      "altText": null,
+      "isPrimary": true
+    }
+  ],
+  "category": {
+    "categoryId": 395,
+    "rimiCategoryCode": "SH-7-2-23",
+    "nameLv": "Tostermaize",
+    "nameEn": "Toaster bread",
+    "parentCategoryId": 88,
+    "level": 3
+  },
+  "store": "maxima",
+  "externalUrl": "https://barbora.lv/produkti/tostermaize-latv-tost-maize-rudzu-390-g",
+  "ingredientCard": {
+    "sku": "000000000001292571",
+    "name": "",
+    "categoryId": 0,
+    "categoryName": null,
+    "ingredients": [
+      {
+        "id": 2,
+        "name": "ūdens",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 37,
+        "name": "cukurs",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 81,
+        "name": "rapšu eļļa",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 88,
+        "name": "sāls",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 163,
+        "name": "askorbīnskābe",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "processing_aid",
+        "health_note": "Pārstrādes palīgviela"
+      },
+      {
+        "id": 398,
+        "name": "diglicerīdi",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "limit",
+        "suspicion_category": "emulsifier",
+        "health_note": "Emulgators (E471)"
+      },
+      {
+        "id": 427,
+        "name": "auzu pārslas",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 948,
+        "name": "biezinātājs ksantāna sveķi",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "emulsifier",
+        "health_note": "Biezinātājs"
+      },
+      {
+        "id": 1133,
+        "name": "rudzu milti",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 1540,
+        "name": "kviešu lipeklis",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "filler",
+        "health_note": "Izolēta olbaltumviela"
+      },
+      {
+        "id": 2024,
+        "name": "emulgatori taukskābju mono",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "limit",
+        "suspicion_category": "emulsifier",
+        "health_note": "Emulgators"
+      },
+      {
+        "id": 5057,
+        "name": "ierauga kultūra",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 5092,
+        "name": "maizes raugs",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 7416,
+        "name": "e472e",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "limit",
+        "suspicion_category": "emulsifier",
+        "health_note": "Emulgators"
+      },
+      {
+        "id": 18186,
+        "name": "rudzu ieraugs",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 18187,
+        "name": "fermenti",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 18188,
+        "name": "sarkanais rudzu iesals",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 18189,
+        "name": "hidrolizēts kviešu lipeklis",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "flavor_enhancer",
+        "health_note": "Apstrādāta olbaltumviela"
+      },
+      {
+        "id": 18190,
+        "name": "fermentu koncentrāts",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      }
+    ],
+    "naturalCount": 5,
+    "processedCount": 14,
+    "avoidCount": 0,
+    "limitCount": 3,
+    "cautionCount": 4
+  },
+  "slug": "100-rudzu-miltu-tostermaize-latvijas-tost-maize-latvijas-maiznieks-390g-7451"
+}

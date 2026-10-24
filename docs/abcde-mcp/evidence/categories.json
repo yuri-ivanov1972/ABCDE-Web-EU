@@ -1,0 +1,83 @@
+[
+  {
+    "categoryId": 10,
+    "rimiCategoryCode": "SH-7",
+    "nameLv": "Maize un konditoreja",
+    "nameEn": "Bread and pastry shop",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "maize-un-konditoreja-10"
+  },
+  {
+    "categoryId": 1,
+    "rimiCategoryCode": "SH-11",
+    "nameLv": "Piena produkti un olas",
+    "nameEn": "Dairy and eggs",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "piena-produkti-un-olas-1"
+  },
+  {
+    "categoryId": 8,
+    "rimiCategoryCode": "SH-5",
+    "nameLv": "Dzērieni",
+    "nameEn": "Drink",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "dzerieni-8"
+  },
+  {
+    "categoryId": 4,
+    "rimiCategoryCode": "SH-16",
+    "nameLv": "Vegāniem un veģetāriešiem",
+    "nameEn": "For vegans and vegetarians",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "veganiem-un-vegetariesiem-4"
+  },
+  {
+    "categoryId": 2,
+    "rimiCategoryCode": "SH-12",
+    "nameLv": "Saldētie ēdieni",
+    "nameEn": "Frozen dishes",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "saldetie-edieni-2"
+  },
+  {
+    "categoryId": 6,
+    "rimiCategoryCode": "SH-2",
+    "nameLv": "Augļi un dārzeņi",
+    "nameEn": "Fruits and vegetables",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "augli-un-darzeni-6"
+  },
+  {
+    "categoryId": 9,
+    "rimiCategoryCode": "SH-6",
+    "nameLv": "Gaļa, zivis un gatavā kulinārija",
+    "nameEn": "Meat, fish and finished culinary",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "gala-zivis-un-gatava-kulinarija-9"
+  },
+  {
+    "categoryId": 7,
+    "rimiCategoryCode": "SH-4",
+    "nameLv": "Iepakotā pārtika",
+    "nameEn": "Packaged food",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "iepakota-partika-7"
+  },
+  {
+    "categoryId": 3,
+    "rimiCategoryCode": "SH-13",
+    "nameLv": "Saldumi un uzkodas",
+    "nameEn": "Sweets and snacks",
+    "parentCategoryId": null,
+    "level": 1,
+    "slug": "saldumi-un-uzkodas-3"
+  }
+]

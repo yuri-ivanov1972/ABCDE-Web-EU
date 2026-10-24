@@ -1,0 +1,482 @@
+{
+  "products": [
+    {
+      "productId": 11277,
+      "sku": "000000000001412511",
+      "name": "Proteīna tostermaize WELL DONE 380g",
+      "name_norm": "proteina tostermaize well done 380g",
+      "categoryId": 395,
+      "rimiUrl": null,
+      "quantityValue": "380",
+      "quantityUnit": "g",
+      "novaScore": 4,
+      "createdAt": "2026-05-08T23:13:38.911Z",
+      "updatedAt": "2026-10-14T23:08:48.950Z",
+      "nutrition": {
+        "nutritionId": 11256,
+        "productId": 11277,
+        "ingredientsText": "ūdens, KVIEŠU milti, KVIEŠU lipeklis, saulespuķu sēklas 6,6%, linsēklas 5,8%, arbūzu sēklas 3,0%, KVIEŠU dīgļi, AUZU proteīns 2,2% (izcelsme – ES), AUZU šķiedrvielas, raugs, ķirbju sēklas 1,6%, RUDZU šķiedrvielas, cukurs, RUDZU iesals, jodēts sāls, konservants sorbīnskābe, miltu apstrādes līdzeklis askorbīnskābe.",
+        "energyKcal": 275,
+        "energyKj": 1165,
+        "fatTotal": "9.5",
+        "fatSaturated": "1.4",
+        "carbsTotal": "26.0",
+        "carbsSugars": "2.3",
+        "protein": "17.0",
+        "salt": "1.0",
+        "fiber": "0",
+        "nutriScoreGrade": "B",
+        "nutriScorePoints": 2,
+        "dataSourceDate": null
+      },
+      "photos": [
+        {
+          "photoId": 12325,
+          "productId": 11277,
+          "photoUrl": "https://cdn.barbora.lv/products/82d65878-b487-4a02-900e-929d0a46350b_m.png",
+          "altText": null,
+          "isPrimary": true
+        }
+      ],
+      "category": {
+        "categoryId": 395,
+        "rimiCategoryCode": "SH-7-2-23",
+        "nameLv": "Tostermaize",
+        "nameEn": "Toaster bread",
+        "parentCategoryId": 88,
+        "level": 3
+      },
+      "store": "maxima",
+      "externalUrl": "https://barbora.lv/produkti/proteina-tostermaize-well-done-380-g",
+      "slug": "proteina-tostermaize-well-done-380g-11277",
+      "ingredientCard": {
+        "sku": "000000000001412511",
+        "name": "",
+        "categoryId": 0,
+        "categoryName": null,
+        "ingredients": [
+          {
+            "id": 2,
+            "name": "ūdens",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 37,
+            "name": "cukurs",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 214,
+            "name": "kviešu milti",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 705,
+            "name": "saulespuķu sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 739,
+            "name": "raugs",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 1173,
+            "name": "linsēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 1202,
+            "name": "sāls",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 1540,
+            "name": "kviešu lipeklis",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "filler",
+            "health_note": "Izolēta olbaltumviela"
+          },
+          {
+            "id": 2248,
+            "name": "kviešu dīgļi",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 2627,
+            "name": "sorbīnskābe",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "limit",
+            "suspicion_category": "preservative",
+            "health_note": "Konservants"
+          },
+          {
+            "id": 2745,
+            "name": "ķirbju sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 5108,
+            "name": "askorbīnskābe",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "processing_aid",
+            "health_note": "Apstrādes palīgviela"
+          },
+          {
+            "id": 5136,
+            "name": "rudzu iesals",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 5141,
+            "name": "rudzu šķiedrvielas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 9737,
+            "name": "auzu šķiedrvielas",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 18228,
+            "name": "auzu proteīns",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "filler",
+            "health_note": "Olbaltumvielu izolāts"
+          },
+          {
+            "id": 26290,
+            "name": "arbūzu sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          }
+        ],
+        "naturalCount": 10,
+        "processedCount": 7,
+        "avoidCount": 0,
+        "limitCount": 1,
+        "cautionCount": 3
+      }
+    },
+    {
+      "productId": 7467,
+      "sku": "000000000001393685",
+      "name": "Tostermaize Latvijas Tost Maize sēklu LM 450g",
+      "name_norm": "tostermaize latvijas tost maize seklu lm 450g",
+      "categoryId": 395,
+      "rimiUrl": null,
+      "quantityValue": "450",
+      "quantityUnit": "g",
+      "novaScore": 4,
+      "createdAt": "2026-01-04T16:41:44.921Z",
+      "updatedAt": "2026-07-21T23:09:52.778Z",
+      "nutrition": {
+        "nutritionId": 7446,
+        "productId": 7467,
+        "ingredientsText": "KVIEŠU milti, saulespuķu sēklas 19,5%, ūdens, brūnās linsēklas 8,6%, ķirbju sēklas 3,6%, KVIEŠU lipeklis, raugs, sēklu maisījums (prosa, dzeltenās linsēklas, magoņu sēklas, SEZAMA sēklas) 2,3%, cukura sīrups, cukurs, sāls, rapšu eļļa, kukurūzas ciete, modificēta KVIEŠU ciete, fermentēti KVIEŠU milti, MIEŽU iesala ekstrakts, miltu apstrādes līdzeklis: askorbīnskābe; fermenti, konservants: sorbīnskābe.",
+        "energyKcal": 394,
+        "energyKj": 1648,
+        "fatTotal": "18.0",
+        "fatSaturated": "2.2",
+        "carbsTotal": "38.0",
+        "carbsSugars": "2.8",
+        "protein": "16.0",
+        "salt": "0.84",
+        "fiber": "2.2",
+        "nutriScoreGrade": "C",
+        "nutriScorePoints": 4,
+        "dataSourceDate": null
+      },
+      "photos": [
+        {
+          "photoId": 8118,
+          "productId": 7467,
+          "photoUrl": "https://cdn.barbora.lv/products/e11b9cf6-788f-4cbe-a4d0-e26259ba8b74_m.png",
+          "altText": null,
+          "isPrimary": true
+        }
+      ],
+      "category": {
+        "categoryId": 395,
+        "rimiCategoryCode": "SH-7-2-23",
+        "nameLv": "Tostermaize",
+        "nameEn": "Toaster bread",
+        "parentCategoryId": 88,
+        "level": 3
+      },
+      "store": "maxima",
+      "externalUrl": "https://barbora.lv/produkti/tostermaize-latv-tost-maize-sekl-lm-450-g",
+      "slug": "tostermaize-latvijas-tost-maize-seklu-lm-450g-7467",
+      "ingredientCard": {
+        "sku": "000000000001393685",
+        "name": "",
+        "categoryId": 0,
+        "categoryName": null,
+        "ingredients": [
+          {
+            "id": 2,
+            "name": "ūdens",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 5,
+            "name": "sāls",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 37,
+            "name": "cukurs",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 81,
+            "name": "rapšu eļļa",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 214,
+            "name": "kviešu milti",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 705,
+            "name": "saulespuķu sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 739,
+            "name": "raugs",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 1005,
+            "name": "kukurūzas ciete",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "processing_aid",
+            "health_note": "Biezētājs / Apstrādes palīgviela"
+          },
+          {
+            "id": 1150,
+            "name": "fermenti",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "processing_aid",
+            "health_note": "Pārstrādes palīgviela"
+          },
+          {
+            "id": 1152,
+            "name": "fermentēti kviešu milti",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "clean",
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 1285,
+            "name": "miežu iesala ekstrakts",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "limit",
+            "suspicion_category": "sweetener",
+            "health_note": "Rūpnieciskais cukurs"
+          },
+          {
+            "id": 1540,
+            "name": "kviešu lipeklis",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "filler",
+            "health_note": "Izolēta olbaltumviela"
+          },
+          {
+            "id": 2101,
+            "name": "cukura sīrups",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "limit",
+            "suspicion_category": "sweetener",
+            "health_note": "Industriāls cukurs"
+          },
+          {
+            "id": 2627,
+            "name": "sorbīnskābe",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "limit",
+            "suspicion_category": "preservative",
+            "health_note": "Konservants"
+          },
+          {
+            "id": 2745,
+            "name": "ķirbju sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 3454,
+            "name": "magoņu sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 5108,
+            "name": "askorbīnskābe",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "caution",
+            "suspicion_category": "processing_aid",
+            "health_note": "Apstrādes palīgviela"
+          },
+          {
+            "id": 12453,
+            "name": "modificēta kviešu ciete",
+            "category": "processed",
+            "is_processed": true,
+            "suspicion_level": "limit",
+            "suspicion_category": null,
+            "health_note": "modificēta ciete"
+          },
+          {
+            "id": 13248,
+            "name": "brūnās linsēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 17395,
+            "name": "prosa",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 17396,
+            "name": "sezama sēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          },
+          {
+            "id": 18212,
+            "name": "dzeltenās linsēklas",
+            "category": "natural",
+            "is_processed": false,
+            "suspicion_level": null,
+            "suspicion_category": null,
+            "health_note": null
+          }
+        ],
+        "naturalCount": 10,
+        "processedCount": 12,
+        "avoidCount": 0,
+        "limitCount": 4,
+        "cautionCount": 4
+      }
+    }
+  ],
+  "totalCount": 202
+}

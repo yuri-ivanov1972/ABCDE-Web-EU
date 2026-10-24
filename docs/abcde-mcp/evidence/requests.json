@@ -1,0 +1,58 @@
+{
+  "captured_on": "2026-10-24",
+  "method": "GET",
+  "status": 200,
+  "notes": [
+    "Public API, no credentials",
+    "Pretty-printed original JSON bodies; no catalogue substitutions",
+    "Snapshot examples, not availability guarantees",
+    "Health body was {\"status\":\"ok\"}; no separate health capture included"
+  ],
+  "requests": [
+    {
+      "name": "health",
+      "url": "https://abcde.lv/api/healthz",
+      "file": null
+    },
+    {
+      "name": "rimi-list",
+      "url": "https://abcde.lv/api/products?store=rimi&pageSize=1&sortBy=name&sortOrder=asc",
+      "file": "rimi-list.json"
+    },
+    {
+      "name": "maxima-list",
+      "url": "https://abcde.lv/api/products?store=maxima&pageSize=1&sortBy=name&sortOrder=asc",
+      "file": "maxima-list.json"
+    },
+    {
+      "name": "rimi-detail",
+      "url": "https://abcde.lv/api/products/3975?store=rimi",
+      "file": "rimi-detail.json"
+    },
+    {
+      "name": "maxima-detail",
+      "url": "https://abcde.lv/api/products/7451?store=maxima",
+      "file": "maxima-detail.json"
+    },
+    {
+      "name": "rimi-search",
+      "url": "https://abcde.lv/api/products?store=rimi&search=maize&proteinMin=10&pageSize=2&sortBy=protein&sortOrder=desc",
+      "file": "rimi-search.json"
+    },
+    {
+      "name": "maxima-search",
+      "url": "https://abcde.lv/api/products?store=maxima&search=maize&proteinMin=10&pageSize=2&sortBy=protein&sortOrder=desc",
+      "file": "maxima-search.json"
+    },
+    {
+      "name": "categories",
+      "url": "https://abcde.lv/api/categories?level=1",
+      "file": "categories.json"
+    },
+    {
+      "name": "filter-probe",
+      "url": "https://abcde.lv/api/products?store=maxima&search=maize&proteinMin=90&pageSize=2&sortBy=protein&sortOrder=desc",
+      "file": "filter-probe.json"
+    }
+  ]
+}

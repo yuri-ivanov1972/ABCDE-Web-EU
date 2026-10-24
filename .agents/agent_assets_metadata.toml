@@ -28,3 +28,31 @@ mtime_ms = 1791922054110
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/147070b0-331d-4382-902e-f106b645019b/89f252c1-1ecd-4812-bd41-6024766c547a"
 storage_version_token = "1791922064512660"
 content_type = "text/csv"
+
+[[outputs]]
+id = "POjt-YrnIW2iEJoB0gSyl"
+uri = "file://docs/abcde-mcp/START-PROMPT.txt"
+type = "text"
+title = "ABCDE MCP — ready-to-paste starting prompt"
+description = "Paste this complete prompt into a new Replit project. Covers both stores, Latvian/English, nutrition-only tools, safeguards, landing page, and verification."
+logical_id = "7ce92b12-ed76-4d1c-951d-40ce9dbc6e3f"
+content_hash = "sha256:c00fa24df0ad6d51ee3ac5cf9334a9e2e2421a5ff08f728165fac809d5007a2a"
+size = 22884
+mtime_ms = 1792835190158
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/7ce92b12-ed76-4d1c-951d-40ce9dbc6e3f/f703541d-b059-43a0-af5b-7fbc2a163148"
+storage_version_token = "1792835242118889"
+content_type = "text/plain"
+
+[[outputs]]
+id = "oX_iRQaX6SUaIMzdqC8ZE"
+uri = "file://generated-artifacts/abcde-mcp-handoff.zip"
+type = "unspecified"
+title = "ABCDE MCP — complete handoff bundle"
+description = "Starting prompt, API reference, price-audit findings, request manifest, and eight real API response samples."
+logical_id = "1e3bb56a-4c60-4358-981c-12000025b546"
+content_hash = "sha256:0d63685028ef5dda3ddaca2a6201c7292e6c3b9e0688942402a58fce46fc2c7b"
+size = 33267
+mtime_ms = 1792835223753
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/1e3bb56a-4c60-4358-981c-12000025b546/a3f5fce5-f958-4562-b5a8-f5d48c63e67c"
+storage_version_token = "1792835243076954"
+content_type = "application/octet-stream"

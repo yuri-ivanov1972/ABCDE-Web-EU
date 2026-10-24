@@ -1,0 +1,153 @@
+{
+  "productId": 3975,
+  "sku": "952513",
+  "name": "\"LATVIJAS Graudu maize\" kliju pilngraudu 300g",
+  "name_norm": "\"latvijas graudu maize\" kliju pilngraudu 300g",
+  "rimiUrl": "https://www.rimi.lv/e-veikals/lv/produkti/p/952513",
+  "categoryId": 399,
+  "quantityValue": "300.00",
+  "quantityUnit": "g",
+  "novaScore": 3,
+  "createdAt": "2025-11-22T12:34:41.044Z",
+  "updatedAt": "2026-10-23T23:32:36.343Z",
+  "nutrition": {
+    "nutritionId": 3987,
+    "productId": 3975,
+    "ingredientsText": "KVIEŠU pilngraudu milti (33%), KVIEŠU milti, dzeramais ūdens, KVIEŠU klijas (6,5%), KVIEŠU LIPEKLIS, maizes raugs, rafinētā rapšu augu eļļa, pārtikas sāls, fermenti, antioksidants: askorbīnskābe",
+    "energyKcal": 256,
+    "energyKj": 1071,
+    "fatTotal": "3.60",
+    "fatSaturated": "0.20",
+    "carbsTotal": "42.00",
+    "carbsSugars": "0.50",
+    "protein": "11.10",
+    "salt": "1.00",
+    "fiber": "6.00",
+    "nutriScoreGrade": "B",
+    "nutriScorePoints": 0,
+    "dataSourceDate": "2025-11-22T12:34:41.463Z"
+  },
+  "photos": [
+    {
+      "photoId": 4790,
+      "productId": 3975,
+      "photoUrl": "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_952513_PCE_LV",
+      "altText": null,
+      "isPrimary": true
+    }
+  ],
+  "category": {
+    "categoryId": 399,
+    "rimiCategoryCode": "SH-7-2-17",
+    "nameLv": "Sēklu un pelēkā maize",
+    "nameEn": "Seed and gray bread",
+    "parentCategoryId": 88,
+    "level": 3
+  },
+  "store": "rimi",
+  "externalUrl": "https://www.rimi.lv/e-veikals/lv/produkti/p/952513",
+  "ingredientCard": {
+    "sku": "952513",
+    "name": "",
+    "categoryId": 0,
+    "categoryName": null,
+    "ingredients": [
+      {
+        "id": 4,
+        "name": "ūdens",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 5,
+        "name": "kviešu milti",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 9,
+        "name": "maizes raugs",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 15,
+        "name": "pārtikas sāls",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "clean",
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 151,
+        "name": "fermenti",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 220,
+        "name": "kviešu lipeklis",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "filler",
+        "health_note": "Izolēts proteīns"
+      },
+      {
+        "id": 428,
+        "name": "askorbīnskābe",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "processing_aid",
+        "health_note": "Pārstrādes palīgviela"
+      },
+      {
+        "id": 719,
+        "name": "rafinētā rapšu eļļa",
+        "category": "processed",
+        "is_processed": true,
+        "suspicion_level": "caution",
+        "suspicion_category": "industrial_fat",
+        "health_note": "Rafinēta eļļa"
+      },
+      {
+        "id": 740,
+        "name": "kviešu pilngraudu milti",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      },
+      {
+        "id": 9483,
+        "name": "kviešu klijas",
+        "category": "natural",
+        "is_processed": false,
+        "suspicion_level": null,
+        "suspicion_category": null,
+        "health_note": null
+      }
+    ],
+    "naturalCount": 5,
+    "processedCount": 5,
+    "avoidCount": 0,
+    "limitCount": 0,
+    "cautionCount": 3
+  },
+  "slug": "latvijas-graudu-maize-kliju-pilngraudu-300g-3975"
+}
