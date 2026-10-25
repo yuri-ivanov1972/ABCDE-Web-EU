@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { createMcpPageProxy } from "./mcpPageProxy";
 
 const REDIRECT_DOMAINS = ["nutri-score.lv", "nutriscore.lv"];
 const NUTRI_SCORE_INFO_URL = "https://abcde.lv/lv/about-nutriscore";
@@ -43,6 +44,13 @@ app.use(
     },
   }),
 );
+// Before parsers and language/SPA fallbacks: scoped MCP requests must never
+// become website HTML or pass browser credentials to the independent service.
+const proxyMcpPage = createMcpPageProxy();
+app.use(async (req, res, next) => {
+  if (!await proxyMcpPage(req, res)) next();
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

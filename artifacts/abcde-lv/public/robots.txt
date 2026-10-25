@@ -9,3 +9,4 @@ Disallow:
 
 # Sitemap location
 Sitemap: https://abcde.lv/sitemap.xml
+Sitemap: https://abcde.lv/mcp-site/sitemap.xml

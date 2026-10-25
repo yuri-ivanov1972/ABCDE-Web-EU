@@ -27,6 +27,13 @@
 - [What Latvians Eat](/lv/ko-ed-latvija): Statistics and insights on food consumption in Latvia
 - [About the Project](/lv/about-project): Background and goals of ABCDE.lv
 
+## AI shopping assistant (MCP)
+
+- [ABCDE MCP (Latvian)](https://abcde.lv/lv/mcp): Build a healthier shopping list with Claude
+- [ABCDE MCP (English)](https://abcde.lv/en/mcp): English landing page
+- [MCP documentation](https://abcde.lv/mcp-site/llms.txt): AI-readable service information
+- Claude connector (unchanged): https://abcde-mcp.replit.app/mcp
+
 ## Technical
 
 - [Sitemap](/sitemap.xml): Complete list of all product and category pages

@@ -227,6 +227,7 @@ Disallow: /*&pageSize=
 
 # Sitemap location
 Sitemap: https://abcde.lv/sitemap.xml
+Sitemap: https://abcde.lv/mcp-site/sitemap.xml
 `;
     res.header('Content-Type', 'text/plain');
     res.send(robotsTxt);
@@ -1827,6 +1828,17 @@ Sitemap: https://abcde.lv/sitemap.xml
         xml += `    <priority>${page.priority}</priority>\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv${lvPath}" />\n`;
         xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/lv${lvPath}" />\n`;
+        xml += '  </url>\n';
+      }
+
+      // MCP pages are available in both languages; retain the existing English
+      // crawl policy in robots.txt rather than silently changing site-wide SEO.
+      for (const lang of languages) {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/${lang}/mcp</loc>\n`;
+        xml += '    <changefreq>monthly</changefreq>\n';
+        xml += `    <xhtml:link rel="alternate" hreflang="lv" href="${baseUrl}/lv/mcp" />\n`;
+        xml += `    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/mcp" />\n`;
         xml += '  </url>\n';
       }
 
