@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { createMcpPageProxy } from "./mcpPageProxy";
+import { createMcpProxy } from "./mcpMachineProxy";
 
 const REDIRECT_DOMAINS = ["nutri-score.lv", "nutriscore.lv"];
 const NUTRI_SCORE_INFO_URL = "https://abcde.lv/lv/about-nutriscore";
@@ -11,6 +12,19 @@ const WWW_DOMAIN = "www.abcde.lv";
 const CANONICAL_ORIGIN = "https://abcde.lv";
 
 const app: Express = express();
+
+// The machine transport must see untouched bytes before redirects, logging,
+// CORS, parsers, authentication, compression or any HTML/page fallback.
+const proxyMcp = createMcpProxy({
+  allowedHosts: [
+    "abcde.lv",
+    ...(process.env.NODE_ENV === "development" && process.env.REPLIT_DEV_DOMAIN
+      ? [process.env.REPLIT_DEV_DOMAIN] : []),
+  ],
+});
+app.use(async (req, res, next) => {
+  if (!await proxyMcp(req, res)) next();
+});
 
 // 301-redirect alternate domains to the canonical domain
 app.use((req, res, next) => {

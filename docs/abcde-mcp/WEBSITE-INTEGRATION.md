@@ -10,7 +10,10 @@ publication; local success is not evidence of production availability or indexin
 The independently published service remains at `https://abcde-mcp.replit.app`.
 The Claude connector remains **`https://abcde-mcp.replit.app/mcp`**.
 ABCDE.lv proxies only its human pages and scoped support resources, not the
-connector, retailer APIs, or the standalone service's root pages.
+connector, retailer APIs, or the standalone service's root pages as part of the
+landing-page integration. A subsequent, separate machine-endpoint change is
+documented in [MACHINE-ENDPOINT.md](MACHINE-ENDPOINT.md); it requires its own
+publication approval and public protocol verification.
 
 ## Implementation
 
