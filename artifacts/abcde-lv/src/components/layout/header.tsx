@@ -3,6 +3,7 @@ import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangLink from '@/components/routing/LangLink';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { addLanguageToPath } from '@/i18n';
 import nutriScoreLogo from '@assets/RVB_neutre_1768766381066.png';
 import { trackSearch, trackSearchCleared, trackArticleLinkClick } from '@/lib/analytics';
 
@@ -36,13 +37,17 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categoryId, isMobileFiltersOp
       <header className="bg-white shadow-sm sticky top-0 z-50">
         {/* Top navigation bar */}
         <div className="bg-gray-50 border-b border-gray-200">
-          <div className="container mx-auto px-4 py-1.5 flex justify-center gap-6">
+          <div className="container mx-auto px-4 py-1.5 flex flex-wrap justify-center gap-x-6 gap-y-1 text-center">
             <LangLink href="/about-nutriscore" className="text-sm text-gray-700 hover:text-primary font-medium">
               {t('common:footer.aboutNutriScore')}
             </LangLink>
             <LangLink href={i18n.language === 'en' ? '/what-latvians-eat' : '/ko-ed-latvija'} className="text-sm text-gray-700 hover:text-primary font-medium">
               {t('common:footer.whatLatviansEat')}
             </LangLink>
+            {/* Proxied landing pages require a document load, not SPA routing. */}
+            <a href={addLanguageToPath('/mcp', i18n.language?.startsWith('en') ? 'en' : 'lv')} className="text-sm text-gray-700 hover:text-primary font-medium">
+              MCP
+            </a>
             <LangLink href="/about-project" className="text-sm text-gray-700 hover:text-primary font-medium">
               {t('common:footer.aboutProject')}
             </LangLink>

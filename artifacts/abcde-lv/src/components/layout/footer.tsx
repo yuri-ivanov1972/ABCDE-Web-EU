@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import LangLink from '@/components/routing/LangLink';
+import { addLanguageToPath } from '@/i18n';
 import { getCategories } from '@/api';
 import { Category } from '@/types';
 
@@ -55,6 +56,12 @@ const Footer: React.FC = () => {
                 <LangLink href={statsPath} className="text-sm text-gray-600 hover:text-primary transition-colors">
                   {t('footer.whatLatviansEat')}
                 </LangLink>
+              </li>
+              <li>
+                {/* Keep this a document navigation to the server-proxied page. */}
+                <a href={addLanguageToPath('/mcp', isEn ? 'en' : 'lv')} className="text-sm text-gray-600 hover:text-primary transition-colors">
+                  MCP
+                </a>
               </li>
               <li>
                 <LangLink href="/about-project" className="text-sm text-gray-600 hover:text-primary transition-colors">

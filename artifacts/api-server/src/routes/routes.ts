@@ -2472,9 +2472,10 @@ Sitemap: https://abcde.lv/mcp-site/sitemap.xml
     return `${responsiveStyles}
 <header style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:50">
   <div style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
-    <div style="max-width:1280px;margin:0 auto;padding:6px 16px;display:flex;justify-content:center;gap:24px">
+    <div style="max-width:1280px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;justify-content:center;column-gap:24px;row-gap:4px;text-align:center">
       <a href="/${esc(lang)}/about-nutriscore" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.aboutNutriScore}</a>
       <a href="${esc(tr.eatHref)}" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.whatLatviansEat}</a>
+      <a href="/${esc(lang)}/mcp" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">MCP</a>
       <a href="/${esc(lang)}/about-project" style="font-size:14px;color:#374151;text-decoration:none;font-weight:500">${tr.aboutProject}</a>
     </div>
   </div>
