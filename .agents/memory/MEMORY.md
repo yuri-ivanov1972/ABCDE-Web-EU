@@ -1,3 +1,4 @@
 - [Homepage redirect and LCP](homepage-redirect-lcp.md) — / must redirect via inline script in index.html, not React router; Express SSR handles /lv and /en.
 - [react-helmet-async title children](helmet-title-children.md) — title must be a single string child; mixing string literals with {number} crashes Helmet in v3.
 - [MCP product scope](mcp-product-scope.md) — separate project; Rimi and Maxima; Latvian and English; investigate prices before deciding pricing scope.
+- [FOPL research remix](fopl-research-scope.md) — exploratory label-comparison study; cart is the last step, no semi-checkout; neutral design and 3–4 links considered.
