@@ -56,3 +56,31 @@ mtime_ms = 1792835223753
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/1e3bb56a-4c60-4358-981c-12000025b546/a3f5fce5-f958-4562-b5a8-f5d48c63e67c"
 storage_version_token = "1792835243076954"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "v87EUYc06YHXSnQ0-VHdr"
+uri = "file://generated-artifacts/barbora-extension-handoff.zip"
+type = "unspecified"
+title = "Barbora extension — complete handoff"
+description = "Six-file package: findings, proposed API, new-project prompt, acceptance checks, local DOM diagnostic and unexecuted read-only audit queries. No extension or endpoint has been implemented."
+logical_id = "1f969c29-ac91-48a1-98ec-d848fa356c44"
+content_hash = "sha256:ea7328a26d91b4bb2f7bbb130a01705d84fd00784c428ad69751a55262538445"
+size = 19873
+mtime_ms = 1793606867546
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/1f969c29-ac91-48a1-98ec-d848fa356c44/71c57c51-48ef-4b92-a42a-11ecbf0c52dc"
+storage_version_token = "1793606897756709"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "Zm7vB5dElohTqmEBvj3mS"
+uri = "file://docs/barbora-extension/START-PROMPT.txt"
+type = "text"
+title = "Starting prompt for the separate extension project"
+description = "Ready-to-paste LV/EN shopping-pilot brief with verified SKU selectors, privacy safeguards, real example data and an explicit pending-backend dependency."
+logical_id = "dfde81e7-c87d-421e-a2cf-3c7e01f987cd"
+content_hash = "sha256:6e92e729cacad207d41d1cf6ec6ec1412cf24f536d9125afe099d859c21ce344"
+size = 10061
+mtime_ms = 1793606740610
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/dfde81e7-c87d-421e-a2cf-3c7e01f987cd/3a117a30-40df-445c-82af-c5c8d723f2e3"
+storage_version_token = "1793606898584419"
+content_type = "text/plain"

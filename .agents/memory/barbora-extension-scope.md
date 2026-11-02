@@ -10,3 +10,9 @@ Introduce research after the shopping pilot. The research comparison is no added
 **Why:** The user explicitly chose these options after reviewing the attached extension proposal and the existing-project versus separate-project tradeoff.
 
 **How to apply:** The attachment's instruction to keep extension code in the existing website repository is superseded. Keep the extension separate without duplicating databases; plan any shared ABCDE lookup API work in the website project. Do not import the earlier shopping-simulator study's multi-label scope or add research tracking to the shopping pilot.
+
+Treat retailer identifiers as opaque strings and verify them against live markup before relying on stored retailer URLs. Repeated product blocks can represent responsive copies of the same item, not distinct products.
+
+**Why:** On 2026-11-02, Barbora exposed zero-padded SKU strings matching ABCDE records while current product paths differed from stored legacy URLs. Its detail page contained two blocks for the same product.
+
+**How to apply:** Recheck the external observations in `docs/barbora-extension/REPORT.md` before implementing selectors. Never coerce these keys to numbers or infer identifier equivalence from an internal database ID or a URL slug.

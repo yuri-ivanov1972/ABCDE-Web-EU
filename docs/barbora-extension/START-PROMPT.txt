@@ -1,0 +1,158 @@
+PROJECT: ABCDE Nutri-Score for Barbora — private Chrome extension
+
+Build in this NEW, SEPARATE Replit project, not in the ABCDE.lv website project.
+Do not remix the whole website, create a database, copy product data, connect
+retailer database secrets, or deploy a replacement API. This project owns only
+Chrome extension source, local build tooling, tests and installable packaging.
+
+Approved scope:
+- Private desktop Chrome shopping pilot installed through Developer Mode.
+- Barbora.lv only; independent ABCDE Nutri-Score letter badges, grades A–E.
+- Latvian and English messages/settings.
+- No accounts, payment, checkout, analytics, research tracking, cart observation,
+  shopping-history persistence or Chrome Web Store publication.
+- A later separately scoped study compares no added badge versus Nutri-Score.
+  Do not implement study assignment or observation in this shopping pilot.
+
+IMPORTANT BACKEND DEPENDENCY
+ABCDE.lv owns the external Maxima database. A batch endpoint is PROPOSED at:
+POST https://abcde.lv/api/extension/nutriscores/batch
+It was NOT implemented/published when this prompt was prepared on 2026-11-02.
+Ask for the current approved API-CONTRACT.md, implementation status and current
+DOM evidence. Verify API availability before claiming the extension works.
+Do not create a server in this project to disguise the missing dependency.
+
+Proposed request:
+{"retailer":"barbora","product_ids":["000000000000790928"]}
+
+Proposed response using an actual public-record example, NOT an endpoint response:
+{"products":{"000000000000790928":{"nutri_score":"D","abcde_url":"https://abcde.lv/lv/product/skabais-krejums-valmiera-20-450g-6741"}}}
+
+Use the approved backend contract if it changes. At the handoff date it proposes
+1–100 exact 18-digit string SKUs, retaining all leading zeros, JSON only,
+32 KiB maximum body. Do not substitute internal ABCDE product IDs or numbers.
+Only exact store-specific matches, never fuzzy names or client-side scoring.
+An empty successful map means no known displayable grades. Timeouts, 429,
+unavailable service or HTML are errors, not negative product results.
+
+VERIFIED BARBORA EVIDENCE, RECHECK BEFORE IMPLEMENTING
+On 2026-11-02:
+- Category https://barbora.lv/c/URAL/piena-produkti-un-olas had 60 product roots.
+- Search https://barbora.lv/search?q=piens had 60 product roots.
+- Promotion https://barbora.lv/cl/0WTS/weeklyfood-44 had 45 product wrappers.
+- Listing roots used [data-product-id]; child wrappers used
+  [data-cnstrc-item-id]. Both exposed zero-padded 18-digit SKUs.
+- Detail https://barbora.lv/p/skabais-krejums-valmiera-20-proc-450-g had TWO
+  [data-cnstrc-product-detail][data-cnstrc-item-id] blocks for one product:
+  000000000000790928. The main product heading was inside the main block.
+- Exact SKU matches were checked against the ABCDE public catalogue. Other
+  examples: 000000000000800999 → A; 000000000000801000 → B.
+- Product links now use /p/... whereas stored ABCDE retailer links can use
+  /produkti/...; legacy address probes returned 403. Do not match by URL aliases.
+- category-product-card-0 is a position, NOT an identifier.
+- Homepage recommendation markup also contained data-cnstrc-item-id but had a
+  different wrapper structure. Do not reuse category nesting assumptions.
+- Screenshots/static HTML are not proof of Chrome extension operation, infinite
+  scroll, SPA lifecycle, logged-in layouts, card reuse or cart non-interference.
+
+PHASE 1: INSPECT AND CONFIRM
+Inspect the actual rendered DOM in Chrome, including desktop/mobile-responsive
+variants within desktop Chrome, real search, category, promotion and detail.
+Use the supplied local DOM-DIAGNOSTIC.js if remote inspection is insufficient.
+Never invent selectors; unsupported layouts should get no badge.
+Report verified identifiers, supported roots, safe placement and limitations.
+Do not depend on retailer internal APIs, cookies, analytics globals, prices,
+hydration object formats or private account/cart data.
+
+PHASE 2: ARCHITECTURE AND IMPLEMENTATION
+Use Manifest V3, vanilla JavaScript or TypeScript, namespaced CSS and only small
+local tooling. React and a web server are unnecessary for the delivered package.
+Choose the structure, e.g. manifest.json, content script, service worker,
+badge.css, local LV/EN messages/settings, icons, tests, README and build script.
+
+Content script:
+- Run only on exactly approved Barbora origin/path layouts. Exclude basket,
+  account, personal-history and checkout areas even if their markup contains IDs.
+- Prefer verified product roots and exclude repeated/nested representations.
+  If root and child IDs disagree or scope is ambiguous, do not display a badge.
+- Extract exact SKU strings, deduplicate and batch. Debounce a scoped observer;
+  bound work, prioritize visible products and do not rescan all DOM per mutation.
+- Ignore extension-owned mutations to avoid observer loops.
+- Detect full document loads, supported SPA changes and lazy-loaded products.
+  Use a robust lifecycle without assuming mutations always signal a URL change.
+- When cards are reused or an ID changes, remove the old badge immediately.
+- Before applying async results recheck node connectivity, current SKU and
+  eligible location; stale requests must not attach a grade to another product.
+- Render exactly one badge per intended visible card/main detail presentation,
+  not once per child link, analytics wrapper or sticky detail duplicate.
+- Use dedicated non-interactive placement. Never nest anchors in anchors/buttons,
+  cover retailer labels, change prices, intercept add-to-cart or alter navigation.
+
+Service worker:
+- Make API requests from the worker, not from the page-origin content script.
+- Accept only a fixed lookup message with validated SKU array.
+- Verify sender is this extension and its tab URL has the exact approved Barbora
+  origin. No externally_connectable bridge or arbitrary page postMessage API.
+- Never accept an arbitrary fetch URL, HTTP headers or code from content messages.
+- Use one fixed ABCDE HTTPS endpoint, POST JSON, credentials:"omit", redirect:"error",
+  bounded timeout (e.g. 5 seconds), at most 2 concurrent requests and finite queue.
+- Validate JSON/schema, requested-key subset, A–E grades and canonical links.
+  Allow links only to the approved ABCDE HTTPS product path; no HTML rendering.
+- Respect Retry-After and cap retries. Service failures must not enter miss cache.
+- Bounded memory caches, e.g. max 2,000 entries, positive TTL 10 minutes,
+  actual missing-grade TTL 60 seconds. Deduplicate in-flight lookups.
+  Worker suspension may clear caches; do not store browsing history to avoid it.
+
+Permissions:
+- Only precise Barbora content-script matches and ABCDE API host access.
+  No <all_urls>, cookies, history, webRequest or broad tabs permission.
+- If storage is used, store only chosen language/settings, not SKUs or activity.
+- Bundle every executable script locally. No remote JavaScript, eval, tracking,
+  externally supplied code, production credentials or supposedly secret API key.
+- Use safe message passing and treat DOM/API values as untrusted data.
+
+Badge/messages:
+- Compact letter badge with ABCDE attribution, not a claim of native Barbora
+  endorsement or official Nutri-Score artwork. Check artwork rules before using
+  official assets. Avoid overstating freshness or scientific status.
+- Proposed backgrounds: A #038141, B #85BB2F, C #FECB02, D #EE8100, E #E63E11.
+  Select accessible text colors; include the letter so color is not sole meaning.
+- LV: "Nutri-Score: D — ABCDE.lv"; EN: "Nutri-Score: D — ABCDE.lv".
+  Localize settings, errors, aria labels and independent-source explanation.
+- Clicking a badge with a validated link opens ABCDE in a new tab using
+  rel="noopener noreferrer". No link available: keep the badge non-clickable.
+- The currently verified product canonical is Latvian; English product addresses
+  can redirect to Latvian. Do not promise English destination pages.
+- Missing/invalid/ambiguous grade means no badge, never a guessed grade.
+- API outage means no new badge and an optional unobtrusive extension status,
+  not repeated alerts or a fake "no Nutri-Score" statement.
+- Debug off by default; counts/status/timings only, no names, SKU lists, page
+  queries, cart data or personal browsing details in persistent logs.
+
+PHASE 3: VALIDATE AND DELIVER
+Use real public-grade fixtures plus missing/conflicting/error fixtures for tests.
+Test extraction, leading zeros, cache TTLs, bounded batching, worker validation,
+credential/redirect rules, missing grades versus outages, stale async responses,
+duplicate roots, safe DOM rendering and non-nested badge links.
+No production mock fallback. Live mode must not pretend fixtures are real data.
+
+Test in actual desktop Chrome with the extension loaded:
+- category, search, promotion, main detail and supported recommendations;
+- scroll/load more, SPA navigation/back, card reuse and responsive duplicates;
+- correct cross-checked grades, unknown products, API outage, 429 and timeouts;
+- correct accessible styling, LV/EN and new-tab product links;
+- no interference with retailer cart, price, wishlist or navigation controls.
+Do not submit a real order or change a user's cart without explicit permission.
+Report page-level identified/matched/badged counts, unmatched causes, unsupported
+layouts and precise test limitations. Do not claim "Chrome tested" from HTML,
+fixtures or a screenshot alone.
+
+Deliver source, tests, a locally loadable unpacked dist folder, a ZIP with
+manifest.json at its root, install/update steps for chrome://extensions,
+known limitations and troubleshooting. Load unpacked from the extracted folder,
+not the ZIP. Test fixtures/secrets/node_modules must not enter the package.
+Use a dedicated ignored generated-output directory for archives/build output.
+
+Do not publish anything or add research features without a separate approval.
+Start by reporting inspection findings and whether the real API dependency is
+available; proceed only with reliable matching and explicit dependency status.
