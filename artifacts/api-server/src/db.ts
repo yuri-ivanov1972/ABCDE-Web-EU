@@ -3,25 +3,11 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as scansSchema from "@workspace/db";
 import * as remoteSchema from "./remote-schema";
+import { logger } from "./lib/logger";
 
 // Configure Neon to use WebSockets with improved settings
 neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
-
-// Log database URLs (just the beginning for security)
-const rimiUrlStart = process.env.RIMI_DATABASE_URL 
-  ? process.env.RIMI_DATABASE_URL.substring(0, 20) + "..." 
-  : "undefined";
-const maximaUrlStart = process.env.MAXIMA_DATABASE_URL
-  ? process.env.MAXIMA_DATABASE_URL.substring(0, 20) + "..."
-  : "undefined";
-const localUrlStart = process.env.DATABASE_URL
-  ? process.env.DATABASE_URL.substring(0, 20) + "..."
-  : "undefined";
-
-console.log("RIMI_DATABASE_URL starts with:", rimiUrlStart);
-console.log("MAXIMA_DATABASE_URL starts with:", maximaUrlStart);
-console.log("DATABASE_URL (local) starts with:", localUrlStart);
 
 // Get database connection strings
 const RIMI_DB_URL = process.env.RIMI_DATABASE_URL;
@@ -33,7 +19,7 @@ if (!RIMI_DB_URL) {
 }
 
 if (!MAXIMA_DB_URL) {
-  console.warn("MAXIMA_DATABASE_URL is not set. Maxima products will not be available.");
+  logger.warn("Maxima database is not configured; Maxima products are unavailable.");
 }
 
 if (!LOCAL_DB_URL) {
@@ -66,18 +52,18 @@ export const scansPool = new Pool({
 });
 
 // Add connection error handling
-rimiPool.on('error', (err: Error) => {
-  console.error('Rimi database pool error:', err);
+rimiPool.on('error', () => {
+  logger.error("Rimi database pool error");
 });
 
 if (maximaPool) {
-  maximaPool.on('error', (err: Error) => {
-    console.error('Maxima database pool error:', err);
+  maximaPool.on('error', () => {
+    logger.error("Maxima database pool error");
   });
 }
 
-scansPool.on('error', (err: Error) => {
-  console.error('Scans pool error:', err);
+scansPool.on('error', () => {
+  logger.error("Scans pool error");
 });
 
 // Create drizzle clients
@@ -89,4 +75,4 @@ export const maximaDb = maximaPool ? drizzle({ client: maximaPool, schema: remot
 export const scansDb = drizzle({ client: scansPool, schema: scansSchema });
 
 const dbList = ['rimi (remote)', maximaDb ? 'maxima (remote)' : null, 'scans (local)'].filter(Boolean).join(', ');
-console.log(`Database connections established: ${dbList}`);
+logger.info({ databases: dbList }, "Database clients configured");

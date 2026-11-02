@@ -2,14 +2,14 @@
 
 ## Owner sequence
 
-1. Review `REPORT.md`. Exact SKUs were verified, but the complete external
-   Maxima audit is blocked by unavailable read-only connection access.
-2. Have an authorized owner run `READ-ONLY-AUDIT.sql` against the actual Maxima
-   database, not Rimi, scans or the project's managed production database.
-   Share only aggregate/index results; never send credentials.
-3. Approve the API implementation task separately in ABCDE.lv.
-4. After backend tests pass, approve publication and verify the proposed route
-   on the public domain. No such endpoint was created by this handoff.
+1. Review `IMPLEMENTATION.md`: the API and runtime external Maxima read-only
+   audit are complete; the original report's blocked audit is historical.
+2. Confirm the intended deployment uses the audited database configuration;
+   do not substitute the project's managed database or share secret values.
+3. Review `API-CONTRACT.md` and `API-HANDOFF.txt`. Backend tests pass; no Chrome
+   extension implementation or real Chrome installation was tested here.
+4. Approve publication separately, then verify the actual public route before
+   treating the extension's public API dependency as ready.
 5. Create a new lightweight extension project, paste `START-PROMPT.txt` and
    provide `API-CONTRACT.md`, this report and the diagnostic. Do not remix the
    full website or connect database secrets to the extension.
@@ -18,19 +18,19 @@
    Chrome's extension page and refresh Barbora tabs. A ZIP is for transport,
    not the folder selected for Load unpacked.
 
-## API acceptance, in ABCDE.lv
+## API acceptance, in ABCDE.lv — completed in development
 
-- [ ] Exact text SKU keys retain leading zeros; Maxima only, no Rimi fallback.
-- [ ] Match positive samples, missing/invalid/null grades and ambiguous fixtures.
-- [ ] Verify actual index/uniqueness before any migration. No automatic DDL.
-- [ ] 100 submitted items accepted, 101 rejected; deduplication is bounded.
-- [ ] JSON/body/encoding errors stay JSON, not SPA HTML.
-- [ ] Timeout, database outage, rate limit and admission failure are distinct
+- [x] Exact text SKU keys retain leading zeros; Maxima grades only, no Rimi fallback.
+- [x] Match positive samples, missing/invalid/null grades and ambiguous fixtures.
+- [x] Verify actual configured external database index/uniqueness. No DDL performed.
+- [x] 100 submitted items accepted, 101 rejected; deduplication is bounded.
+- [x] JSON/body/encoding errors stay JSON, not SPA HTML.
+- [x] Timeout, database outage, rate limit and admission failure are distinct
       from empty successful results; no false negative caching or retry flood.
-- [ ] No body, SKU, header, SQL, session, cookie, IP or browsing-history logging.
+- [x] No body, SKU, header, SQL, session, cookie, IP or browsing-history logging.
 - [ ] Credentialless fixed-endpoint Chrome worker requests work after approved
       publication; CORS is not treated as authentication.
-- [ ] Existing website, mobile, MCP and other APIs remain unchanged.
+- [x] Existing page/MCP regressions and development health/product checks pass.
 
 ## Extension acceptance, in the separate project
 
@@ -82,6 +82,8 @@ Performed: source/schema inspection, public API JSON reads, static live HTML
 parsing, exact SKU comparisons, one external category screenshot and public
 Chrome network-documentation review.
 
-Not performed: full external database audit, actual extension installation,
-Chrome DevTools diagnostic execution, user interactions, scrolling/navigation/
-card-reuse checks, basket changes, endpoint implementation or publication.
+Update: the configured external Maxima audit and API implementation/testing
+were subsequently completed; see `IMPLEMENTATION.md`. Still not performed:
+actual extension installation, Chrome DevTools diagnostic execution, user
+interactions, scrolling/navigation/card-reuse checks, basket changes,
+publication or public-route verification.

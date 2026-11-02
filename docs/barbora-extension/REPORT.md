@@ -1,6 +1,12 @@
 # Barbora Nutri-Score extension: investigation and handoff
 
-**Checked: 2 November 2026. Status: specification only, not an implemented API or extension.**
+**Current status, 2 November 2026: the API is implemented and development-verified,
+but NOT published. The extension remains separate and unimplemented here.**
+
+See `IMPLEMENTATION.md` for the completed runtime database audit and API tests,
+and `API-HANDOFF.txt` for the current separate-project message. The investigation
+below records the **original handoff**; its unavailable-connection and
+not-implemented statements are historical and superseded by that update.
 
 ## Recommendation and project boundary
 
@@ -237,7 +243,7 @@ confounds under the later protocol. No-added-badge is not a label-free store.
 Do not present the later extension study as the earlier multi-FOPL shopping
 simulator, and do not enable research tracking silently.
 
-## Deliverable boundary
+## Original handoff deliverable boundary (superseded)
 
 Only documentation and a local diagnostic were added. No application code,
 secrets, schema, product records, grades, API behavior or deployment was changed.

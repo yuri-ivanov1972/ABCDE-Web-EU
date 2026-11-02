@@ -1,4 +1,5 @@
--- NOT EXECUTED. For an authorized read-only connection to the actual external
+-- Executed 2026-11-02 through the configured external Maxima runtime connection.
+-- Reference queries for an authorized read-only connection to the actual external
 -- Maxima database, not the Replit-managed database or the separate Rimi DB.
 -- Aggregate/catalog queries only. No DDL, writes, credentials or PII.
 -- Run with a bounded statement timeout configured by the connection.

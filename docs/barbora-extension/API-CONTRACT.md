@@ -1,12 +1,13 @@
-# Proposed ABCDE extension API — NOT IMPLEMENTED
+# ABCDE extension API contract
 
-This is a versioned implementation specification, not documentation of a live
-route. Implement in the existing ABCDE backend only after owner approval.
-The new extension project must not invent a replacement service or data.
+**Implemented and development-verified on 2 November 2026. NOT published.**
+The owner must approve publication before the public endpoint can be used.
+See `IMPLEMENTATION.md` for audit provenance, tests and remaining limitations.
+The extension project must not invent a replacement service or data.
 
 ## Request
 
-Proposed fixed address:
+Intended public address after approved publication:
 `POST https://abcde.lv/api/extension/nutriscores/batch`
 
 `Content-Type: application/json`, no cookies, Authorization, user identifier,
@@ -33,8 +34,8 @@ coercion or guessing.
 
 ## Success
 
-The following is a **proposed response using a real verified record**. It has
-not been received from the nonexistent endpoint:
+The following response was verified through the development shared proxy
+against the real configured external Maxima database, not the published route:
 
 ```json
 {
@@ -68,14 +69,15 @@ WHERE p.sku = ANY($1::text[])
 LIMIT 201;
 ```
 
-This is a proposed query, not one executed here. Group results by exact SKU
+This query was implemented and its indexed plan audited. Group results by exact SKU
 before applying the grade allowlist. More than one underlying product or
 nutrition row for a key is ambiguous and must not be resolved by ordering,
 DISTINCT, “first row”, or “prefer a valid grade”. If the bounded result indicates
 excess multiplicity, fail the request rather than silently trimming.
 
-Verify actual indexes and unique constraints first. Existing schema declarations
-suggest unique SKU and nutrition-product keys, but production DDL is unverified.
+Actual unique SKU and nutrition-product indexes were verified on the configured
+external Maxima database; published deployment secret identity was not independently
+compared. Recheck against the deployment target when its configuration differs.
 Use `EXPLAIN` without executing unbounded analytics during routine requests.
 Any index creation is a separately approved production schema change, not
 part of read-only lookup and not automatically applied at startup/publish.
@@ -86,21 +88,38 @@ origin from the caller or perform URL fetching. If a canonical collision cannot
 be disambiguated by existing routing, omit the link rather than link to a wrong
 product; the badge can be non-clickable.
 
+`abcde_url` is therefore optional. One additional bounded, indexed Rimi
+ID/name query validates canonical collisions only; Rimi never supplies grades
+or resolves a missing SKU. If this optional guard fails, return the Maxima
+grade without a URL. Both reads are read-only transactions with LOCAL statement
+timeouts and abortable outgoing HTTP transport.
+
 ## Operational starting limits
 
-Proposed pilot defaults to validate/tune, not existing measured guarantees:
+Implemented pilot limits, still subject to deployment tuning:
 
 - 30 requests/minute/client IP; use the existing safe IPv4/IPv6 key handling and
   a verified trusted-proxy configuration. IP is used transiently for admission,
   not written to analytics/logs.
 - Bounded per-instance admission: 4 concurrent lookups and a conservative global
-  instance budget; document that instance limits do not equal deployment-wide
+  instance budget of 120 requests/minute; instance limits do not equal deployment-wide
   limits under scaling.
 - 5-second route deadline; database statement timeout at most 2 seconds, with
   connection acquisition inside the deadline. Cancel work on disconnect.
 - Shared bounded LRU response cache, e.g. 60 seconds, maximum 2,000 SKU entries.
   No per-client histories. Do not cache upstream/query failures as missing.
 - Reject overload with Retry-After. No automatic server-side retry loops.
+
+Forwarding headers are not trusted by default. Rate keys use Express's safely
+configured IP or socket peer, normalize mapped IPv4 and aggregate IPv6 /56.
+With an unverified shared ingress this can conservatively group multiple users.
+Do not enable trust-all or a guessed hop count to improve apparent throughput.
+Counters use transient HMAC keys, a 5,000-entry limit and on-request expiry
+cleanup; no raw IPs are written to logs or stored product history.
+
+Cookie/Authorization headers and query parameters are rejected with 400.
+OPTIONS returns 204, unsupported methods 405 with Allow, unrelated paths within
+the extension namespace JSON 404. CORS allows `*` without credentials.
 
 Extension starting defaults: at most 2 requests in flight; positive cache
 10 minutes, negative cache 60 seconds, bounded 2,000 entries, memory only.
@@ -130,7 +149,7 @@ all catalogue content as untrusted text.
 
 ## Authentication, permissions and privacy
 
-The pilot endpoint is public read-only public-grade data with abuse protection,
+After publication the endpoint will be public read-only public-grade data with abuse protection,
 not a private API disguised behind an extension key. Any key embedded in a
 downloaded extension can be extracted.
 
@@ -152,8 +171,8 @@ IP/access metadata: do not promise that no infrastructure metadata exists.
 
 ## Publication gate
 
-Implement API regressions and verify the published route only after the owner
-approves publication. Before connecting the real extension, check real SKUs,
+API regressions and development HTTP checks passed; verify the published route
+only after the owner approves publication. Before connecting the real extension, check real SKUs,
 missing/invalid grades, duplicate/conflicting fixtures, retailer isolation,
 leading zeros, 100/101 bounds, malformed JSON, timeouts, 429 behavior,
 credential omission, log redaction and actual extension-origin requests.

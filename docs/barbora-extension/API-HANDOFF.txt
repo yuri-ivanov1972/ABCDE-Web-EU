@@ -1,0 +1,55 @@
+ABCDE / BARBORA API — HANDOFF FOR THE SEPARATE EXTENSION PROJECT
+Updated 2 November 2026
+
+STATUS
+The endpoint is implemented and tested in the ABCDE website's DEVELOPMENT
+environment against its real configured external Maxima database.
+It has NOT been published by this implementation task.
+Wait for the website owner to approve publication and confirm public verification
+before treating the public URL below as available. Do not invent a replacement
+API or use fixtures as a silent live-mode fallback.
+
+INTENDED PUBLIC ENDPOINT AFTER APPROVED PUBLICATION
+POST https://abcde.lv/api/extension/nutriscores/batch
+
+Use a fixed service-worker fetch URL, credentials:"omit", redirect:"error",
+Content-Type: application/json, and a finite timeout.
+No cookies, Authorization, database secrets, API keys or query parameters.
+
+REQUEST
+{"retailer":"barbora","product_ids":["000000000000790928","000000000000800999","000000000000000000"]}
+
+DEVELOPMENT-VERIFIED RESULT
+{"products":{"000000000000790928":{"nutri_score":"D","abcde_url":"https://abcde.lv/lv/product/skabais-krejums-valmiera-20-450g-6741"},"000000000000800999":{"nutri_score":"A","abcde_url":"https://abcde.lv/lv/product/biezpiens-5-valmiera-180g-587"}}}
+
+RULES
+- IDs are exact 18-digit SKU STRINGS from Barbora markup, retaining leading zeros.
+  They are not ABCDE internal integer product IDs and must not become numbers.
+- Maximum 100 submitted IDs BEFORE deduplication; 32 KiB uncompressed JSON.
+  Only retailer and product_ids properties are accepted.
+- Unknown, ambiguous, null/invalid-grade products are omitted.
+- An empty products map is successful, with no known displayable grades.
+- abcde_url is OPTIONAL. Without it, render a non-clickable badge.
+  This protects against cross-store canonical-link collisions or unavailable
+  link validation. Grades always originate in Maxima, never a Rimi fallback.
+- Validate returned-key subset, grade A–E and trusted HTTPS ABCDE product links.
+- 400 invalid input; 413 oversized input; 415 unsupported type/encoding;
+  429 rate/admission limit; 503 unavailable lookup; 504 timeout.
+  Errors are {"error":{"code":"fixed_code"}} and must NOT enter the miss cache.
+- Observe Retry-After. Limit worker concurrency to 2, deduplicate batches and use
+  bounded ephemeral caches. A source outage is not "no grade for this product".
+- CORS is credentialless; no account, research tracking or shopping-history
+  collection. The endpoint does not modify products or calculate scores.
+- Public pilot caps: 30 requests/minute/visible client IP, 120/minute/instance,
+  4 active server requests, 5-second route deadline, 60-second server LRU cache.
+  Conservative ingress sharing can cause multiple users to share a rate bucket;
+  server counters are per instance, not a deployment-wide quota.
+
+Evidence: 47 API regressions passed, including 21 new tests, plus a subsequently
+checked configuration-failure regression. The shared
+development proxy returned five known products plus an omitted unknown key in
+approximately 0.22 seconds. This is not a production-publication result or a
+test of a real installed Chrome extension.
+
+Keep the extension in its separate project. The website owns database access.
+Request the current API-CONTRACT.md and publication verification from the owner.

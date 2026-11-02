@@ -15,20 +15,21 @@ Approved scope:
   Do not implement study assignment or observation in this shopping pilot.
 
 IMPORTANT BACKEND DEPENDENCY
-ABCDE.lv owns the external Maxima database. A batch endpoint is PROPOSED at:
+ABCDE.lv owns the external Maxima database. Its batch endpoint is implemented at:
 POST https://abcde.lv/api/extension/nutriscores/batch
-It was NOT implemented/published when this prompt was prepared on 2026-11-02.
+Updated 2026-11-02: implemented and verified in DEVELOPMENT, NOT PUBLISHED.
+Wait for owner-approved publication and actual public verification.
 Ask for the current approved API-CONTRACT.md, implementation status and current
 DOM evidence. Verify API availability before claiming the extension works.
 Do not create a server in this project to disguise the missing dependency.
 
-Proposed request:
+Current request:
 {"retailer":"barbora","product_ids":["000000000000790928"]}
 
-Proposed response using an actual public-record example, NOT an endpoint response:
+Development-verified response; NOT a published-route verification:
 {"products":{"000000000000790928":{"nutri_score":"D","abcde_url":"https://abcde.lv/lv/product/skabais-krejums-valmiera-20-450g-6741"}}}
 
-Use the approved backend contract if it changes. At the handoff date it proposes
+Use the approved backend contract if it changes. The implemented contract accepts
 1–100 exact 18-digit string SKUs, retaining all leading zeros, JSON only,
 32 KiB maximum body. Do not substitute internal ABCDE product IDs or numbers.
 Only exact store-specific matches, never fuzzy names or client-side scoring.
@@ -97,7 +98,8 @@ Service worker:
 - Use one fixed ABCDE HTTPS endpoint, POST JSON, credentials:"omit", redirect:"error",
   bounded timeout (e.g. 5 seconds), at most 2 concurrent requests and finite queue.
 - Validate JSON/schema, requested-key subset, A–E grades and canonical links.
-  Allow links only to the approved ABCDE HTTPS product path; no HTML rendering.
+  Allow optional links only to the approved ABCDE HTTPS product path; no HTML
+  rendering. A missing link is legitimate: display a non-clickable badge.
 - Respect Retry-After and cap retries. Service failures must not enter miss cache.
 - Bounded memory caches, e.g. max 2,000 entries, positive TTL 10 minutes,
   actual missing-grade TTL 60 seconds. Deduplicate in-flight lookups.

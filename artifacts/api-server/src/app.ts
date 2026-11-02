@@ -5,6 +5,9 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { createMcpPageProxy } from "./mcpPageProxy";
 import { createMcpProxy } from "./mcpMachineProxy";
+import { createBarboraExtension } from "./routes/barboraExtension";
+import { createBarboraLookup } from "./lib/barboraLookup";
+import { createBarboraDatabase } from "./lib/barboraDatabase";
 
 const REDIRECT_DOMAINS = ["nutri-score.lv", "nutriscore.lv"];
 const NUTRI_SCORE_INFO_URL = "https://abcde.lv/lv/about-nutriscore";
@@ -38,6 +41,15 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Exact extension namespace before general logging/parsers. Log only a fixed
+// route label and aggregate timing/status, never caller paths, headers or IDs.
+app.use("/api/extension", createBarboraExtension({
+  lookup: createBarboraLookup(createBarboraDatabase()),
+  onComplete: (status, durationMs) => logger.info({
+    route: "/api/extension", status, durationMs,
+  }, "Extension lookup completed"),
+}));
 
 app.use(
   pinoHttp({

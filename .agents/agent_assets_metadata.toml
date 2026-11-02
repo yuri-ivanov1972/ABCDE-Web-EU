@@ -84,3 +84,31 @@ mtime_ms = 1793606740610
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/dfde81e7-c87d-421e-a2cf-3c7e01f987cd/3a117a30-40df-445c-82af-c5c8d723f2e3"
 storage_version_token = "1793606898584419"
 content_type = "text/plain"
+
+[[outputs]]
+id = "2n68CeG2JRhj75RYSUV3S"
+uri = "file://docs/barbora-extension/API-HANDOFF.txt"
+type = "text"
+title = "Updated API handoff for the extension project"
+description = "Ready-to-share request/response contract and integration rules. Implemented and verified in development; publication approval and public verification are still required."
+logical_id = "dc7f6729-f876-47a8-a077-00e369da0a0a"
+content_hash = "sha256:ea3af5af70be08abe8cbb3d78ddadae52806460a126a3e9e45b877c5d9f13320"
+size = 3279
+mtime_ms = 1793608847677
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/dc7f6729-f876-47a8-a077-00e369da0a0a/e1f09dfc-185c-4c2b-a7aa-02f57514bf6e"
+storage_version_token = "1793608976413019"
+content_type = "text/plain"
+
+[[outputs]]
+id = "S7tYX5Vw1mvWmb96oe1sx"
+uri = "file://generated-artifacts/barbora-api-handoff.zip"
+type = "unspecified"
+title = "Barbora API — updated handoff package"
+description = "Eight documents and diagnostic/reference files, including database audit findings, implementation evidence, current API contract and extension starting prompt."
+logical_id = "955930b2-018b-4953-8686-da8d464a5434"
+content_hash = "sha256:058f98a9e417ac5bfa327e42ab993c06deadba2cc63c9ea848dc95468003a0dc"
+size = 26342
+mtime_ms = 1793608914186
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:b1c19b05-d9fc-4b04-915d-71611aa5c1dc/955930b2-018b-4953-8686-da8d464a5434/34c1e87b-2d78-46dc-a856-5946100bfa5a"
+storage_version_token = "1793608977090245"
+content_type = "application/octet-stream"

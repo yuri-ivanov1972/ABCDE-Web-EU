@@ -11,6 +11,40 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /extension/nutriscores/batch:
+    post:
+      operationId: lookupBarboraNutriscores
+      summary: Read-only exact Barbora SKU grade lookup
+      description: Public credentialless lookup. Maximum 100 submitted exact 18-digit text SKUs before deduplication and 32 KiB uncompressed JSON. Unknown, ambiguous and invalid-grade products are omitted. A missing abcde_url means no safely verified canonical link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BarboraLookupInput"
+      responses:
+        "200":
+          description: Successful lookup, including an empty products map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BarboraLookupResult"
+        "400":
+          $ref: "#/components/responses/BarboraError"
+        "404":
+          $ref: "#/components/responses/BarboraError"
+        "405":
+          $ref: "#/components/responses/BarboraError"
+        "413":
+          $ref: "#/components/responses/BarboraError"
+        "415":
+          $ref: "#/components/responses/BarboraError"
+        "429":
+          $ref: "#/components/responses/BarboraError"
+        "503":
+          $ref: "#/components/responses/BarboraError"
+        "504":
+          $ref: "#/components/responses/BarboraError"
   /healthz:
     get:
       operationId: healthCheck
@@ -25,7 +59,62 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 components:
+  responses:
+    BarboraError:
+      description: Fixed non-sensitive JSON error code; 429/503 may include Retry-After
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BarboraLookupError"
   schemas:
+    BarboraLookupInput:
+      type: object
+      additionalProperties: false
+      required: [retailer, product_ids]
+      properties:
+        retailer:
+          type: string
+          enum: [barbora]
+        product_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            pattern: '^[0-9]{18}$'
+    BarboraGrade:
+      type: object
+      additionalProperties: false
+      required: [nutri_score]
+      properties:
+        nutri_score:
+          type: string
+          enum: [A, B, C, D, E]
+        abcde_url:
+          type: string
+          pattern: '^https://abcde\.lv/lv/product/[a-z0-9-]+-[0-9]+$'
+    BarboraLookupResult:
+      type: object
+      additionalProperties: false
+      required: [products]
+      properties:
+        products:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/BarboraGrade"
+    BarboraLookupError:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code]
+          properties:
+            code:
+              type: string
+              enum: [invalid_request, not_found, method_not_allowed, payload_too_large, unsupported_media_type, rate_limited, lookup_unavailable, lookup_timeout]
     HealthStatus:
       type: object
       properties:

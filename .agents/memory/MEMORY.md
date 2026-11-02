@@ -3,3 +3,4 @@
 - [MCP product scope](mcp-product-scope.md) — separate project; Rimi and Maxima; Latvian and English; investigate prices before deciding pricing scope.
 - [FOPL research remix](fopl-research-scope.md) — exploratory label-comparison study; cart is the last step, no semi-checkout; neutral design and 3–4 links considered.
 - [Barbora Chrome extension](barbora-extension-scope.md) — separate project; LV/EN shopping pilot first, later no-added-badge versus Nutri-Score research.
+- [Runtime secret metadata](runtime-secret-metadata.md) — absent secure metadata did not imply absent backend configuration; verify via a sanitized read-only connection.
