@@ -2,3 +2,4 @@
 - [react-helmet-async title children](helmet-title-children.md) — title must be a single string child; mixing string literals with {number} crashes Helmet in v3.
 - [MCP product scope](mcp-product-scope.md) — separate project; Rimi and Maxima; Latvian and English; investigate prices before deciding pricing scope.
 - [FOPL research remix](fopl-research-scope.md) — exploratory label-comparison study; cart is the last step, no semi-checkout; neutral design and 3–4 links considered.
+- [Barbora Chrome extension](barbora-extension-scope.md) — separate project; LV/EN shopping pilot first, later no-added-badge versus Nutri-Score research.
