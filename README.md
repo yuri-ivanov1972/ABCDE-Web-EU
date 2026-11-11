@@ -11,7 +11,7 @@ Product data comes from two scrapers:
 
 - Browse thousands of supermarket food products with Nutri-Score grades.
 - Filter by category, nutrition values and store (Rimi or Maxima).
-- Scan a product barcode to find the matching product.
+- Photograph a product's label to find it. The text is read with Google Cloud Vision OCR.
 - Switch between Latvian and English (i18next).
 - SEO: the server adds meta tags to each page and generates `sitemap.xml`.
 
@@ -42,7 +42,9 @@ This is a pnpm workspace.
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `DATABASE_URL` | yes | Local Postgres for barcode scans |
+| `DATABASE_URL` | yes | Local Postgres for photo scans |
+| `GOOGLE_CLOUD_API_KEY` | for scans | Google Cloud Vision OCR |
+| `SCAN_TOKEN_SECRET` | no | Signs scan tokens. A random secret is used if it isn't set. |
 | `RIMI_DATABASE_URL` | yes | Rimi products and categories (written by RimiScraper-v2) |
 | `MAXIMA_DATABASE_URL` | no | Maxima products (written by BarboraScraper-v1) |
 
@@ -74,4 +76,4 @@ pnpm --filter @workspace/db run push
 - The frontend uses Tailwind v3, configured through PostCSS in `vite.config.ts`. It doesn't use `@tailwindcss/vite`.
 - `@neondatabase/serverless`, `drizzle-zod`, `zod`, `sharp` and `ws` must be listed in the api-server dependencies.
 
-More notes are in `replit.md`.
+More notes are in `replit.md`. For the system design, see `ARCHITECTURE.md`.
